@@ -1,0 +1,1 @@
+// File removed during cleanup. Window logic is currently handled directly in App.tsx.

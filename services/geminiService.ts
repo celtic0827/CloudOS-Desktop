@@ -1,0 +1,1 @@
+// File removed during cleanup. Service logic has been moved to components/apps/GeminiChat.tsx.

@@ -1,0 +1,1 @@
+// File removed during cleanup. Please use components/apps/NotePad.tsx instead.
