@@ -13,15 +13,22 @@ interface SettingsProps {
   onClose: () => void;
 }
 
-// Expanded Palette: Deep, Rich, Metallic tones
+// Expanded Palette: Wide gamut distribution, focused on distinct rich tones
 const COLORS = [
-  'bg-slate-900', 'bg-zinc-900', 'bg-neutral-900',
-  'bg-amber-900', 'bg-orange-950',
-  'bg-red-950', 'bg-rose-950', 'bg-emerald-950', 'bg-teal-950',
-  'bg-cyan-950', 'bg-sky-950', 'bg-blue-950', 'bg-indigo-950', 
-  'bg-violet-950', 'bg-purple-950', 'bg-fuchsia-950',
-  // Accents
-  'bg-amber-600', 'bg-emerald-700', 'bg-indigo-700'
+  // Monochrome / Neutrals
+  'bg-slate-900', 'bg-zinc-700', 'bg-stone-800', 'bg-neutral-600',
+  // Reds & Warm
+  'bg-red-950', 'bg-red-700', 'bg-rose-800', 'bg-orange-800', 
+  // Yellows & Ambers
+  'bg-amber-900', 'bg-amber-600', 'bg-yellow-700', 'bg-lime-800',
+  // Greens
+  'bg-green-800', 'bg-emerald-900', 'bg-emerald-600', 'bg-teal-800',
+  // Cyans & Blues
+  'bg-cyan-900', 'bg-sky-700', 'bg-blue-900', 'bg-blue-700',
+  // Indigos & Violets
+  'bg-indigo-900', 'bg-indigo-600', 'bg-violet-900', 'bg-violet-700',
+  // Purples & Pinks
+  'bg-purple-900', 'bg-fuchsia-800', 'bg-pink-900', 'bg-rose-600'
 ];
 
 const ICONS = Object.keys(ICON_LIBRARY);
@@ -354,41 +361,44 @@ export const Settings: React.FC<SettingsProps> = ({
                         <div className="flex-1 min-h-0 grid grid-cols-12 gap-4 border-t border-white/5 pt-4">
                               
                               {/* Left: Preview & Colors */}
-                              <div className="col-span-4 flex flex-col gap-4">
+                              <div className="col-span-5 flex flex-col gap-4">
                                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Icon Style</label>
                                  
                                  <div className="flex items-center gap-4 bg-[#0f0f0f] border border-white/5 rounded-xl p-4">
-                                    <div className={`w-14 h-14 rounded-xl ${formData.color} flex items-center justify-center shadow-lg ring-1 ring-white/10 relative overflow-hidden shrink-0`}>
+                                    <div className={`w-12 h-12 rounded-xl ${formData.color} flex items-center justify-center shadow-lg ring-1 ring-white/10 relative overflow-hidden shrink-0`}>
                                         <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-black/30 pointer-events-none" />
                                         {formData.iconUrl ? (
-                                           <img src={formData.iconUrl} alt="Preview" className="w-8 h-8 object-contain drop-shadow-md z-10" />
+                                           <img src={formData.iconUrl} alt="Preview" className="w-7 h-7 object-contain drop-shadow-md z-10" />
                                         ) : (
-                                           React.createElement(ICON_LIBRARY[formData.iconName || 'Globe'] || Globe, { size: 28, className: 'text-white/90 z-10' })
+                                           React.createElement(ICON_LIBRARY[formData.iconName || 'Globe'] || Globe, { size: 24, className: 'text-white/90 z-10' })
                                         )}
                                      </div>
                                      <div className="text-[10px] text-slate-500 leading-tight">
-                                        Previewing app icon<br/>on active background.
+                                        Icon Preview
                                      </div>
                                  </div>
 
-                                 <div className="grid grid-cols-5 gap-1.5 p-3 bg-[#0f0f0f] border border-white/5 rounded-xl">
-                                    {COLORS.map(c => (
-                                       <button
-                                          key={c}
-                                          onClick={() => setFormData({...formData, color: c})}
-                                          className={`w-5 h-5 rounded-full ${c} ${formData.color === c ? 'ring-2 ring-amber-500 scale-110' : 'opacity-60 hover:opacity-100'} transition-all`}
-                                       />
-                                    ))}
+                                 <div className="flex-1 overflow-y-auto scrollbar-hide">
+                                    <div className="grid grid-cols-6 gap-2 p-3 bg-[#0f0f0f] border border-white/5 rounded-xl">
+                                        {COLORS.map(c => (
+                                        <button
+                                            key={c}
+                                            onClick={() => setFormData({...formData, color: c})}
+                                            className={`w-5 h-5 rounded-full ${c} ${formData.color === c ? 'ring-2 ring-amber-500 scale-110' : 'opacity-70 hover:opacity-100'} transition-all`}
+                                            title={c.replace('bg-', '')}
+                                        />
+                                        ))}
+                                    </div>
                                  </div>
                               </div>
 
                               {/* Right: Icon Grid (Scrollable) */}
-                              <div className="col-span-8 flex flex-col bg-[#0f0f0f] border border-white/5 rounded-xl overflow-hidden">
+                              <div className="col-span-7 flex flex-col bg-[#0f0f0f] border border-white/5 rounded-xl overflow-hidden">
                                  <div className="px-4 py-3 border-b border-white/5 bg-[#111]">
                                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">System Library</label>
                                  </div>
                                  <div className="flex-1 overflow-y-auto scrollbar-hide p-3">
-                                    <div className="grid grid-cols-7 gap-2">
+                                    <div className="grid grid-cols-6 gap-2">
                                         {ICONS.map(iconName => {
                                            const IconComponent = ICON_LIBRARY[iconName];
                                            const isSelected = !formData.iconUrl && formData.iconName === iconName;
@@ -403,7 +413,7 @@ export const Settings: React.FC<SettingsProps> = ({
                                                  }`}
                                                  title={iconName}
                                               >
-                                                 <IconComponent size={16} strokeWidth={1.5} />
+                                                 <IconComponent size={14} strokeWidth={1.5} />
                                               </button>
                                            );
                                         })}
