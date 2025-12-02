@@ -379,10 +379,10 @@ export const Settings: React.FC<SettingsProps> = ({
                         <div className="flex-1 min-h-0 grid grid-cols-12 gap-4 border-t border-white/5 pt-4">
                               
                               {/* Left: Preview & Colors */}
-                              <div className="col-span-5 flex flex-col gap-4">
+                              <div className="col-span-5 flex flex-col gap-4 h-full overflow-hidden">
                                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Icon Style</label>
                                  
-                                 <div className="flex items-center gap-4 bg-[#0f0f0f] border border-white/5 rounded-xl p-4">
+                                 <div className="flex items-center gap-4 bg-[#0f0f0f] border border-white/5 rounded-xl p-4 shrink-0">
                                     <div className={`w-12 h-12 rounded-xl ${formData.color} flex items-center justify-center shadow-lg ring-1 ring-white/10 relative overflow-hidden shrink-0`}>
                                         <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-black/30 pointer-events-none" />
                                         {formData.iconUrl ? (
@@ -396,7 +396,7 @@ export const Settings: React.FC<SettingsProps> = ({
                                      </div>
                                  </div>
 
-                                 <div className="flex-1 overflow-y-auto scrollbar-hide">
+                                 <div className="flex-1 overflow-y-auto scrollbar-hide min-h-0">
                                     <div className="grid grid-cols-6 gap-2 p-3 bg-[#0f0f0f] border border-white/5 rounded-xl">
                                         {COLORS.map(c => (
                                         <button
@@ -411,11 +411,11 @@ export const Settings: React.FC<SettingsProps> = ({
                               </div>
 
                               {/* Right: Icon Grid (Scrollable) */}
-                              <div className="col-span-7 flex flex-col bg-[#0f0f0f] border border-white/5 rounded-xl overflow-hidden">
-                                 <div className="px-4 py-3 border-b border-white/5 bg-[#111]">
+                              <div className="col-span-7 flex flex-col bg-[#0f0f0f] border border-white/5 rounded-xl overflow-hidden h-full">
+                                 <div className="px-4 py-3 border-b border-white/5 bg-[#111] shrink-0">
                                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">System Library</label>
                                  </div>
-                                 <div className="flex-1 overflow-y-auto scrollbar-hide p-3">
+                                 <div className="flex-1 overflow-y-auto scrollbar-hide p-3 min-h-0">
                                     {/* Updated Grid: More columns (8), tighter gap (1), larger icons (size 18), smaller buttons (rounded-md) */}
                                     <div className="grid grid-cols-8 gap-1">
                                         {ICONS.map(iconName => {
