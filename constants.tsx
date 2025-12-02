@@ -9,7 +9,10 @@ import {
   Image, Music, Video, Play, Headphones, Camera,
   Cpu, Database, Cloud, Wifi, Terminal, Code, Laptop, Smartphone,
   ShoppingCart, CreditCard, Map, Gift, Coffee, Sun, Moon, Zap, Shield, Lock,
-  Gamepad2, Radio, Tv, Briefcase, LucideIcon
+  Gamepad2, Radio, Tv, Briefcase, LucideIcon,
+  // New Additions (13)
+  Mic, Speaker, Battery, Bluetooth, Signal, Mouse, Keyboard, 
+  Printer, HardDrive, FolderOpen, FileCode, TerminalSquare, Command
 } from 'lucide-react';
 
 // Helper to get high-quality favicon using Google's service
@@ -28,7 +31,10 @@ export const ICON_LIBRARY: Record<string, LucideIcon> = {
   FileText, Mail, Calendar, Calculator, Briefcase, Archive,
   Image, Music, Video, Headphones, Camera, Gamepad2, Radio, Tv,
   Cpu, Database, Cloud, Wifi, Terminal, Code, Laptop, Smartphone,
-  ShoppingCart, CreditCard, Map, Coffee, Zap, Shield, Lock
+  ShoppingCart, CreditCard, Map, Coffee, Zap, Shield, Lock,
+  // New Additions
+  Mic, Speaker, Battery, Bluetooth, Signal, Mouse, Keyboard,
+  Printer, HardDrive, FolderOpen, FileCode, TerminalSquare, Command
 };
 
 export const DEFAULT_USER_APPS: AppConfig[] = [

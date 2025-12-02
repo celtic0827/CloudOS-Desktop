@@ -14,21 +14,29 @@ interface SettingsProps {
 }
 
 // Expanded Palette: Wide gamut distribution, focused on distinct rich tones
+// Removed 8 brighter/generic shades to fit layout better
 const COLORS = [
   // Monochrome / Neutrals
-  'bg-slate-900', 'bg-zinc-700', 'bg-stone-800', 'bg-neutral-600',
+  'bg-slate-900', 'bg-slate-700', 'bg-zinc-900', 'bg-zinc-700', 
+  'bg-stone-800', 'bg-neutral-800',
   // Reds & Warm
-  'bg-red-950', 'bg-red-700', 'bg-rose-800', 'bg-orange-800', 
+  'bg-red-950', 'bg-red-700', 'bg-rose-900', 
+  'bg-rose-800', 'bg-rose-600', 'bg-orange-800',
   // Yellows & Ambers
-  'bg-amber-900', 'bg-amber-600', 'bg-yellow-700', 'bg-lime-800',
+  'bg-amber-900', 'bg-amber-800', 'bg-amber-600', 'bg-yellow-700', 
+  'bg-lime-800',
   // Greens
-  'bg-green-800', 'bg-emerald-900', 'bg-emerald-600', 'bg-teal-800',
+  'bg-green-800', 'bg-emerald-900', 'bg-emerald-700', 
+  'bg-emerald-600', 'bg-teal-800', 'bg-teal-600',
   // Cyans & Blues
-  'bg-cyan-900', 'bg-sky-700', 'bg-blue-900', 'bg-blue-700',
+  'bg-cyan-900', 'bg-cyan-700', 'bg-sky-900', 'bg-sky-700', 
+  'bg-blue-900', 'bg-blue-800',
   // Indigos & Violets
-  'bg-indigo-900', 'bg-indigo-600', 'bg-violet-900', 'bg-violet-700',
+  'bg-indigo-900', 'bg-indigo-700', 'bg-indigo-600', 'bg-violet-900', 
+  'bg-violet-700', 'bg-violet-600',
   // Purples & Pinks
-  'bg-purple-900', 'bg-fuchsia-800', 'bg-pink-900', 'bg-rose-600'
+  'bg-purple-900', 'bg-purple-700', 'bg-fuchsia-900', 'bg-fuchsia-700', 
+  'bg-pink-900', 'bg-pink-700', 'bg-rose-700'
 ];
 
 const ICONS = Object.keys(ICON_LIBRARY);
@@ -408,7 +416,8 @@ export const Settings: React.FC<SettingsProps> = ({
                                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">System Library</label>
                                  </div>
                                  <div className="flex-1 overflow-y-auto scrollbar-hide p-3">
-                                    <div className="grid grid-cols-6 gap-2">
+                                    {/* Updated Grid: More columns (8), tighter gap (1), larger icons (size 18), smaller buttons (rounded-md) */}
+                                    <div className="grid grid-cols-8 gap-1">
                                         {ICONS.map(iconName => {
                                            const IconComponent = ICON_LIBRARY[iconName];
                                            const isSelected = !formData.iconUrl && formData.iconName === iconName;
@@ -416,14 +425,15 @@ export const Settings: React.FC<SettingsProps> = ({
                                               <button
                                                  key={iconName}
                                                  onClick={() => handleIconSelect(iconName)}
-                                                 className={`aspect-square rounded-lg flex items-center justify-center transition-all ${
+                                                 className={`aspect-square rounded-md flex items-center justify-center transition-all ${
                                                     isSelected 
                                                     ? 'bg-amber-600 text-white shadow-lg' 
                                                     : 'bg-white/5 text-slate-500 hover:bg-white/10 hover:text-slate-200'
                                                  }`}
                                                  title={iconName}
                                               >
-                                                 <IconComponent size={14} strokeWidth={1.5} />
+                                                 {/* Larger icon size */}
+                                                 <IconComponent size={18} strokeWidth={1.5} />
                                               </button>
                                            );
                                         })}
