@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { AppDefinition } from '../../types';
-import { LayoutGrid, Globe, GripHorizontal, LayoutDashboard } from 'lucide-react';
+import { LayoutGrid, Globe, LayoutDashboard } from 'lucide-react';
 
 interface FloatingDockProps {
   activeAppId: string | null;
@@ -13,9 +13,8 @@ interface FloatingDockProps {
 const DockIcon: React.FC<{ 
   app: AppDefinition; 
   isActive?: boolean;
-  onClick?: () => void;
   size?: 'small' | 'large';
-}> = ({ app, isActive, onClick, size = 'small' }) => {
+}> = ({ app, isActive, size = 'small' }) => {
   const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
@@ -30,11 +29,12 @@ const DockIcon: React.FC<{
 
   return (
     <div className={`
-      relative w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300
-      ${isActive ? 'bg-white/10 border border-white/5' : 'bg-transparent'}
+      relative flex items-center justify-center transition-all duration-300
+      ${isActive && size === 'small' ? 'bg-white/10 border border-white/5 w-8 h-8 rounded-lg' : ''}
+      ${size === 'large' ? 'w-full h-full' : ''}
     `}>
-      {/* Active Indicator Glow */}
-      {isActive && <div className="absolute inset-0 bg-amber-500/10 rounded-lg blur-sm" />}
+      {/* Active Indicator Glow (Only for list items) */}
+      {isActive && size === 'small' && <div className="absolute inset-0 bg-amber-500/10 rounded-lg blur-sm" />}
 
       {app.iconUrl && !hasError ? (
         <img 
@@ -61,51 +61,64 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
   const activeApp = apps.find(a => a.id === activeAppId);
   const dockRef = useRef<HTMLDivElement>(null);
   
-  // Dragging Logic
+  // Position State
   const [position, setPosition] = useState<{x: number, y: number} | null>(null);
+  
+  // Dragging Logic Refs
   const isDraggingRef = useRef(false);
   const dragStartRef = useRef<{x: number, y: number} | null>(null);
   const initialPosRef = useRef<{x: number, y: number} | null>(null);
+  const hasMovedSignificantDistanceRef = useRef(false);
 
-  // Initialize Position to Bottom Center on Mount
+  // Constants for Size and Padding
+  const DOCK_SIZE = 48; // w-12 = 3rem = 48px
+  const EDGE_PADDING = 2; // 2px margin
+
+  // Initialize Position (Bottom Right area)
   useEffect(() => {
-    // Only set initial position if not already set (e.g. strict mode or re-renders)
     if (!position) {
       const windowWidth = window.innerWidth;
       const windowHeight = window.innerHeight;
-      // Approximate center bottom: Center X, Bottom - 80px
       setPosition({ 
-        x: (windowWidth / 2) - 100, // Roughly centered offset based on dock width
-        y: windowHeight - 80 
+        x: windowWidth - 100, 
+        y: windowHeight - 100 
       });
     }
   }, []);
 
-  // 1. Determine Vertical Popover Direction (Up/Down)
+  // 1. Determine Popover Direction
   const isTopHalf = position && position.y < window.innerHeight / 2;
-
-  // 2. Determine Horizontal Alignment (Left/Center/Right)
-  // Prevents the menu from being clipped if the dock is near the screen edges
-  const getHorizontalAlignmentClass = () => {
-    if (!position) return 'left-1/2 -translate-x-1/2'; // Default Center
+  
+  // 2. Determine Horizontal Alignment for the Menu
+  const getMenuPositionStyle = () => {
+    if (!position) return {};
     
     const windowWidth = window.innerWidth;
-    const leftThreshold = windowWidth * 0.2; // 20% from left
-    const rightThreshold = windowWidth * 0.8; // 20% from right
-
-    if (position.x < leftThreshold) return 'left-0 origin-left';
-    if (position.x > rightThreshold) return 'right-0 origin-right';
-    return 'left-1/2 -translate-x-1/2 origin-center';
+    // If close to right edge, show menu on left
+    if (position.x > windowWidth - 250) {
+      return { right: '100%', marginRight: '12px', top: '50%', transform: 'translateY(-50%)' };
+    }
+    // If close to left edge, show menu on right
+    if (position.x < 250) {
+      return { left: '100%', marginLeft: '12px', top: '50%', transform: 'translateY(-50%)' };
+    }
+    // Otherwise show above or below
+    if (isTopHalf) {
+       return { top: '100%', marginTop: '12px', left: '50%', transform: 'translateX(-50%)' };
+    }
+    return { bottom: '100%', marginBottom: '12px', left: '50%', transform: 'translateX(-50%)' };
   };
 
   const handlePointerDown = (e: React.PointerEvent) => {
-    // Only allow dragging from the drag handle or empty space, not buttons
-    if ((e.target as HTMLElement).closest('button')) return;
+    // Stop propagation to prevent 'click outside' overlay from catching this immediately
+    e.stopPropagation();
 
     isDraggingRef.current = true;
+    hasMovedSignificantDistanceRef.current = false;
     dragStartRef.current = { x: e.clientX, y: e.clientY };
     initialPosRef.current = position;
-    // Prevent text selection during drag
+    
+    // Prevent text selection
     document.body.style.userSelect = 'none';
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   };
@@ -116,44 +129,45 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
     const dx = e.clientX - dragStartRef.current.x;
     const dy = e.clientY - dragStartRef.current.y;
     
-    // Calculate raw new position
-    const rawX = initialPosRef.current.x + dx;
-    const rawY = initialPosRef.current.y + dy;
+    // Check if moved enough to consider it a drag
+    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+      hasMovedSignificantDistanceRef.current = true;
+    }
 
-    // Boundary Constraints (Clamping)
-    const padding = 0; // Allow sticking to screen edges
-    const dockWidth = dockRef.current?.offsetWidth || 200;
-    const dockHeight = dockRef.current?.offsetHeight || 60;
-    
-    const maxX = window.innerWidth - dockWidth - padding;
-    const maxY = window.innerHeight - dockHeight - padding;
+    // Only update position if we are dragging to prevent jitter on simple clicks
+    if (hasMovedSignificantDistanceRef.current) {
+        // Close menu if dragging starts
+        if (isExpanded) setIsExpanded(false);
 
-    // Apply Clamp
-    const clampedX = Math.max(padding, Math.min(rawX, maxX));
-    const clampedY = Math.max(padding, Math.min(rawY, maxY));
+        const rawX = initialPosRef.current.x + dx;
+        const rawY = initialPosRef.current.y + dy;
 
-    setPosition({
-      x: clampedX,
-      y: clampedY
-    });
+        const maxX = window.innerWidth - DOCK_SIZE - EDGE_PADDING;
+        const maxY = window.innerHeight - DOCK_SIZE - EDGE_PADDING;
+
+        const clampedX = Math.max(EDGE_PADDING, Math.min(rawX, maxX));
+        const clampedY = Math.max(EDGE_PADDING, Math.min(rawY, maxY));
+
+        setPosition({ x: clampedX, y: clampedY });
+    }
   };
 
   const handlePointerUp = (e: React.PointerEvent) => {
     isDraggingRef.current = false;
     document.body.style.userSelect = '';
     (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+
+    // If we didn't drag significantly, treat it as a click -> Toggle Menu
+    if (!hasMovedSignificantDistanceRef.current) {
+        setIsExpanded(prev => !prev);
+    }
   };
 
-  // If no app is active, we don't show the detailed dock
   if (!activeAppId || !position) return null;
 
   return (
     <>
-      {/* 
-        Click Outside Overlay: 
-        This transparent layer sits between the App (z-10) and the Dock (z-50).
-        It captures clicks anywhere on the screen (including over iframes) to close the menu.
-      */}
+      {/* Click Outside Overlay */}
       {isExpanded && (
         <div 
           className="fixed inset-0 z-40 bg-transparent"
@@ -161,30 +175,32 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
         />
       )}
 
-      {/* Floating Container */}
+      {/* Main Floating Button Container */}
       <div 
         ref={dockRef}
-        className="fixed z-50 flex flex-col items-center gap-4 transition-none"
+        className="fixed z-50 flex flex-col items-center justify-center transition-none"
         style={{ 
           left: position.x, 
           top: position.y,
-          touchAction: 'none' // Prevent scrolling while dragging on touch
+          touchAction: 'none' 
         }}
       >
         
-        {/* Expanded Menu (Mini App Switcher) */}
+        {/* Expanded Menu */}
         <div 
           className={`
-            absolute ${isTopHalf ? 'top-14' : 'bottom-14'}
-            ${getHorizontalAlignmentClass()}
-            flex items-center gap-2 p-2 bg-[#050505]/90 backdrop-blur-2xl border border-white/10 rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)]
-            transition-all duration-300
+            absolute flex items-center gap-2 p-2 bg-[#050505]/90 backdrop-blur-2xl border border-white/10 rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)]
+            transition-all duration-300 origin-center
             ${isExpanded 
-              ? 'opacity-100 scale-100 translate-y-0' 
-              : `opacity-0 scale-90 ${isTopHalf ? '-translate-y-4' : 'translate-y-4'} pointer-events-none`
+              ? 'opacity-100 scale-100' 
+              : 'opacity-0 scale-90 pointer-events-none'
             }
           `}
-          style={{ width: 'max-content', maxWidth: '90vw' }}
+          style={{ 
+              width: 'max-content', 
+              maxWidth: '90vw',
+              ...getMenuPositionStyle()
+          }}
         >
           {apps.slice(0, 8).map(app => (
             <button
@@ -223,53 +239,32 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
           </button>
         </div>
 
-        {/* Main Bar */}
-        <div className={`
-            flex items-center gap-3 px-2 py-2 rounded-full 
-            bg-[#0a0a0a] backdrop-blur-xl border border-white/10 
+        {/* The Single Floating Icon (FAB) */}
+        {/* Changed: w-12 h-12 (48px), rounded-2xl (Squircle) */}
+        <div 
+          className={`
+            w-12 h-12 rounded-2xl 
+            bg-[#0a0a0a]/80 backdrop-blur-md border border-white/10 
             shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_8px_32px_rgba(0,0,0,0.5)]
+            flex items-center justify-center
+            cursor-grab active:cursor-grabbing
+            hover:scale-105 hover:border-amber-500/30 transition-all duration-300
             group
           `}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
         >
-          {/* Drag Handle */}
-          <div 
-            className="cursor-grab active:cursor-grabbing text-slate-700 hover:text-slate-400 p-1 transition-colors"
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-          >
-             <GripHorizontal size={14} />
-          </div>
-
-          {/* Divider */}
-          <div className="w-px h-6 bg-white/5" />
-
-          {/* Trigger Button */}
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="flex items-center gap-3 pr-4 text-slate-200 hover:text-white transition-all duration-300"
-          >
             {activeApp ? (
-              <>
-                <div className="relative">
+               <div className="pointer-events-none p-2.5">
                   <DockIcon app={activeApp} isActive={true} size="large" />
-                </div>
-                <div className="flex flex-col items-start">
-                  <span className="font-serif tracking-wide text-xs text-amber-50/90 pr-1 max-w-[100px] truncate">
-                    {activeApp.name}
-                  </span>
-                  <span className="text-[9px] text-slate-500 uppercase tracking-widest leading-none">Active</span>
-                </div>
-              </>
+               </div>
             ) : (
-              <LayoutGrid size={18} />
+               <LayoutGrid size={20} className="text-slate-400 group-hover:text-amber-100 transition-colors pointer-events-none" />
             )}
             
-            <div className={`transition-transform duration-300 ml-1 ${isExpanded ? 'rotate-180' : ''}`}>
-              <div className="w-0.5 h-0.5 rounded-full bg-slate-500 mb-0.5 group-hover:bg-amber-500 transition-colors" />
-              <div className="w-0.5 h-0.5 rounded-full bg-slate-500 group-hover:bg-amber-500 transition-colors" />
-            </div>
-          </button>
+            {/* Subtle Ring Glow on Expand (Squircle shape match) */}
+            <div className={`absolute inset-0 rounded-2xl border border-amber-500/50 transition-all duration-500 ${isExpanded ? 'opacity-100 scale-110' : 'opacity-0 scale-100'}`} />
         </div>
 
       </div>

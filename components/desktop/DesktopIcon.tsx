@@ -17,11 +17,11 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({ app, onClick }) => {
   return (
     <button
       onClick={() => onClick(app.id)}
-      className="group flex flex-col items-center gap-3 p-4 rounded-xl transition-all duration-300 w-32 focus:outline-none relative"
+      className="group flex flex-col items-center gap-2 p-2 rounded-xl transition-all duration-300 w-28 focus:outline-none relative"
     >
-      {/* Icon Container */}
+      {/* Icon Container (Smaller: w-14 h-14) */}
       <div className={`
-        relative w-16 h-16 rounded-2xl flex items-center justify-center 
+        relative w-14 h-14 rounded-2xl flex items-center justify-center 
         ${app.color} /* Use app color as base background */
         border border-white/10 shadow-xl
         group-hover:scale-105 group-hover:-translate-y-1 transition-all duration-300
@@ -38,23 +38,23 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({ app, onClick }) => {
           <img 
             src={app.iconUrl} 
             alt={app.name} 
-            className="w-10 h-10 object-contain drop-shadow-lg z-10"
+            className="w-7 h-7 object-contain drop-shadow-lg z-10"
             onError={() => setHasError(true)}
             crossOrigin="anonymous"
           />
         ) : (
           /* Render Lucide Icon if available, else Fallback */
           app.icon ? (
-            <app.icon className="text-white/90 group-hover:text-amber-50 w-8 h-8 z-10 transition-colors drop-shadow-md" strokeWidth={1.5} />
+            <app.icon className="text-white/90 group-hover:text-amber-50 w-7 h-7 z-10 transition-colors drop-shadow-md" strokeWidth={1.5} />
           ) : (
-            <Globe className="text-white/90 group-hover:text-amber-50 w-8 h-8 z-10 transition-colors drop-shadow-md" strokeWidth={1.5} />
+            <Globe className="text-white/90 group-hover:text-amber-50 w-7 h-7 z-10 transition-colors drop-shadow-md" strokeWidth={1.5} />
           )
         )}
       </div>
 
       {/* Label */}
       <div className="flex items-center justify-center gap-1.5 w-full px-1">
-        <span className="text-slate-300 text-sm font-medium tracking-wide drop-shadow-md text-center group-hover:text-white transition-colors truncate">
+        <span className="text-slate-300 text-xs font-medium tracking-wide drop-shadow-md text-center group-hover:text-white transition-colors truncate leading-tight">
           {app.name}
         </span>
       </div>
