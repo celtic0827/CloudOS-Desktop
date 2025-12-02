@@ -1,8 +1,6 @@
 import React from 'react';
 import { AppConfig, AppDefinition } from './types';
 import { 
-  Bot, 
-  StickyNote, 
   Settings,
   Globe,
   // Generic Icons for Library
@@ -13,8 +11,6 @@ import {
   ShoppingCart, CreditCard, Map, Gift, Coffee, Sun, Moon, Zap, Shield, Lock,
   Gamepad2, Radio, Tv, Briefcase, LucideIcon
 } from 'lucide-react';
-import { GeminiChat } from './components/apps/GeminiChat';
-import { NotePad } from './components/apps/NotePad';
 
 // Helper to get high-quality favicon using Google's service
 export const getFavicon = (url: string) => {
@@ -64,26 +60,6 @@ export const DEFAULT_USER_APPS: AppConfig[] = [
 
 // System apps that cannot be deleted, only hidden (conceptually)
 export const SYSTEM_APPS: AppDefinition[] = [
-  {
-    id: 'gemini',
-    name: 'AI Assistant',
-    icon: Bot,
-    color: 'bg-gradient-to-br from-indigo-500 to-purple-600',
-    component: <GeminiChat />,
-    description: 'Ask Gemini anything',
-    isExternal: false,
-    isSystem: true
-  },
-  {
-    id: 'notes',
-    name: 'Notes',
-    icon: StickyNote,
-    color: 'bg-amber-400',
-    component: <NotePad />,
-    description: 'Write it down',
-    isExternal: false,
-    isSystem: true
-  },
   {
     id: 'settings',
     name: 'Settings',

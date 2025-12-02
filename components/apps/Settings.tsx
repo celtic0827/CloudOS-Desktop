@@ -53,6 +53,7 @@ export const Settings: React.FC<SettingsProps> = ({
   const [activeTab, setActiveTab] = useState<'apps' | 'data'>('apps');
   const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
   const [isNewApp, setIsNewApp] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saved'>('idle');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form State
@@ -89,19 +90,24 @@ export const Settings: React.FC<SettingsProps> = ({
     setFormData({ ...app, iconName: app.iconName || 'Globe' });
     setSelectedAppId(app.id);
     setIsNewApp(false);
+    setSaveStatus('idle');
   };
 
   const handleStartAdd = () => {
-    resetForm();
-    setFormData(prev => ({
-      ...prev,
-      id: generateId(),
-      color: COLORS[0],
+    // Explicitly set new state to avoid race conditions with resetForm
+    const newId = generateId();
+    setFormData({
+      id: newId,
+      name: 'New Link',
       url: 'https://',
-      name: 'New Link'
-    }));
+      color: COLORS[0],
+      description: '',
+      iconUrl: '',
+      iconName: 'Globe'
+    });
     setSelectedAppId(null);
     setIsNewApp(true);
+    setSaveStatus('idle');
   };
 
   const handleSave = () => {
@@ -125,6 +131,10 @@ export const Settings: React.FC<SettingsProps> = ({
     } else {
       onUpdateApp(appToSave);
     }
+
+    // Show visual feedback
+    setSaveStatus('saved');
+    setTimeout(() => setSaveStatus('idle'), 2000);
   };
 
   const handleAutoFetchIcon = () => {
@@ -433,9 +443,15 @@ export const Settings: React.FC<SettingsProps> = ({
                            </button>
                            <button 
                               onClick={handleSave} 
-                              className="px-6 py-2 rounded-lg bg-amber-600 text-white text-[10px] font-bold uppercase tracking-wider hover:bg-amber-500 flex items-center gap-2 shadow-lg hover:shadow-amber-500/20 transition-all"
+                              disabled={saveStatus === 'saved'}
+                              className={`px-6 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center gap-2 shadow-lg transition-all duration-300 ${
+                                saveStatus === 'saved' 
+                                  ? 'bg-emerald-600 text-white hover:bg-emerald-600' 
+                                  : 'bg-amber-600 text-white hover:bg-amber-500 hover:shadow-amber-500/20'
+                              }`}
                            >
-                              <Save size={14} /> Save Changes
+                              {saveStatus === 'saved' ? <Check size={14} /> : <Save size={14} />} 
+                              {saveStatus === 'saved' ? 'Saved!' : 'Save Changes'}
                            </button>
                      </div>
 

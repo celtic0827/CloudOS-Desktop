@@ -118,7 +118,7 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
     const rawY = initialPosRef.current.y + dy;
 
     // Boundary Constraints (Clamping)
-    const padding = 16; // Safety margin from screen edges
+    const padding = 0; // Allow sticking to screen edges
     const dockWidth = dockRef.current?.offsetWidth || 200;
     const dockHeight = dockRef.current?.offsetHeight || 60;
     

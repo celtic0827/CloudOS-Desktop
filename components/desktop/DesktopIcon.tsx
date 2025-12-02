@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AppDefinition } from '../../types';
-import { ExternalLink, Globe } from 'lucide-react';
+import { Globe } from 'lucide-react';
 
 interface DesktopIconProps {
   app: AppDefinition;
@@ -49,12 +49,6 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({ app, onClick }) => {
           ) : (
             <Globe className="text-white/90 group-hover:text-amber-50 w-8 h-8 z-10 transition-colors drop-shadow-md" strokeWidth={1.5} />
           )
-        )}
-
-        {app.isExternal && (
-          <div className="absolute -top-1.5 -right-1.5 bg-[#0a0a0a] rounded-full p-1 border border-white/20 shadow-sm z-20">
-            <ExternalLink size={8} className="text-slate-400" />
-          </div>
         )}
       </div>
 
