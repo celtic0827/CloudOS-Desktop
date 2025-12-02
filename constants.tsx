@@ -41,26 +41,47 @@ export const DEFAULT_USER_APPS: AppConfig[] = [
   {
     id: 'creator-sync',
     name: 'Creator Sync',
-    color: 'bg-indigo-600',
+    color: 'bg-sky-700',
     description: 'Sync your content',
     url: 'https://creator-sync-one.vercel.app/',
-    iconUrl: getFavicon('https://creator-sync-one.vercel.app/')
-  },
-  {
-    id: 'png-box',
-    name: 'PNG Box',
-    color: 'bg-pink-500',
-    description: 'Batch Image Converter',
-    url: 'https://png2jpg-batchbox.vercel.app/',
-    iconUrl: getFavicon('https://png2jpg-batchbox.vercel.app/')
+    iconUrl: '',
+    iconName: 'Calendar'
   },
   {
     id: 'comfy-meta',
     name: 'Comfy Meta',
-    color: 'bg-emerald-600',
+    color: 'bg-amber-600',
     description: 'Metadata Viewer',
     url: 'https://comfy-metadata.vercel.app/',
-    iconUrl: getFavicon('https://comfy-metadata.vercel.app/')
+    iconUrl: '',
+    iconName: 'FileCode'
+  },
+  {
+    id: '2d57b6e9-1472-4c7e-a735-7770b1c87326',
+    name: 'Sonic Alchemy',
+    url: 'https://sonic-alchemy.vercel.app/',
+    color: 'bg-amber-800',
+    description: '',
+    iconUrl: '',
+    iconName: 'Music'
+  },
+  {
+    id: 'b236b1d4-09a6-4ca7-a873-0b5f2ea138a6',
+    name: 'Png2Jpg Batchbox',
+    url: 'https://png2jpg-batchbox.vercel.app/',
+    color: 'bg-teal-600',
+    description: '',
+    iconUrl: '',
+    iconName: 'Image'
+  },
+  {
+    id: '27f478d3-020a-474c-82f0-536a8dea712c',
+    name: 'Prisma Flow',
+    url: 'https://prismaflow-sigma.vercel.app/',
+    color: 'bg-indigo-600',
+    description: '',
+    iconUrl: '',
+    iconName: 'Keyboard'
   }
 ];
 
