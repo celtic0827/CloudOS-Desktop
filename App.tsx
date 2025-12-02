@@ -112,7 +112,14 @@ function App() {
 
     // Priority 2: External Apps (Full Screen WebFrame)
     if (activeApp.isExternal && activeApp.url) {
-      return <WebFrame src={activeApp.url} title={activeApp.name} />;
+      return (
+        <WebFrame 
+          id={activeApp.id}
+          src={activeApp.url} 
+          title={activeApp.name} 
+          themeColor={activeApp.color}
+        />
+      );
     }
 
     return (
