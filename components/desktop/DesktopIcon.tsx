@@ -5,19 +5,63 @@ import { Globe } from 'lucide-react';
 interface DesktopIconProps {
   app: AppDefinition;
   onClick: (appId: string) => void;
+  onDragStart?: (id: string) => void;
+  onDrop?: (id: string) => void;
+  isDragging?: boolean;
 }
 
-export const DesktopIcon: React.FC<DesktopIconProps> = ({ app, onClick }) => {
+export const DesktopIcon: React.FC<DesktopIconProps> = ({ 
+  app, 
+  onClick,
+  onDragStart,
+  onDrop,
+  isDragging
+}) => {
   const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
     setHasError(false);
   }, [app.iconUrl]);
 
+  // Handle Drag Start
+  const handleDragStart = (e: React.DragEvent) => {
+    if (!app.isSystem && onDragStart) {
+      onDragStart(app.id);
+      e.dataTransfer.effectAllowed = "move";
+      // Optional: Set a custom drag image here if needed, 
+      // but browser default ghost image is usually fine for icons.
+    } else {
+      e.preventDefault();
+    }
+  };
+
+  // Handle Drag Over (Necessary to allow Drop)
+  const handleDragOver = (e: React.DragEvent) => {
+    if (!app.isSystem) {
+      e.preventDefault(); // Allow drop
+    }
+  };
+
+  // Handle Drop
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (!app.isSystem && onDrop) {
+      onDrop(app.id);
+    }
+  };
+
   return (
     <button
+      draggable={!app.isSystem}
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
       onClick={() => onClick(app.id)}
-      className="group flex flex-col items-center gap-2 p-2 rounded-xl transition-all duration-300 w-28 focus:outline-none relative"
+      className={`
+        group flex flex-col items-center gap-2 p-2 rounded-xl transition-all duration-300 w-28 focus:outline-none relative cursor-pointer
+        ${isDragging ? 'opacity-40 scale-95 grayscale' : 'opacity-100'}
+        ${app.isSystem ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'}
+      `}
     >
       {/* Icon Container (Smaller: w-14 h-14) */}
       <div className={`

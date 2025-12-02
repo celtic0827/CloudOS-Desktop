@@ -24,6 +24,9 @@ function App() {
 
   const [activeAppId, setActiveAppId] = useState<string | null>(null);
   const [isAppOpen, setIsAppOpen] = useState(false);
+  
+  // Drag and Drop State
+  const [draggedAppId, setDraggedAppId] = useState<string | null>(null);
 
   // Persist to local storage whenever userApps changes
   useEffect(() => {
@@ -59,6 +62,32 @@ function App() {
   const handleImportApps = (importedApps: AppConfig[]) => {
     // Basic validation could go here
     setUserApps(importedApps);
+  };
+
+  // --- Drag and Drop Handlers ---
+
+  const handleDragStart = (id: string) => {
+    setDraggedAppId(id);
+  };
+
+  const handleDrop = (targetId: string) => {
+    if (!draggedAppId || draggedAppId === targetId) return;
+
+    // Find indices in userApps (System apps return -1 and are ignored)
+    const sourceIndex = userApps.findIndex(app => app.id === draggedAppId);
+    const targetIndex = userApps.findIndex(app => app.id === targetId);
+
+    // Only allow reordering within user apps
+    if (sourceIndex === -1 || targetIndex === -1) return;
+
+    const newUserApps = [...userApps];
+    // Remove from old position
+    const [movedApp] = newUserApps.splice(sourceIndex, 1);
+    // Insert at new position
+    newUserApps.splice(targetIndex, 0, movedApp);
+
+    setUserApps(newUserApps);
+    setDraggedAppId(null);
   };
 
   // --- Window Management ---
@@ -180,7 +209,10 @@ function App() {
               <DesktopIcon 
                 key={app.id} 
                 app={app} 
-                onClick={handleOpenApp} 
+                onClick={handleOpenApp}
+                onDragStart={handleDragStart}
+                onDrop={handleDrop}
+                isDragging={draggedAppId === app.id}
               />
             ))}
           </div>
