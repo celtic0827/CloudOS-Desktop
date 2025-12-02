@@ -9,6 +9,8 @@ interface FloatingDockProps {
   onCloseApp: () => void;
 }
 
+const STORAGE_KEY = 'cloudos_dock_position';
+
 // Internal component to handle individual icon state logic
 const DockIcon: React.FC<{ 
   app: AppDefinition; 
@@ -69,20 +71,41 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
   const dragStartRef = useRef<{x: number, y: number} | null>(null);
   const initialPosRef = useRef<{x: number, y: number} | null>(null);
   const hasMovedSignificantDistanceRef = useRef(false);
+  // Keep track of latest position for saving to storage on mouse up (avoids stale closures)
+  const latestPositionRef = useRef<{x: number, y: number} | null>(null);
 
   // Constants for Size and Padding
   const DOCK_SIZE = 48; // w-12 = 3rem = 48px
   const EDGE_PADDING = 2; // 2px margin
 
-  // Initialize Position (Bottom Right area)
+  // Initialize Position (From LocalStorage or Default Bottom Right)
   useEffect(() => {
     if (!position) {
       const windowWidth = window.innerWidth;
       const windowHeight = window.innerHeight;
-      setPosition({ 
-        x: windowWidth - 100, 
-        y: windowHeight - 100 
-      });
+      
+      let initialX = windowWidth - 100;
+      let initialY = windowHeight - 100;
+
+      // Try loading from local storage
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            // Verify and clamp in case window size changed
+            const maxX = windowWidth - DOCK_SIZE - EDGE_PADDING;
+            const maxY = windowHeight - DOCK_SIZE - EDGE_PADDING;
+            
+            initialX = Math.max(EDGE_PADDING, Math.min(parsed.x, maxX));
+            initialY = Math.max(EDGE_PADDING, Math.min(parsed.y, maxY));
+        }
+      } catch (e) {
+        console.error("Failed to load dock position", e);
+      }
+
+      const startPos = { x: initialX, y: initialY };
+      setPosition(startPos);
+      latestPositionRef.current = startPos;
     }
   }, []);
 
@@ -148,7 +171,9 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
         const clampedX = Math.max(EDGE_PADDING, Math.min(rawX, maxX));
         const clampedY = Math.max(EDGE_PADDING, Math.min(rawY, maxY));
 
-        setPosition({ x: clampedX, y: clampedY });
+        const newPos = { x: clampedX, y: clampedY };
+        setPosition(newPos);
+        latestPositionRef.current = newPos; // Update ref for save logic
     }
   };
 
@@ -157,8 +182,11 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
     document.body.style.userSelect = '';
     (e.target as HTMLElement).releasePointerCapture(e.pointerId);
 
-    // If we didn't drag significantly, treat it as a click -> Toggle Menu
-    if (!hasMovedSignificantDistanceRef.current) {
+    // If we dragged, save the position
+    if (hasMovedSignificantDistanceRef.current && latestPositionRef.current) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(latestPositionRef.current));
+    } else {
+        // Otherwise, treat it as a click -> Toggle Menu
         setIsExpanded(prev => !prev);
     }
   };
