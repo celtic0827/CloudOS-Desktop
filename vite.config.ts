@@ -14,6 +14,9 @@ export default defineConfig(({ mode }) => {
         react(),
         VitePWA({
           registerType: 'autoUpdate',
+          devOptions: {
+            enabled: true
+          },
           manifest: {
             name: 'CloudOS Desktop',
             short_name: 'CloudOS',
@@ -23,12 +26,12 @@ export default defineConfig(({ mode }) => {
             display: 'standalone',
             icons: [
               {
-                src: 'pwa-192x192.png',
+                src: '/pwa-192x192.png',
                 sizes: '192x192',
                 type: 'image/png'
               },
               {
-                src: 'pwa-512x512.png',
+                src: '/pwa-512x512.png',
                 sizes: '512x512',
                 type: 'image/png'
               }
