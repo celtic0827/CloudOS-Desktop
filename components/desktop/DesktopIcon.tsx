@@ -17,7 +17,7 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({ app, onClick }) => {
   return (
     <button
       onClick={() => onClick(app.id)}
-      className="group flex flex-col items-center gap-4 p-4 rounded-xl transition-all duration-300 w-32 focus:outline-none relative"
+      className="group flex flex-col items-center gap-3 p-4 rounded-xl transition-all duration-300 w-32 focus:outline-none relative"
     >
       {/* Icon Container */}
       <div className={`
@@ -28,10 +28,10 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({ app, onClick }) => {
         group-hover:border-amber-500/40 group-hover:shadow-[0_0_25px_rgba(245,158,11,0.2)]
         overflow-hidden
       `}>
-        {/* Gradient Overlay for texture/luxury feel, but keeps color visible */}
+        {/* Gradient Overlay for texture/luxury feel */}
         <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-black/30 pointer-events-none" />
 
-        {/* Inner colored glow based on app color preference, subtly visible */}
+        {/* Inner colored glow */}
         <div className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-20 transition-opacity duration-300 bg-white`} />
 
         {app.iconUrl && !hasError ? (
@@ -53,9 +53,11 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({ app, onClick }) => {
       </div>
 
       {/* Label */}
-      <span className="text-slate-300 text-sm font-medium tracking-wide drop-shadow-md text-center group-hover:text-white transition-colors truncate w-full px-1">
-        {app.name}
-      </span>
+      <div className="flex items-center justify-center gap-1.5 w-full px-1">
+        <span className="text-slate-300 text-sm font-medium tracking-wide drop-shadow-md text-center group-hover:text-white transition-colors truncate">
+          {app.name}
+        </span>
+      </div>
     </button>
   );
 };

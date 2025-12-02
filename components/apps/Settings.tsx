@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { AppConfig } from '../../types';
-import { Trash2, Plus, Download, Upload, RotateCcw, X, Check, Globe, RefreshCcw, LayoutGrid, ChevronRight, Save, Search, Link as LinkIcon, Type } from 'lucide-react';
+import { Trash2, Plus, Download, Upload, RotateCcw, X, Check, Globe, RefreshCcw, LayoutGrid, ChevronRight, Save, Search, Link as LinkIcon, Type, ExternalLink } from 'lucide-react';
 import { getFavicon, ICON_LIBRARY } from '../../constants';
 
 interface SettingsProps {
@@ -277,10 +277,10 @@ export const Settings: React.FC<SettingsProps> = ({
                                 <AppIcon size={14} />
                              )}
                           </div>
-                          <div className="flex-1 min-w-0">
+                          <div className="flex-1 min-w-0 flex items-center justify-between">
                              <div className={`text-xs font-medium truncate ${isActive ? 'text-amber-100' : 'text-slate-300 group-hover:text-slate-100'}`}>{app.name}</div>
+                             <ExternalLink size={10} className={`shrink-0 ${isActive ? 'text-amber-500' : 'text-slate-600'} transition-all`} />
                           </div>
-                          {isActive && <ChevronRight size={12} className="text-amber-500" />}
                        </button>
                     )
                  })}

@@ -99,6 +99,9 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
   };
 
   const handlePointerDown = (e: React.PointerEvent) => {
+    // Only allow dragging from the drag handle or empty space, not buttons
+    if ((e.target as HTMLElement).closest('button')) return;
+
     isDraggingRef.current = true;
     dragStartRef.current = { x: e.clientX, y: e.clientY };
     initialPosRef.current = position;
@@ -146,6 +149,18 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
 
   return (
     <>
+      {/* 
+        Click Outside Overlay: 
+        This transparent layer sits between the App (z-10) and the Dock (z-50).
+        It captures clicks anywhere on the screen (including over iframes) to close the menu.
+      */}
+      {isExpanded && (
+        <div 
+          className="fixed inset-0 z-40 bg-transparent"
+          onClick={() => setIsExpanded(false)}
+        />
+      )}
+
       {/* Floating Container */}
       <div 
         ref={dockRef}
