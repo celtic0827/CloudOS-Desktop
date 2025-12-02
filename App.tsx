@@ -130,20 +130,27 @@ function App() {
   };
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-black font-sans text-slate-900 selection:bg-amber-500/30">
+    <div className="relative w-screen h-screen overflow-hidden bg-[#020202] font-sans text-slate-900 selection:bg-amber-500/30">
       
-      {/* Wallpaper Background - Dims significantly when app is open to save focus */}
+      {/* Refined Background System - Using inline styles to guarantee rendering */}
       <div 
-        className="absolute inset-0 z-0 bg-cover bg-center transition-transform duration-700 ease-out"
-        style={{ 
-          backgroundImage: 'url("https://picsum.photos/3840/2160?grayscale&blur=2")',
-          transform: activeAppId ? 'scale(1.1)' : 'scale(1.0)',
-          filter: activeAppId ? 'brightness(0.2) blur(20px)' : 'brightness(0.8) blur(0px)'
+        className="absolute inset-0 z-0 pointer-events-none"
+        style={{
+          background: `
+            radial-gradient(circle at 85% 10%, rgba(217, 119, 6, 0.15) 0%, rgba(0, 0, 0, 0) 50%),
+            radial-gradient(circle at 0% 100%, rgba(255, 255, 255, 0.03) 0%, rgba(0, 0, 0, 0) 40%),
+            #020202
+          `
         }}
       />
       
-      {/* Overlay Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none z-0" />
+      {/* Noise Texture for Realism (Low opacity) */}
+      <div 
+        className="absolute inset-0 opacity-[0.04] z-0 pointer-events-none mix-blend-overlay"
+        style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`
+        }}
+      />
 
       {/* Main Content Area */}
       <main className="relative z-10 w-full h-full">
@@ -151,14 +158,24 @@ function App() {
         {/* Desktop View (Icons & Clock) */}
         <div 
           className={`
-            w-full h-full flex flex-col items-center justify-center p-6
-            transition-all duration-500 ease-in-out
-            ${activeAppId ? 'opacity-0 scale-150 pointer-events-none blur-sm' : 'opacity-100 scale-100'}
+            w-full h-full flex flex-col items-center justify-center p-6 pb-24
+            transition-all duration-300 ease-in-out
+            ${activeAppId ? 'opacity-0 pointer-events-none' : 'opacity-100'}
           `}
         >
-          <Clock />
+          <div className="mb-12">
+            <Clock />
+          </div>
           
-          <div className="grid grid-cols-4 md:grid-cols-6 gap-6 p-8 rounded-3xl bg-white/5 backdrop-blur-sm border border-white/5 shadow-2xl max-w-4xl max-h-[60vh] overflow-y-auto scrollbar-hide">
+          {/* App Grid Panel - Refined Glassmorphism */}
+          <div className="
+            grid grid-cols-4 md:grid-cols-6 gap-x-8 gap-y-10 p-10 
+            rounded-[2.5rem] 
+            bg-black/20 backdrop-blur-xl 
+            border border-white/10 
+            shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] 
+            max-w-5xl max-h-[60vh] overflow-y-auto scrollbar-hide
+          ">
             {allApps.map((app) => (
               <DesktopIcon 
                 key={app.id} 
@@ -169,11 +186,11 @@ function App() {
           </div>
         </div>
 
-        {/* Active App Window Container */}
+        {/* Active App Window Container - Optimized Transitions (No Scale/Blur) */}
         <div 
           className={`
-            absolute inset-0 transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1)
-            ${activeAppId && isAppOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-8 pointer-events-none'}
+            absolute inset-0 transition-all duration-300 ease-out
+            ${activeAppId && isAppOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}
           `}
         >
           {activeApp && renderAppContent()}

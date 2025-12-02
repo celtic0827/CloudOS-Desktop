@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { AppDefinition } from '../../types';
-import { LayoutGrid, X, Globe, GripHorizontal } from 'lucide-react';
+import { LayoutGrid, Globe, GripHorizontal, LayoutDashboard } from 'lucide-react';
 
 interface FloatingDockProps {
   activeAppId: string | null;
@@ -195,15 +195,16 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
           
           <div className="w-px h-6 bg-white/10 mx-1" />
           
+          {/* Back to Desktop Button */}
           <button
             onClick={() => {
               onCloseApp();
               setIsExpanded(false);
             }}
-            className="p-1.5 rounded-lg hover:bg-red-900/20 text-slate-500 hover:text-red-400 transition-colors group relative"
-            title="Close App"
+            className="p-1.5 rounded-lg hover:bg-white/10 text-slate-500 hover:text-amber-100 transition-colors group relative"
+            title="Show Desktop"
           >
-            <X size={16} strokeWidth={1.5} />
+            <LayoutDashboard size={16} strokeWidth={1.5} />
           </button>
         </div>
 

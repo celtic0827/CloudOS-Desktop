@@ -9,19 +9,22 @@ export const Clock: React.FC = () => {
   }, []);
 
   return (
-    <div className="text-center select-none mb-12 relative group cursor-default">
-      {/* Glow Effect */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl group-hover:bg-amber-500/20 transition-all duration-700" />
+    <div className="text-center select-none relative group cursor-default flex flex-col items-center">
+      {/* Subtle Glow Effect */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-amber-600/10 rounded-full blur-[60px] pointer-events-none" />
       
-      <h1 className="relative text-8xl md:text-9xl font-serif text-transparent bg-clip-text bg-gradient-to-b from-amber-50 to-amber-200/50 drop-shadow-2xl tracking-tighter">
+      {/* Time - Editorial Style: Smaller, Dark Gold Gradient, Padding for Clipping */}
+      <h1 className="relative text-6xl md:text-[5rem] leading-tight font-serif font-thin text-transparent bg-clip-text bg-gradient-to-b from-amber-400 via-amber-600 to-amber-800 drop-shadow-2xl tracking-tighter pb-4">
         {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
       </h1>
-      <div className="flex items-center justify-center gap-3 mt-4 opacity-80">
-        <div className="h-px w-8 bg-gradient-to-r from-transparent to-amber-500/50" />
-        <p className="text-xl md:text-2xl font-light text-amber-100/80 tracking-widest uppercase font-serif">
+      
+      {/* Date - Darker Theme to match */}
+      <div className="flex items-center justify-center gap-6 mt-2 opacity-80">
+        <div className="h-px w-8 bg-gradient-to-r from-transparent via-amber-700/50 to-transparent" />
+        <p className="text-xs md:text-sm font-sans font-medium text-amber-500/80 tracking-[0.3em] uppercase">
           {time.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}
         </p>
-        <div className="h-px w-8 bg-gradient-to-l from-transparent to-amber-500/50" />
+        <div className="h-px w-8 bg-gradient-to-r from-transparent via-amber-700/50 to-transparent" />
       </div>
     </div>
   );
