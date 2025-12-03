@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AppDefinition } from '../../types';
 import { Globe } from 'lucide-react';
+import { playClick, playHover } from '../../utils/sound';
 
 interface DesktopIconProps {
   app: AppDefinition;
@@ -50,13 +51,19 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({
     }
   };
 
+  const handleClick = () => {
+    playClick('high');
+    onClick(app.id);
+  };
+
   return (
     <button
       draggable={!app.isSystem}
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
-      onClick={() => onClick(app.id)}
+      onClick={handleClick}
+      onMouseEnter={() => playHover()}
       className={`
         group flex flex-col items-center gap-2 p-2 rounded-xl transition-all duration-300 w-28 focus:outline-none relative cursor-pointer
         ${isDragging ? 'opacity-40 scale-95 grayscale' : 'opacity-100'}

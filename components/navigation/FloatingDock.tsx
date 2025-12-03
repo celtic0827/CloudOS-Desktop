@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { AppDefinition } from '../../types';
 import { LayoutGrid, Globe, LayoutDashboard } from 'lucide-react';
+import { playClick, playHover } from '../../utils/sound';
 
 interface FloatingDockProps {
   activeAppId: string | null;
@@ -187,6 +188,7 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
         localStorage.setItem(STORAGE_KEY, JSON.stringify(latestPositionRef.current));
     } else {
         // Otherwise, treat it as a click -> Toggle Menu
+        playClick('high');
         setIsExpanded(prev => !prev);
     }
   };
@@ -237,6 +239,7 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
                 onSwitchApp(app.id);
                 setIsExpanded(false);
               }}
+              onMouseEnter={() => playHover()}
               className={`
                 relative group p-1 rounded-lg transition-all
                 ${activeAppId === app.id ? '' : 'hover:bg-white/5'}
@@ -260,6 +263,7 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
               onCloseApp();
               setIsExpanded(false);
             }}
+            onMouseEnter={() => playHover()}
             className="p-1.5 rounded-lg hover:bg-white/10 text-slate-500 hover:text-amber-100 transition-colors group relative"
             title="Show Desktop"
           >

@@ -7,6 +7,7 @@ import { Clock } from './components/desktop/Clock';
 import { GlassCard } from './components/ui/GlassCard';
 import { WebFrame } from './components/apps/WebFrame';
 import { Settings } from './components/apps/Settings';
+import { playAppOpen, playPlop } from './utils/sound';
 
 const STORAGE_KEY = 'cloudos_user_apps';
 
@@ -93,12 +94,14 @@ function App() {
   // --- Window Management ---
 
   const handleOpenApp = (appId: string) => {
+    playAppOpen(); // Sound Effect
     setActiveAppId(appId);
     // Small delay to allow state to set before animating in
     setTimeout(() => setIsAppOpen(true), 10);
   };
 
   const handleCloseApp = () => {
+    playPlop(); // Sound Effect
     setIsAppOpen(false);
     // Wait for animation to finish before removing from DOM
     setTimeout(() => setActiveAppId(null), 300);
