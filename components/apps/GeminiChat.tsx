@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Loader2, Sparkles } from 'lucide-react';
 import { GoogleGenAI } from '@google/genai';
-import { playNotification, playClick } from '../../utils/sound';
 
 interface Message {
   id: string;
@@ -28,8 +27,6 @@ export const GeminiChat: React.FC = () => {
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
-    playClick('low'); // Send click
-
     const userMessage: Message = { id: Date.now().toString(), role: 'user', text: input };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
@@ -52,7 +49,6 @@ export const GeminiChat: React.FC = () => {
         role: 'model',
         text: text || "I couldn't generate a response."
       }]);
-      playNotification(); // Sound on arrival
 
     } catch (error) {
       console.error("AI Error:", error);
@@ -61,7 +57,6 @@ export const GeminiChat: React.FC = () => {
         role: 'model',
         text: "Apologies, I encountered an issue connecting to the network."
       }]);
-      playNotification();
     } finally {
       setIsLoading(false);
     }

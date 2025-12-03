@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { AppConfig } from '../../types';
 import { Trash2, Plus, Download, Upload, RotateCcw, X, Check, Globe, RefreshCcw, LayoutGrid, ChevronRight, Save, Search, Link as LinkIcon, Type, ExternalLink } from 'lucide-react';
 import { getFavicon, ICON_LIBRARY } from '../../constants';
-import { playClick } from '../../utils/sound';
 
 interface SettingsProps {
   userApps: AppConfig[];
@@ -79,12 +78,11 @@ export const Settings: React.FC<SettingsProps> = ({
   // Effect to select the first app by default if available and nothing selected
   useEffect(() => {
     if (activeTab === 'apps' && !selectedAppId && !isNewApp && userApps.length > 0) {
-      handleSelectApp(userApps[0], false);
+      handleSelectApp(userApps[0]);
     }
   }, [activeTab, userApps]);
 
   const resetForm = () => {
-    playClick();
     setFormData({
       id: '',
       name: '',
@@ -96,8 +94,7 @@ export const Settings: React.FC<SettingsProps> = ({
     });
   };
 
-  const handleSelectApp = (app: AppConfig, sound = true) => {
-    if (sound) playClick();
+  const handleSelectApp = (app: AppConfig) => {
     setFormData({ ...app, iconName: app.iconName || 'Globe' });
     setSelectedAppId(app.id);
     setIsNewApp(false);
@@ -105,7 +102,6 @@ export const Settings: React.FC<SettingsProps> = ({
   };
 
   const handleStartAdd = () => {
-    playClick();
     // Explicitly set new state to avoid race conditions with resetForm
     const newId = generateId();
     setFormData({
@@ -123,7 +119,6 @@ export const Settings: React.FC<SettingsProps> = ({
   };
 
   const handleSave = () => {
-    playClick();
     // Basic validation
     if (!formData.name.trim() || !formData.url.trim()) {
         alert("Please enter both a Name and a URL.");
@@ -158,25 +153,22 @@ export const Settings: React.FC<SettingsProps> = ({
   };
 
   const handleIconSelect = (iconName: string) => {
-    playClick('low');
     // Clear iconUrl to prioritize the system icon
     setFormData(prev => ({ ...prev, iconName, iconUrl: '' }));
   };
 
   const handleColorSelect = (c: string) => {
-    playClick('low');
     setFormData({...formData, color: c});
   };
 
   const handleDeleteCurrent = () => {
-    playClick();
     if (selectedAppId && confirm('Delete this shortcut permanently?')) {
       onDeleteApp(selectedAppId);
       setSelectedAppId(null);
       if (userApps.length > 1) {
          // Select another app (simple logic: first one that isn't the deleted one)
          const next = userApps.find(a => a.id !== selectedAppId);
-         if (next) handleSelectApp(next, false);
+         if (next) handleSelectApp(next);
       } else {
          handleStartAdd(); // If no apps left, go to add mode
       }
@@ -185,7 +177,6 @@ export const Settings: React.FC<SettingsProps> = ({
 
   // --- Data Handlers ---
   const handleExport = () => {
-    playClick();
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(userApps, null, 2));
     const downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href", dataStr);
@@ -196,7 +187,6 @@ export const Settings: React.FC<SettingsProps> = ({
   };
 
   const handleImportClick = () => {
-    playClick();
     fileInputRef.current?.click();
   };
 
@@ -235,13 +225,13 @@ export const Settings: React.FC<SettingsProps> = ({
         <div className="flex items-center gap-4">
           <div className="flex gap-1 bg-white/5 p-1 rounded-lg">
             <button 
-              onClick={() => { setActiveTab('apps'); playClick(); }}
+              onClick={() => { setActiveTab('apps'); }}
               className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest transition-all duration-300 ${activeTab === 'apps' ? 'bg-amber-600 text-white shadow-lg shadow-amber-900/20' : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'}`}
             >
               Apps
             </button>
             <button 
-              onClick={() => { setActiveTab('data'); playClick(); }}
+              onClick={() => { setActiveTab('data'); }}
               className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest transition-all duration-300 ${activeTab === 'data' ? 'bg-amber-600 text-white shadow-lg shadow-amber-900/20' : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'}`}
             >
               Backup
@@ -249,7 +239,7 @@ export const Settings: React.FC<SettingsProps> = ({
           </div>
           <div className="w-px h-6 bg-white/10" />
           <button 
-            onClick={() => { playClick(); onClose(); }}
+            onClick={() => { onClose(); }}
             className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
             title="Close Settings"
           >
@@ -554,7 +544,6 @@ export const Settings: React.FC<SettingsProps> = ({
                      <button 
                         onClick={() => {
                            if (confirm('DANGER: This will delete all your custom links. Are you sure?')) {
-                              playClick();
                               onResetApps();
                            }
                         }}
