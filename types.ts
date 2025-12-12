@@ -26,6 +26,7 @@ export interface AppConfig {
   heroOffsetX?: number;  // -200 to 200
   heroOffsetY?: number;  // -200 to 200
   heroRotation?: number; // -180 to 180
+  heroColor?: string;    // Hex Code
   
   // Advanced Visuals
   heroEffect?: HeroEffect; 

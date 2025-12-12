@@ -23,6 +23,15 @@ const COLORS = [
   'bg-purple-900', 'bg-purple-700', 'bg-fuchsia-900', 'bg-fuchsia-700', 'bg-pink-900', 'bg-pink-700', 'bg-rose-700'
 ];
 
+// Gold Palette for Hero Icons
+const HERO_COLORS = [
+    { value: '#ffffff', label: 'White' },
+    { value: '#fde68a', label: 'Champagne' }, // Amber-200
+    { value: '#fbbf24', label: 'Bright Gold' }, // Amber-400
+    { value: '#f59e0b', label: 'Classic Gold' }, // Amber-500
+    { value: '#b45309', label: 'Bronze' }, // Amber-700
+];
+
 const ICONS = Object.keys(ICON_LIBRARY);
 
 // Base unit for Bento Grid to match Desktop
@@ -75,6 +84,7 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
     heroOffsetX: 40,
     heroOffsetY: 0,
     heroRotation: 0,
+    heroColor: '#94a3b8',
     heroEffect: 'none',
     heroEffectIntensity: 5,
     widgetStyle: 'standard',
@@ -106,6 +116,7 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
       heroOffsetX: 40,
       heroOffsetY: 0,
       heroRotation: 0,
+      heroColor: '#94a3b8',
       heroEffect: 'none',
       heroEffectIntensity: 5,
       widgetStyle: 'standard',
@@ -123,6 +134,7 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
         heroOffsetX: app.heroOffsetX ?? 40,
         heroOffsetY: app.heroOffsetY ?? 0,
         heroRotation: app.heroRotation ?? 0,
+        heroColor: app.heroColor || '#94a3b8',
         heroEffect: app.heroEffect ?? 'none',
         heroEffectIntensity: app.heroEffectIntensity ?? 5,
         widgetStyle: app.widgetStyle || 'standard',
@@ -150,6 +162,7 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
       heroOffsetX: 40,
       heroOffsetY: 0,
       heroRotation: 0,
+      heroColor: '#94a3b8',
       heroEffect: 'none',
       heroEffectIntensity: 5,
       widgetStyle: 'standard',
@@ -252,6 +265,7 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
               heroOffsetX: formData.heroOffsetX || 40,
               heroOffsetY: formData.heroOffsetY || 0,
               heroRotation: 0,
+              heroColor: '#fbbf24', // Default to Bright Gold when enabling
               heroEffect: 'none',
               heroEffectIntensity: 5
           });
@@ -478,6 +492,27 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
                                         {formData.heroIconName && (
                                             <div className="mt-2 pt-3 border-t border-white/5 space-y-4">
                                                 
+                                                {/* Color Palette Selection */}
+                                                <div className="flex flex-col gap-2">
+                                                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Color Tone</label>
+                                                     <div className="flex gap-2">
+                                                        {HERO_COLORS.map(color => (
+                                                            <button
+                                                                key={color.value}
+                                                                onClick={() => setFormData({...formData, heroColor: color.value})}
+                                                                className={`
+                                                                    w-6 h-6 rounded-full border transition-all duration-300
+                                                                    ${formData.heroColor === color.value 
+                                                                        ? 'border-white scale-110 shadow-[0_0_10px_rgba(255,255,255,0.3)]' 
+                                                                        : 'border-transparent opacity-60 hover:opacity-100 hover:scale-105'}
+                                                                `}
+                                                                style={{ backgroundColor: color.value }}
+                                                                title={color.label}
+                                                            />
+                                                        ))}
+                                                     </div>
+                                                </div>
+
                                                 {/* Visual Effect Mode - Full Width Toggle */}
                                                 <div className="flex items-center justify-between">
                                                     <div className="text-[10px] text-slate-500 uppercase font-bold flex items-center gap-1">
@@ -630,6 +665,7 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
                                                     x: formData.heroOffsetX || 40,
                                                     y: formData.heroOffsetY || 0,
                                                     rotate: formData.heroRotation || 0,
+                                                    color: formData.heroColor,
                                                     effect: formData.heroEffect,
                                                     effectIntensity: formData.heroEffectIntensity
                                                 }}

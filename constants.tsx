@@ -60,6 +60,7 @@ export const DEFAULT_USER_APPS: AppConfig[] = [
     heroOffsetX: 50,
     heroOffsetY: 20,
     heroRotation: -15,
+    heroColor: '#fbbf24', // Default Gold
     heroEffect: 'none',
     heroEffectIntensity: 5,
     gridSize: '2x1',
@@ -173,6 +174,7 @@ export const configToDefinition = (config: AppConfig): AppDefinition => {
                 x: config.heroOffsetX ?? 40,
                 y: config.heroOffsetY ?? 0,
                 rotate: config.heroRotation ?? 0,
+                color: config.heroColor, // Pass color
                 effect: config.heroEffect ?? 'none',
                 effectIntensity: config.heroEffectIntensity ?? 5
             }}

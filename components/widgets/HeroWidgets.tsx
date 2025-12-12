@@ -165,6 +165,7 @@ export const DropZoneWidget: React.FC<{
       x: number,
       y: number,
       rotate?: number,
+      color?: string,
       effect?: HeroEffect,
       effectIntensity?: number
   }
@@ -174,7 +175,7 @@ export const DropZoneWidget: React.FC<{
   color,
   gridSize = '2x1',
   heroIcon: HeroIcon,
-  heroSettings = { scale: 8, opacity: 30, x: 40, y: 0, rotate: 0, effect: 'none', effectIntensity: 5 }
+  heroSettings = { scale: 8, opacity: 30, x: 40, y: 0, rotate: 0, color: '#94a3b8', effect: 'none', effectIntensity: 5 }
 }) => {
     
     const isVertical = gridSize === '1x2';
@@ -185,13 +186,14 @@ export const DropZoneWidget: React.FC<{
     const rawIntensity = heroSettings.effectIntensity || 0;
     
     // Multiplier to make 0-10 range look good in pixels.
-    // 5 -> 10px blur. 10 -> 20px blur.
     const intensity = rawIntensity * 2; 
+    
+    // Determine color (default to slate-400 if not set)
+    const iconColor = heroSettings.color || '#94a3b8';
 
     if (heroSettings.effect === 'glow') {
-        // Bright white/amber glow. Using a mix helps visibility on dark bg.
-        // We use the calculated intensity for the spread.
-        filter = `drop-shadow(0px 0px ${intensity}px rgba(255,255,255,0.8)) drop-shadow(0px 0px ${intensity * 0.5}px rgba(245,158,11,0.5))`;
+        // Bright glow using the same icon color, plus a standard white core
+        filter = `drop-shadow(0px 0px ${intensity}px ${iconColor}) drop-shadow(0px 0px ${intensity * 0.5}px rgba(255,255,255,0.5))`;
     }
 
     return (
@@ -216,7 +218,7 @@ export const DropZoneWidget: React.FC<{
                         // Apply filter here so it wraps the shape
                         filter: filter,
                         // Color is set here
-                        color: '#94a3b8' // Slate-400 equivalent
+                        color: iconColor
                     }}
                 >
                     {/* Apply opacity here directly to the icon */}
