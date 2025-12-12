@@ -52,7 +52,7 @@ function App() {
     // Special case: Settings App
     if (activeApp.id === 'settings') {
       return (
-        <div className="flex items-center justify-center w-full h-full pointer-events-none p-4">
+        <div className="flex items-center justify-center w-full h-full pointer-events-none p-4 pb-[env(safe-area-inset-bottom)]">
           <div className="w-[900px] h-[600px] max-w-full max-h-full pointer-events-auto">
             <GlassCard className="w-full h-full flex flex-col overflow-hidden shadow-2xl !bg-[#0a0a0a] !border-amber-500/20 !shadow-black/50">
               <Settings 
@@ -73,7 +73,7 @@ function App() {
     // Priority 1: Internal Components
     if (activeApp.component) {
       return (
-        <div className="p-4 md:p-8 w-full h-full">
+        <div className="p-4 md:p-8 w-full h-full pb-[calc(2rem+env(safe-area-inset-bottom))]">
           <GlassCard className="w-full h-full flex flex-col overflow-hidden shadow-2xl">
             {activeApp.component}
           </GlassCard>
@@ -97,7 +97,8 @@ function App() {
   };
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-[#020202] font-sans text-slate-900 selection:bg-amber-500/30">
+    // optimization: use 100dvh to handle mobile address bars correctly
+    <div className="relative w-screen h-[100dvh] overflow-hidden bg-[#020202] font-sans text-slate-900 selection:bg-amber-500/30">
       
       <DesktopBackground />
 
@@ -111,6 +112,7 @@ function App() {
             transition-all duration-300 ease-in-out
             ${activeAppId ? 'opacity-0 pointer-events-none' : 'opacity-100'}
           `}
+          style={{ paddingBottom: 'calc(6rem + env(safe-area-inset-bottom))' }} 
         >
           <div className="mb-12">
             <Clock />

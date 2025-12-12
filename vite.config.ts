@@ -18,6 +18,7 @@ export default defineConfig(({ mode }) => {
         react(),
         VitePWA({
           registerType: 'autoUpdate',
+          includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
           devOptions: {
             enabled: true
           },
@@ -28,18 +29,33 @@ export default defineConfig(({ mode }) => {
             theme_color: '#050505',
             background_color: '#050505',
             display: 'standalone',
+            orientation: 'any',
+            start_url: '/',
             icons: [
               {
                 src: '/pwa-192x192.png',
                 sizes: '192x192',
-                type: 'image/png'
+                type: 'image/png',
+                purpose: 'any maskable'
               },
               {
                 src: '/pwa-512x512.png',
                 sizes: '512x512',
-                type: 'image/png'
+                type: 'image/png',
+                purpose: 'any maskable'
               }
-            ]
+            ],
+            // Shortcuts allow right-click menu on the app icon in OS
+            shortcuts: [
+              {
+                name: "Settings",
+                short_name: "Settings",
+                description: "Open System Settings",
+                url: "/?app=settings",
+                icons: [{ src: "/pwa-192x192.png", sizes: "192x192" }]
+              }
+            ],
+            categories: ["productivity", "utilities", "personalization"]
           }
         })
       ],
