@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { AppConfig, WidgetStyle } from '../../../types';
+import { AppConfig, WidgetStyle, GridSize } from '../../../types';
 import { ICON_LIBRARY, getFavicon } from '../../../constants';
+import { DropZoneWidget, StatusWidget } from '../../widgets/HeroWidgets'; // Import real widgets
 import { Plus, Globe, Type, Link as LinkIcon, RefreshCcw, Square, RectangleHorizontal, RectangleVertical, Upload as UploadIcon, Trash2, Check, Save, Search, X, Palette, LayoutTemplate, MousePointerClick, Image as ImageIcon, Sparkles, ArrowRight, ArrowDown, LucideIcon, Move, Maximize, Droplets, ToggleLeft, ToggleRight } from 'lucide-react';
 
 interface AppsSettingsProps {
@@ -23,6 +24,20 @@ const COLORS = [
 ];
 
 const ICONS = Object.keys(ICON_LIBRARY);
+
+// Base unit for Bento Grid to match Desktop
+const BASE_SIZE = 160; 
+const GAP = 16;
+
+const getPreviewDimensions = (gridSize: GridSize) => {
+    switch (gridSize) {
+        case '2x2': return { width: BASE_SIZE * 2 + GAP, height: BASE_SIZE * 2 + GAP }; // 336x336
+        case '2x1': return { width: BASE_SIZE * 2 + GAP, height: BASE_SIZE };           // 336x160
+        case '1x2': return { width: BASE_SIZE, height: BASE_SIZE * 2 + GAP };           // 160x336
+        case '1x1':
+        default:    return { width: BASE_SIZE, height: BASE_SIZE };                     // 160x160
+    }
+};
 
 const generateId = () => {
     if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -254,6 +269,10 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
         ? ICON_LIBRARY[formData.heroIconName]
         : null;
 
+  // --- PREVIEW RENDERER ---
+  // Calculates Dimensions and Renders Real Widgets
+  const previewDim = getPreviewDimensions(formData.gridSize || '1x1');
+
   return (
     <>
         {/* LEFT SIDEBAR: LIST */}
@@ -301,7 +320,7 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
           </div>
         </div>
 
-        {/* RIGHT PANEL: APP EDITOR (Optimized for No Scrolling) */}
+        {/* RIGHT PANEL: APP EDITOR */}
         <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#050505] relative">
            {/* Background FX */}
            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none" />
@@ -309,7 +328,7 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
            {(selectedAppId || isNewApp) ? (
               <div className="flex flex-col h-full relative z-10 p-8">
                  
-                 {/* 1. Header Row (Inputs) - Horizontal Layout */}
+                 {/* 1. Header Row */}
                  <div className="flex gap-4 mb-8 shrink-0">
                      <div className="w-1/4">
                         <label className="text-[10px] font-bold uppercase tracking-widest text-amber-500/80 mb-2 block">Name</label>
@@ -353,13 +372,13 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
                      </div>
                  </div>
 
-                 {/* 2. Main Content Grid (Split Pane) */}
+                 {/* 2. Main Content Grid */}
                  <div className="flex-1 grid grid-cols-12 gap-8 min-h-0">
                     
-                    {/* Left Column: Visual Settings (Layout, Icon, Hero) - Span 5 */}
+                    {/* Left Column: Visual Settings - Span 5 */}
                     <div className="col-span-5 flex flex-col gap-6 overflow-y-auto scrollbar-hide pr-2">
                         
-                        {/* Layout Style - Horizontal Cards */}
+                        {/* Layout Style */}
                         <div className="p-5 bg-[#0a0a0a] border border-white/5 rounded-2xl shrink-0">
                             <div className="flex items-center gap-2 text-slate-400 mb-3">
                                 <LayoutTemplate size={14} />
@@ -419,11 +438,9 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
                                     </button>
                                 </div>
 
-                                {/* Hero Icon (Conditional) */}
+                                {/* Hero Icon Toggle & Sliders */}
                                 {(formData.gridSize === '1x2' || formData.gridSize === '2x1') && (
                                     <div className="flex flex-col gap-3 p-3 bg-[#111] border border-white/5 rounded-xl animate-in fade-in slide-in-from-top-2">
-                                        
-                                        {/* Header / Toggle */}
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center border border-white/5">
@@ -442,10 +459,9 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
                                             </button>
                                         </div>
 
-                                        {/* CUSTOMIZATION SLIDERS (Only show if enabled) */}
+                                        {/* SLIDERS */}
                                         {formData.heroIconName && (
                                             <div className="mt-2 pt-3 border-t border-white/5 space-y-4">
-                                                
                                                 {/* Scale */}
                                                 <div className="space-y-1">
                                                     <div className="flex justify-between text-[10px] text-slate-500 uppercase font-bold">
@@ -459,7 +475,6 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
                                                         className="w-full h-1 bg-white/10 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-amber-500 [&::-webkit-slider-thumb]:rounded-full cursor-pointer hover:[&::-webkit-slider-thumb]:scale-125 transition-all"
                                                     />
                                                 </div>
-
                                                 {/* Opacity */}
                                                 <div className="space-y-1">
                                                     <div className="flex justify-between text-[10px] text-slate-500 uppercase font-bold">
@@ -473,8 +488,7 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
                                                         className="w-full h-1 bg-white/10 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-amber-500 [&::-webkit-slider-thumb]:rounded-full cursor-pointer hover:[&::-webkit-slider-thumb]:scale-125 transition-all"
                                                     />
                                                 </div>
-
-                                                {/* Position Offset */}
+                                                {/* Offsets */}
                                                 <div className="grid grid-cols-2 gap-3">
                                                     <div className="space-y-1">
                                                         <div className="flex justify-between text-[10px] text-slate-500 uppercase font-bold">
@@ -512,85 +526,67 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
                     {/* Right Column: Colors & Preview - Span 7 */}
                     <div className="col-span-7 flex flex-col gap-6">
                          
-                        {/* Live Preview (Centered and Large) */}
-                        <div className="flex-1 bg-[#0a0a0a] border border-white/5 rounded-2xl flex flex-col items-center justify-center relative overflow-hidden min-h-[250px]">
-                            <div className="absolute top-4 left-4 text-[10px] font-bold uppercase tracking-widest text-slate-600">Live Preview</div>
-                            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white/5 via-transparent to-transparent pointer-events-none" />
+                        {/* Live Preview (Fixed Dimensions / Scrolling) */}
+                        <div className="flex-1 bg-[#0a0a0a] border border-white/5 rounded-2xl flex flex-col relative overflow-hidden min-h-[250px]">
+                            <div className="absolute top-4 left-4 text-[10px] font-bold uppercase tracking-widest text-slate-600 z-20">Live Preview</div>
                             
-                            <div className={`
-                                ${formData.gridSize === '1x2' ? 'aspect-[1/2] h-48' : (formData.gridSize === '2x1' ? 'aspect-[2/1] w-80' : 'aspect-square h-40')}
-                                ${formData.color} 
-                                rounded-3xl border border-white/10 shadow-2xl relative overflow-hidden transition-all duration-300
-                                p-6 gap-4 flex
-                                ${formData.heroIconName ? (
-                                    formData.gridSize === '2x1' ? 'flex-row justify-between items-center' : 
-                                    formData.gridSize === '1x2' ? 'flex-col justify-between' : 'flex-col justify-center items-center'
-                                ) : (
-                                    (formData.gridSize === '2x1' || formData.gridSize === '1x2') 
-                                        ? (formData.gridSize === '2x1' ? 'flex-row items-center gap-6' : 'flex-col items-center justify-center text-center') 
-                                        : 'flex-col justify-center items-center text-center'
-                                )}
-                            `}>
-                                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-black/30 pointer-events-none" />
-                                
-                                {formData.heroIconName && (formData.gridSize !== '1x1') ? (
-                                    <>
-                                        {/* THE BACKGROUND GRAPHIC PREVIEW */}
-                                        <div 
-                                            className="absolute z-0 pointer-events-none text-slate-400 origin-center transition-all duration-300 ease-out"
-                                            style={{
-                                                top: '50%',
-                                                left: '50%',
-                                                marginTop: '-12px', // half icon size
-                                                marginLeft: '-12px',
-                                                transform: `translate(${formData.heroOffsetX || 0}px, ${formData.heroOffsetY || 0}px) scale(${formData.heroScale || 1})`,
-                                                opacity: (formData.heroOpacity || 30) / 100
-                                            }}
-                                        >
-                                            {MainIconToRender && <MainIconToRender size={24} strokeWidth={1} />}
-                                        </div>
-
-                                        {/* Foreground Content */}
-                                        <div className={`z-10 flex flex-col ${formData.gridSize === '1x2' ? 'items-center text-center w-full mt-4' : 'ml-0'}`}>
-                                            <div className={`w-10 h-10 rounded-xl ${formData.color} flex items-center justify-center mb-2 shadow-lg ring-1 ring-white/10 backdrop-blur-sm`}>
-                                                {formData.iconUrl ? <img src={formData.iconUrl} className="w-5 h-5" /> : <MainIconToRender size={20} className="text-white" />}
+                            {/* Scrollable Area for Fixed Content */}
+                            <div className="w-full h-full overflow-auto flex items-center justify-center p-8 custom-scrollbar relative z-10">
+                                <div 
+                                    style={{ 
+                                        width: previewDim.width, 
+                                        height: previewDim.height 
+                                    }}
+                                    className="shrink-0 relative rounded-3xl overflow-hidden border border-white/10 bg-[#0a0a0a]/40 backdrop-blur-xl shadow-2xl transition-all duration-300"
+                                >
+                                    {/* Logic to Render Authentic Widget */}
+                                    {formData.gridSize === '1x1' ? (
+                                        // Standard 1x1 Icon Tile
+                                        <div className="w-full h-full flex flex-col items-center justify-center relative group">
+                                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-3 ${formData.color} shadow-lg relative z-10`}>
+                                                {formData.iconUrl ? (
+                                                    <img src={formData.iconUrl} alt="Preview" className="w-6 h-6 object-contain" />
+                                                ) : (
+                                                    <MainIconToRender size={24} className="text-white" />
+                                                )}
                                             </div>
+                                            <span className="text-xs font-medium text-slate-300 truncate w-full text-center px-2">{formData.name || 'App Name'}</span>
                                         </div>
-
-                                        <div className={`z-10 flex flex-col ${formData.gridSize === '1x2' ? 'mb-2' : 'items-end text-right'}`}>
-                                            <span className="text-base font-bold text-slate-100 leading-none drop-shadow-md truncate max-w-full">{formData.name || 'App Name'}</span>
-                                            <span className="text-[10px] text-amber-500 font-bold uppercase tracking-wider mt-1.5 opacity-90">Open</span>
-                                        </div>
-
-                                        {/* Overlay to ensure readability */}
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none z-0" />
-                                    </>
-                                ) : (
-                                    <>
-                                        <div className="relative z-10 drop-shadow-xl">
-                                            {formData.iconUrl ? (
-                                                <img src={formData.iconUrl} alt="Preview" className="w-12 h-12 object-contain" />
-                                            ) : (
-                                                <MainIconToRender size={40} className="text-white" />
-                                            )}
-                                        </div>
-                                        <div className="relative z-10 flex flex-col min-w-0">
-                                            <span className="text-sm font-bold text-slate-100 truncate leading-tight mt-1">
-                                                {formData.name || 'App Name'}
-                                            </span>
-                                            {(formData.gridSize !== '1x1') && (
-                                                <span className="text-[10px] text-white/60 truncate mt-1">
-                                                    {formData.description || 'Description text'}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </>
-                                )}
+                                    ) : (
+                                        // Complex Widgets (Using Real Components)
+                                        formData.heroIconName ? (
+                                            <DropZoneWidget 
+                                                name={formData.name || 'App Name'}
+                                                icon={MainIconToRender}
+                                                color={formData.color}
+                                                gridSize={formData.gridSize}
+                                                heroIcon={HeroIconToRender || MainIconToRender}
+                                                heroSettings={{
+                                                    scale: formData.heroScale || 8,
+                                                    opacity: formData.heroOpacity || 30,
+                                                    x: formData.heroOffsetX || 40,
+                                                    y: formData.heroOffsetY || 0
+                                                }}
+                                            />
+                                        ) : (
+                                            <StatusWidget 
+                                                name={formData.name || 'App Name'}
+                                                icon={MainIconToRender}
+                                                color={formData.color}
+                                                description={formData.description || 'Shortcut'}
+                                                gridSize={formData.gridSize}
+                                            />
+                                        )
+                                    )}
+                                </div>
                             </div>
+
+                            {/* Background Pattern */}
+                            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white/5 via-transparent to-transparent pointer-events-none z-0" />
                         </div>
 
-                         {/* Color Picker - No Scroll, Full Grid */}
-                        <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-5">
+                         {/* Color Picker */}
+                        <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-5 shrink-0">
                             <div className="flex items-center gap-2 text-slate-400 mb-3">
                                 <Palette size={14} />
                                 <span className="text-[10px] font-bold uppercase tracking-widest">Theme Color</span>
@@ -606,7 +602,6 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
                                 ))}
                             </div>
                         </div>
-
                     </div>
                  </div>
                  
@@ -645,7 +640,7 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
                      </div>
                  </div>
 
-                 {/* --- ICON PICKER MODAL OVERLAY (No Changes needed here, it floats) --- */}
+                 {/* --- ICON PICKER MODAL --- */}
                  {showIconPicker && (
                     <div className="absolute inset-0 z-50 bg-[#050505]/95 backdrop-blur-md flex flex-col animate-in fade-in duration-200">
                         <div className="p-4 border-b border-white/10 flex items-center gap-4 bg-[#0a0a0a] shrink-0">
