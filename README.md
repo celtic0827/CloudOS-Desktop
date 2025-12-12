@@ -1,6 +1,8 @@
 # CloudOS Desktop
 
-A React-based Web Desktop Environment (WebOS) designed with a "Low-key Luxury" aesthetic. It simulates a desktop operating system experience within the browser, featuring window management, a smart navigation dock, and persistent app shortcuts.
+![CloudOS Desktop Interface](https://upload.cc/i1/2025/12/12/1TC9NI.jpg)
+
+A React-based Web Desktop Environment (WebOS) designed with a "Low-key Luxury" aesthetic. It simulates a desktop operating system experience within the browser, featuring window management, a smart navigation dock, and integrated Gemini AI assistant.
 
 ## Project Overview
 
@@ -33,6 +35,7 @@ CloudOS Desktop acts as a unified dashboard for your web applications, providing
 *   **Framework**: React 18+ (Vite)
 *   **Styling**: Tailwind CSS (Arbitrary values, Backdrop filters, Gradients)
 *   **Icons**: Lucide React
+*   **AI**: Google Gemini API (@google/genai)
 *   **PWA**: Vite Plugin PWA
 
 ## Key Components
