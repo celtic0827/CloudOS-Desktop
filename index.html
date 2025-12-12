@@ -15,6 +15,45 @@
     <link rel="apple-touch-icon" href="/pwa-192x192.png" />
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+      /* Global Dark Scrollbar Theme */
+      :root {
+        color-scheme: dark;
+      }
+
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      
+      ::-webkit-scrollbar-track {
+        background: #050505; /* Dark background to match app */
+      }
+      
+      ::-webkit-scrollbar-thumb {
+        background: #262626; /* Dark gray handle */
+        border-radius: 4px;
+        border: 2px solid #050505; /* Creates padding effect */
+      }
+      
+      ::-webkit-scrollbar-thumb:hover {
+        background: #404040;
+      }
+
+      ::-webkit-scrollbar-corner {
+        background: #050505;
+      }
+      
+      /* Firefox Support */
+      * {
+        scrollbar-width: thin;
+        scrollbar-color: #262626 #050505;
+      }
+
+      /* Specific utility for transparent tracks inside containers */
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
       /* Hide scrollbar for Chrome, Safari and Opera */
       .scrollbar-hide::-webkit-scrollbar {
         display: none;
