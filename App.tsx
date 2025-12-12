@@ -17,7 +17,7 @@ function App() {
   const { 
     userApps, 
     allApps, 
-    activeWidgetIds,
+    activeWidgetIds, 
     addApp, 
     updateApp, 
     deleteApp, 
@@ -143,8 +143,15 @@ function App() {
             }}
           >
             {/* Inner Wrapper for Centering & Padding */}
-            {/* Updated: Justify logic changes based on direction */}
-            <div className={`min-h-full flex flex-col items-center p-6 pb-32 pt-16 ${isStackUp ? 'justify-end' : 'justify-center'}`}>
+            {/* 
+                Alignment Logic:
+                - Down (Standard): justify-start (Align to Top), pt-24 (Top Padding), pb-32 (Bottom space for dock/scroll)
+                - Up (Bottom Up): justify-end (Align to Bottom), pt-32 (Top space for scroll), pb-28 (Bottom Padding above dock)
+            */}
+            <div className={`
+                min-h-full flex flex-col items-center p-6 transition-all duration-500
+                ${isStackUp ? 'justify-end pt-32 pb-28' : 'justify-start pt-24 pb-32'}
+            `}>
                <BentoGrid 
                   apps={allApps} 
                   onOpenApp={handleOpenApp} 
@@ -154,7 +161,10 @@ function App() {
                
                {/* Optional: Visual hint that end of list is reached if many apps */}
                {allApps.length > 12 && (
-                 <div className={`mt-8 text-slate-700 text-[10px] uppercase tracking-widest opacity-50 font-medium ${isStackUp ? 'order-first mb-8 mt-0' : ''}`}>
+                 <div className={`
+                    text-slate-700 text-[10px] uppercase tracking-widest opacity-50 font-medium
+                    ${isStackUp ? 'order-first mb-12 mt-0' : 'mt-12 mb-0'}
+                 `}>
                    {isStackUp ? 'Start of Workspace' : 'End of Workspace'}
                  </div>
                )}
