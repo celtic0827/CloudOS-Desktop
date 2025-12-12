@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Sparkles, ArrowRight, Upload, Calendar, Clock as ClockIcon } from 'lucide-react';
 import { useSystemConfig } from '../../hooks/useSystemConfig';
-import { GridSize } from '../../types';
+import { GridSize, HeroEffect } from '../../types';
 
 // --- 1. The Hero Clock Widget (Responsive to GridSize) ---
 export const ClockWidget: React.FC = () => {
@@ -152,7 +152,7 @@ export const AIWidget: React.FC = () => {
 };
 
 // --- 3. The "Hero Graphic" Widget (Replaces old DropZone) ---
-// Renders Main Icon + Background Illustration (Scale/Opacity/Offset)
+// Renders Main Icon + Background Illustration (Scale/Opacity/Offset/Rotation/Effects)
 export const DropZoneWidget: React.FC<{ 
   name: string, 
   icon: any, 
@@ -163,7 +163,10 @@ export const DropZoneWidget: React.FC<{
       scale: number,
       opacity: number,
       x: number,
-      y: number
+      y: number,
+      rotate?: number,
+      effect?: HeroEffect,
+      effectIntensity?: number
   }
 }> = ({ 
   name, 
@@ -171,10 +174,22 @@ export const DropZoneWidget: React.FC<{
   color,
   gridSize = '2x1',
   heroIcon: HeroIcon,
-  heroSettings = { scale: 8, opacity: 30, x: 40, y: 0 }
+  heroSettings = { scale: 8, opacity: 30, x: 40, y: 0, rotate: 0, effect: 'none', effectIntensity: 20 }
 }) => {
     
     const isVertical = gridSize === '1x2';
+
+    // Calculate Filter for Effects
+    let filter = 'none';
+    const intensity = heroSettings.effectIntensity || 20;
+    
+    if (heroSettings.effect === 'shadow') {
+        // Deep, offset dark shadow
+        filter = `drop-shadow(0px 10px ${intensity}px rgba(0,0,0,0.8))`;
+    } else if (heroSettings.effect === 'glow') {
+        // Bright, centered glow (simulating neon/backlight)
+        filter = `drop-shadow(0px 0px ${intensity}px rgba(255,255,255,0.6))`;
+    }
 
     return (
         <div className={`w-full h-full flex p-4 relative overflow-hidden group ${isVertical ? 'flex-col justify-between items-center text-center' : 'flex-row items-center justify-between'}`}>
@@ -182,14 +197,19 @@ export const DropZoneWidget: React.FC<{
             {/* BACKGROUND GRAPHIC (Hero Icon) */}
             {HeroIcon && (
                 <div 
-                    className="absolute z-0 pointer-events-none text-slate-400 origin-center transition-all duration-500 ease-out"
+                    className="absolute z-0 pointer-events-none text-slate-400 origin-center transition-all duration-500 ease-out will-change-transform"
                     style={{
                         top: '50%',
                         left: '50%',
                         marginTop: '-12px', // Half of base size (24px)
                         marginLeft: '-12px',
-                        transform: `translate(${heroSettings.x}px, ${heroSettings.y}px) scale(${heroSettings.scale})`,
-                        opacity: heroSettings.opacity / 100
+                        transform: `
+                            translate(${heroSettings.x}px, ${heroSettings.y}px) 
+                            rotate(${heroSettings.rotate || 0}deg) 
+                            scale(${heroSettings.scale})
+                        `,
+                        opacity: heroSettings.opacity / 100,
+                        filter: filter
                     }}
                 >
                     <HeroIcon size={24} strokeWidth={1} />

@@ -3,6 +3,7 @@ import { ReactNode } from 'react';
 
 export type GridSize = '1x1' | '2x1' | '1x2' | '2x2' | '4x2';
 export type WidgetStyle = 'standard' | 'vertical' | 'status' | 'dropzone' | 'horizontal';
+export type HeroEffect = 'none' | 'shadow' | 'glow';
 
 export interface ClockConfig {
   timezone: string;
@@ -24,6 +25,11 @@ export interface AppConfig {
   heroOpacity?: number;  // 0 to 100
   heroOffsetX?: number;  // -200 to 200
   heroOffsetY?: number;  // -200 to 200
+  heroRotation?: number; // 0 to 360
+  
+  // Advanced Visuals
+  heroEffect?: HeroEffect; 
+  heroEffectIntensity?: number; // 0 to 100 (Blur radius)
   
   color: string;
   description: string;

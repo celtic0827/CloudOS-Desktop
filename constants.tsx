@@ -59,6 +59,9 @@ export const DEFAULT_USER_APPS: AppConfig[] = [
     heroOpacity: 25,
     heroOffsetX: 50,
     heroOffsetY: 20,
+    heroRotation: -15,
+    heroEffect: 'shadow',
+    heroEffectIntensity: 20,
     gridSize: '2x1',
     widgetStyle: 'horizontal'
   },
@@ -168,7 +171,10 @@ export const configToDefinition = (config: AppConfig): AppDefinition => {
                 scale: config.heroScale ?? 8,
                 opacity: config.heroOpacity ?? 30,
                 x: config.heroOffsetX ?? 40,
-                y: config.heroOffsetY ?? 0
+                y: config.heroOffsetY ?? 0,
+                rotate: config.heroRotation ?? 0,
+                effect: config.heroEffect ?? 'none',
+                effectIntensity: config.heroEffectIntensity ?? 20
             }}
           />;
       } else {

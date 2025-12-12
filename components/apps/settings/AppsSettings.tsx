@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { AppConfig, WidgetStyle, GridSize } from '../../../types';
+import { AppConfig, WidgetStyle, GridSize, HeroEffect } from '../../../types';
 import { ICON_LIBRARY, getFavicon } from '../../../constants';
 import { DropZoneWidget, StatusWidget } from '../../widgets/HeroWidgets'; // Import real widgets
-import { Plus, Globe, Type, Link as LinkIcon, RefreshCcw, Square, RectangleHorizontal, RectangleVertical, Upload as UploadIcon, Trash2, Check, Save, Search, X, Palette, LayoutTemplate, MousePointerClick, Image as ImageIcon, Sparkles, ArrowRight, ArrowDown, LucideIcon, Move, Maximize, Droplets, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Plus, Globe, Type, Link as LinkIcon, RefreshCcw, Square, RectangleHorizontal, RectangleVertical, Upload as UploadIcon, Trash2, Check, Save, Search, X, Palette, LayoutTemplate, MousePointerClick, Image as ImageIcon, Sparkles, ArrowRight, ArrowDown, LucideIcon, Move, Maximize, Droplets, ToggleLeft, ToggleRight, RotateCw, Moon, Sun, Ban, BoxSelect } from 'lucide-react';
 
 interface AppsSettingsProps {
   userApps: AppConfig[];
@@ -74,6 +74,9 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
     heroOpacity: 30,
     heroOffsetX: 40,
     heroOffsetY: 0,
+    heroRotation: 0,
+    heroEffect: 'none',
+    heroEffectIntensity: 20,
     widgetStyle: 'standard',
     gridSize: '1x1'
   });
@@ -102,6 +105,9 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
       heroOpacity: 30,
       heroOffsetX: 40,
       heroOffsetY: 0,
+      heroRotation: 0,
+      heroEffect: 'none',
+      heroEffectIntensity: 20,
       widgetStyle: 'standard',
       gridSize: '1x1'
     });
@@ -116,6 +122,9 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
         heroOpacity: app.heroOpacity ?? 30,
         heroOffsetX: app.heroOffsetX ?? 40,
         heroOffsetY: app.heroOffsetY ?? 0,
+        heroRotation: app.heroRotation ?? 0,
+        heroEffect: app.heroEffect ?? 'none',
+        heroEffectIntensity: app.heroEffectIntensity ?? 20,
         widgetStyle: app.widgetStyle || 'standard',
         gridSize: app.gridSize || '1x1'
     });
@@ -140,6 +149,9 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
       heroOpacity: 30,
       heroOffsetX: 40,
       heroOffsetY: 0,
+      heroRotation: 0,
+      heroEffect: 'none',
+      heroEffectIntensity: 20,
       widgetStyle: 'standard',
       gridSize: '1x1'
     });
@@ -238,7 +250,10 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
               heroScale: formData.heroScale || 8,
               heroOpacity: formData.heroOpacity || 30,
               heroOffsetX: formData.heroOffsetX || 40,
-              heroOffsetY: formData.heroOffsetY || 0
+              heroOffsetY: formData.heroOffsetY || 0,
+              heroRotation: 0,
+              heroEffect: 'none',
+              heroEffectIntensity: 20
           });
       }
   };
@@ -459,9 +474,10 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
                                             </button>
                                         </div>
 
-                                        {/* SLIDERS */}
+                                        {/* SLIDERS & EFFECTS */}
                                         {formData.heroIconName && (
                                             <div className="mt-2 pt-3 border-t border-white/5 space-y-4">
+                                                
                                                 {/* Scale */}
                                                 <div className="space-y-1">
                                                     <div className="flex justify-between text-[10px] text-slate-500 uppercase font-bold">
@@ -475,6 +491,21 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
                                                         className="w-full h-1 bg-white/10 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-amber-500 [&::-webkit-slider-thumb]:rounded-full cursor-pointer hover:[&::-webkit-slider-thumb]:scale-125 transition-all"
                                                     />
                                                 </div>
+
+                                                {/* Rotation */}
+                                                <div className="space-y-1">
+                                                    <div className="flex justify-between text-[10px] text-slate-500 uppercase font-bold">
+                                                        <span className="flex items-center gap-1"><RotateCw size={10} /> Rotation</span>
+                                                        <span>{formData.heroRotation}°</span>
+                                                    </div>
+                                                    <input 
+                                                        type="range" min="0" max="360" step="5"
+                                                        value={formData.heroRotation || 0}
+                                                        onChange={(e) => setFormData({...formData, heroRotation: parseInt(e.target.value)})}
+                                                        className="w-full h-1 bg-white/10 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-amber-500 [&::-webkit-slider-thumb]:rounded-full cursor-pointer hover:[&::-webkit-slider-thumb]:scale-125 transition-all"
+                                                    />
+                                                </div>
+
                                                 {/* Opacity */}
                                                 <div className="space-y-1">
                                                     <div className="flex justify-between text-[10px] text-slate-500 uppercase font-bold">
@@ -488,8 +519,51 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
                                                         className="w-full h-1 bg-white/10 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-amber-500 [&::-webkit-slider-thumb]:rounded-full cursor-pointer hover:[&::-webkit-slider-thumb]:scale-125 transition-all"
                                                     />
                                                 </div>
+
+                                                {/* Effect Mode */}
+                                                <div className="space-y-2">
+                                                    <div className="text-[10px] text-slate-500 uppercase font-bold flex items-center gap-1"><Sparkles size={10} /> Visual Effect</div>
+                                                    <div className="grid grid-cols-3 gap-2">
+                                                        {[
+                                                            { id: 'none', label: 'None', icon: Ban },
+                                                            { id: 'shadow', label: 'Shadow', icon: Moon },
+                                                            { id: 'glow', label: 'Glow', icon: Sun },
+                                                        ].map(mode => (
+                                                            <button
+                                                                key={mode.id}
+                                                                onClick={() => setFormData({...formData, heroEffect: mode.id as HeroEffect})}
+                                                                className={`
+                                                                    flex flex-col items-center justify-center p-2 rounded-lg border transition-all
+                                                                    ${formData.heroEffect === mode.id 
+                                                                        ? 'bg-amber-600 text-white border-amber-500 shadow-md' 
+                                                                        : 'bg-[#151515] border-white/5 text-slate-500 hover:text-slate-300'}
+                                                                `}
+                                                            >
+                                                                <mode.icon size={14} className="mb-1" />
+                                                                <span className="text-[9px] font-bold uppercase">{mode.label}</span>
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                {/* Effect Intensity (Conditional) */}
+                                                {formData.heroEffect && formData.heroEffect !== 'none' && (
+                                                    <div className="space-y-1 animate-in fade-in slide-in-from-top-1">
+                                                        <div className="flex justify-between text-[10px] text-slate-500 uppercase font-bold">
+                                                            <span>Intensity</span>
+                                                            <span>{formData.heroEffectIntensity}px</span>
+                                                        </div>
+                                                        <input 
+                                                            type="range" min="5" max="100" step="5"
+                                                            value={formData.heroEffectIntensity || 20}
+                                                            onChange={(e) => setFormData({...formData, heroEffectIntensity: parseInt(e.target.value)})}
+                                                            className="w-full h-1 bg-white/10 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-amber-500 [&::-webkit-slider-thumb]:rounded-full cursor-pointer hover:[&::-webkit-slider-thumb]:scale-125 transition-all"
+                                                        />
+                                                    </div>
+                                                )}
+
                                                 {/* Offsets */}
-                                                <div className="grid grid-cols-2 gap-3">
+                                                <div className="grid grid-cols-2 gap-3 pt-1">
                                                     <div className="space-y-1">
                                                         <div className="flex justify-between text-[10px] text-slate-500 uppercase font-bold">
                                                             <span className="flex items-center gap-1"><Move size={10} /> Offset X</span>
@@ -565,7 +639,10 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
                                                     scale: formData.heroScale || 8,
                                                     opacity: formData.heroOpacity || 30,
                                                     x: formData.heroOffsetX || 40,
-                                                    y: formData.heroOffsetY || 0
+                                                    y: formData.heroOffsetY || 0,
+                                                    rotate: formData.heroRotation || 0,
+                                                    effect: formData.heroEffect,
+                                                    effectIntensity: formData.heroEffectIntensity
                                                 }}
                                             />
                                         ) : (
