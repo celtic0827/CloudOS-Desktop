@@ -14,10 +14,13 @@ const AnalogClock: React.FC<{ time: Date, className?: string, opacity?: number }
     const minuteDeg = minutes * 6 + seconds * 0.1;
     const hourDeg = (hours % 12) * 30 + minutes * 0.5;
 
-    // Colors
-    const goldColor = "#b45309"; // Amber-700 (Dark Gold)
-    const tickColor = "#78350f"; // Amber-900 (Deep Bronze)
-    
+    // Colors - Refined for "Antique Bronze" look (Sat -30%, Light -20%)
+    // Old Gold: #b45309 -> New: #856036 (Desaturated Bronze/Gold)
+    // Old Tick: #78350f -> New: #594226 (Deep Coffee Bronze)
+    const goldColor = "#856036"; 
+    const tickColor = "#594226"; 
+    const secondHandColor = "#a17228"; // Darkened Amber
+
     return (
         <div className={`relative ${className}`} style={{ opacity }}>
             <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-xl">
@@ -43,21 +46,29 @@ const AnalogClock: React.FC<{ time: Date, className?: string, opacity?: number }
                             transform={`rotate(${i * 6} 100 100)`}
                             stroke={tickColor}
                             strokeWidth="1"
-                            opacity="0.5"
+                            opacity="0.6"
                         />
                     )
                 ))}
-                {/* Hour Ticks (Large, Dark Gold) */}
-                {[...Array(12)].map((_, i) => (
-                    <line 
-                        key={`h-${i}`}
-                        x1="100" y1="10" x2="100" y2="25"
-                        transform={`rotate(${i * 30} 100 100)`}
-                        stroke={goldColor}
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                    />
-                ))}
+                
+                {/* Hour Ticks (Modified Logic) */}
+                {[...Array(12)].map((_, i) => {
+                    const isCardinal = i % 3 === 0; // 0(12), 3, 6, 9
+                    // Cardinal: 10 to 25 (Length 15)
+                    // Others: 10 to 17.5 (Length 7.5 - 50% shorter)
+                    const y2 = isCardinal ? "25" : "17.5"; 
+                    
+                    return (
+                        <line 
+                            key={`h-${i}`}
+                            x1="100" y1="10" x2="100" y2={y2}
+                            transform={`rotate(${i * 30} 100 100)`}
+                            stroke={goldColor}
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                        />
+                    );
+                })}
 
                 {/* 2. Hour Hand (Ruby Tip) */}
                 <g transform={`rotate(${hourDeg} 100 100)`}>
@@ -68,7 +79,7 @@ const AnalogClock: React.FC<{ time: Date, className?: string, opacity?: number }
                     {/* Ruby Gem */}
                     <rect x="98" y="40" width="4" height="15" fill="#991b1b" stroke={goldColor} strokeWidth="0.5" filter="url(#rubyGlow)" />
                     {/* Gem Reflection */}
-                    <rect x="99" y="42" width="1" height="8" fill="#fca5a5" opacity="0.6" />
+                    <rect x="99" y="42" width="1" height="8" fill="#fca5a5" opacity="0.5" />
                 </g>
 
                 {/* 3. Minute Hand (Sapphire Tip) */}
@@ -80,13 +91,13 @@ const AnalogClock: React.FC<{ time: Date, className?: string, opacity?: number }
                     {/* Sapphire Gem */}
                     <rect x="98.5" y="25" width="3" height="20" fill="#1e3a8a" stroke={goldColor} strokeWidth="0.5" filter="url(#sapphireGlow)" />
                      {/* Gem Reflection */}
-                     <rect x="99.5" y="27" width="1" height="12" fill="#93c5fd" opacity="0.6" />
+                     <rect x="99.5" y="27" width="1" height="12" fill="#93c5fd" opacity="0.5" />
                 </g>
 
-                {/* 4. Second Hand (Simple Gold Needle) */}
+                {/* 4. Second Hand (Simple Antique Gold Needle) */}
                 <g transform={`rotate(${secondDeg} 100 100)`}>
-                    <line x1="100" y1="110" x2="100" y2="20" stroke="#f59e0b" strokeWidth="1" />
-                    <circle cx="100" cy="100" r="2" fill="#f59e0b" />
+                    <line x1="100" y1="110" x2="100" y2="20" stroke={secondHandColor} strokeWidth="1" />
+                    <circle cx="100" cy="100" r="2" fill={secondHandColor} />
                 </g>
 
                 {/* Center Cap */}
@@ -219,12 +230,10 @@ export const ClockWidget: React.FC = () => {
               {clockConfig.timezone.split('/')[1]?.replace('_', ' ') || clockConfig.timezone}
             </span>
         </div>
-        {/* Removed standard Icon, the Analog clock is the icon now */}
       </div>
 
       {/* Digital Time Overlay */}
       <div className="z-10 relative mt-auto">
-        {/* Added a subtle backdrop to ensure text is readable over the clock hands if they overlap */}
         <div className="inline-block">
             <h1 className={`text-5xl font-thin tracking-tighter whitespace-nowrap ${goldGradientText} drop-shadow-2xl`}>
             {timeString}
