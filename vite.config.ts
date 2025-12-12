@@ -18,7 +18,7 @@ export default defineConfig(({ mode }) => {
         react(),
         VitePWA({
           registerType: 'autoUpdate',
-          includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+          includeAssets: ['favicon.ico', 'icon.svg'], 
           devOptions: {
             enabled: true
           },
@@ -33,7 +33,6 @@ export default defineConfig(({ mode }) => {
             orientation: 'any',
             start_url: '/',
             id: '/',
-            // PC Optimization: Screenshots allow the install prompt to look like a Store App
             screenshots: [
               {
                 src: "https://upload.cc/i1/2025/12/12/1TC9NI.jpg",
@@ -50,29 +49,13 @@ export default defineConfig(({ mode }) => {
                 label: "CloudOS Mobile View"
               }
             ],
+            // Use the new SVG icon for PWA install
             icons: [
               {
-                src: '/favicon.ico',
-                sizes: '64x64 32x32 24x24 16x16',
-                type: 'image/x-icon'
-              },
-              {
-                src: '/pwa-192x192.png',
-                sizes: '192x192',
-                type: 'image/png',
-                purpose: 'any' // 'any' keeps transparency for desktop icons
-              },
-              {
-                src: '/pwa-512x512.png',
-                sizes: '512x512',
-                type: 'image/png',
-                purpose: 'any'
-              },
-              {
-                src: '/pwa-512x512.png',
-                sizes: '512x512',
-                type: 'image/png',
-                purpose: 'maskable' // 'maskable' fills the square (Android/Windows Tiles)
+                src: '/icon.svg',
+                sizes: 'any',
+                type: 'image/svg+xml',
+                purpose: 'any maskable'
               }
             ],
             shortcuts: [
@@ -81,14 +64,14 @@ export default defineConfig(({ mode }) => {
                 short_name: "Settings",
                 description: "Open System Settings",
                 url: "/?app=settings",
-                icons: [{ src: "/pwa-192x192.png", sizes: "192x192" }]
+                icons: [{ src: "/icon.svg", sizes: "192x192", type: "image/svg+xml" }]
               },
               {
                 name: "AI Assistant",
                 short_name: "Gemini",
                 description: "Chat with Gemini AI",
                 url: "/?app=gemini-assistant",
-                icons: [{ src: "/pwa-192x192.png", sizes: "192x192" }]
+                icons: [{ src: "/icon.svg", sizes: "192x192", type: "image/svg+xml" }]
               }
             ],
             categories: ["productivity", "utilities", "personalization"],

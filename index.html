@@ -12,17 +12,18 @@
 
     <!-- Windows / Desktop Specific Optimizations -->
     <meta name="msapplication-TileColor" content="#050505" />
-    <meta name="msapplication-TileImage" content="/pwa-512x512.png" />
+    <meta name="msapplication-TileImage" content="/icon.svg" />
     <meta name="application-name" content="CloudOS" />
 
     <title>CloudOS Desktop</title>
     
     <!-- Icons -->
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" sizes="any" />
-    <link rel="icon" type="image/svg+xml" href="/masked-icon.svg" />
-    <link rel="icon" type="image/png" sizes="192x192" href="/pwa-192x192.png" />
-    <link rel="icon" type="image/png" sizes="512x512" href="/pwa-512x512.png" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <!-- Priority: SVG for modern browsers/PWA, ICO for legacy/fallback -->
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="alternate icon" href="/favicon.ico" />
+    
+    <!-- Mobile Icons: Point to SVG (Android handles this well, iOS attempts to render) -->
+    <link rel="apple-touch-icon" href="/icon.svg" />
     
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
