@@ -14,14 +14,28 @@ export const GeminiChat: React.FC = () => {
     { id: 'welcome', role: 'model', text: 'Greetings. I am your CloudOS Assistant. How may I assist you today?' }
   ]);
   const [isLoading, setIsLoading] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Ref for the scrollable container instead of a dummy element
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
+    if (scrollContainerRef.current) {
+      const { scrollHeight, clientHeight } = scrollContainerRef.current;
+      scrollContainerRef.current.scrollTo({
+        top: scrollHeight - clientHeight,
+        behavior
+      });
+    }
   };
 
   useEffect(() => {
-    scrollToBottom();
+    // Immediate scroll on mount without animation to prevent initial jump visual
+    scrollToBottom('auto');
+  }, []);
+
+  useEffect(() => {
+    // Smooth scroll for new messages
+    scrollToBottom('smooth');
   }, [messages]);
 
   const handleSend = async () => {
@@ -40,9 +54,6 @@ export const GeminiChat: React.FC = () => {
       });
       
       const text = response.text;
-      
-      // Artificial delay for realism if response is too fast
-      // But Gemini is fast, so let's just show it.
       
       setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
@@ -79,8 +90,11 @@ export const GeminiChat: React.FC = () => {
         <h2 className="font-serif text-lg text-slate-200 tracking-wide">AI Assistant</h2>
       </div>
 
-      {/* Chat Area */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide">
+      {/* Chat Area - Added ref here */}
+      <div 
+        ref={scrollContainerRef}
+        className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide"
+      >
         {messages.map((msg) => (
           <div
             key={msg.id}
@@ -106,7 +120,6 @@ export const GeminiChat: React.FC = () => {
             <span>Processing...</span>
           </div>
         )}
-        <div ref={messagesEndRef} />
       </div>
 
       {/* Input Area */}

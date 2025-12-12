@@ -1,26 +1,31 @@
 import React, { useState } from 'react';
-import { DesktopIcon } from './components/desktop/DesktopIcon';
 import { FloatingDock } from './components/navigation/FloatingDock';
-import { Clock } from './components/desktop/Clock';
 import { GlassCard } from './components/ui/GlassCard';
 import { WebFrame } from './components/apps/WebFrame';
 import { Settings } from './components/apps/Settings';
 import { DesktopBackground } from './components/desktop/DesktopBackground';
+import { BentoGrid } from './components/desktop/BentoGrid';
 import { useAppConfig } from './hooks/useAppConfig';
+import { useSystemConfig } from './hooks/useSystemConfig'; // Import here
 import { useWindowManager } from './hooks/useWindowManager';
 
 function App() {
-  // Logic extracted to Custom Hooks
+  // 1. Initialize System Config (Clock, etc.) at Top Level
+  const { clockConfig, updateClockConfig } = useSystemConfig();
+
+  // 2. Pass clockConfig to useAppConfig so the Grid knows the correct sizes
   const { 
     userApps, 
     allApps, 
+    activeWidgetIds,
     addApp, 
     updateApp, 
     deleteApp, 
     resetApps, 
-    importApps, 
-    reorderApps 
-  } = useAppConfig();
+    importApps,
+    moveApp,
+    toggleWidget
+  } = useAppConfig(clockConfig);
 
   const { 
     activeAppId, 
@@ -29,21 +34,28 @@ function App() {
     closeApp 
   } = useWindowManager();
 
-  // Drag State (Purely UI state, specific to Desktop view)
-  const [draggedAppId, setDraggedAppId] = useState<string | null>(null);
+  // New State for Settings Context
+  const [settingsContext, setSettingsContext] = useState<{tab?: string, appId?: string | null}>({});
+
+  const handleOpenApp = (id: string) => {
+      const app = allApps.find(a => a.id === id);
+      
+      // Special Handling for Widgets (No Window)
+      // If it's a widget and NOT the AI (which has a chat window), open Settings
+      if (app?.isWidget && app.id !== 'gemini-assistant') {
+          setSettingsContext({ tab: 'widgets', appId: app.id });
+          openApp('settings');
+          return;
+      }
+      
+      // Default behavior
+      if (app?.id === 'settings') {
+          setSettingsContext({ tab: 'apps' });
+      }
+      openApp(id);
+  };
 
   const activeApp = allApps.find(app => app.id === activeAppId);
-
-  // --- Drag and Drop Handlers ---
-  const handleDragStart = (id: string) => {
-    setDraggedAppId(id);
-  };
-
-  const handleDrop = (targetId: string) => {
-    if (!draggedAppId || draggedAppId === targetId) return;
-    reorderApps(draggedAppId, targetId);
-    setDraggedAppId(null);
-  };
 
   // --- Window Content Renderer ---
   const renderAppContent = () => {
@@ -57,12 +69,18 @@ function App() {
             <GlassCard className="w-full h-full flex flex-col overflow-hidden shadow-2xl !bg-[#0a0a0a] !border-amber-500/20 !shadow-black/50">
               <Settings 
                 userApps={userApps}
+                activeWidgetIds={activeWidgetIds}
+                clockConfig={clockConfig} // Pass current config
+                onUpdateClockConfig={updateClockConfig} // Pass updater
                 onAddApp={addApp}
                 onUpdateApp={updateApp}
                 onDeleteApp={deleteApp}
                 onResetApps={resetApps}
                 onImportApps={importApps}
+                onToggleWidget={toggleWidget}
                 onClose={closeApp}
+                initialTab={settingsContext.tab}
+                initialAppId={settingsContext.appId}
               />
             </GlassCard>
           </div>
@@ -70,7 +88,7 @@ function App() {
       );
     }
 
-    // Priority 1: Internal Components
+    // Priority 1: Internal Components (e.g. Gemini Chat)
     if (activeApp.component) {
       return (
         <div className="p-4 md:p-8 w-full h-full pb-[calc(2rem+env(safe-area-inset-bottom))]">
@@ -97,54 +115,49 @@ function App() {
   };
 
   return (
-    // optimization: use 100dvh to handle mobile address bars correctly
     <div className="relative w-screen h-[100dvh] overflow-hidden bg-[#020202] font-sans text-slate-900 selection:bg-amber-500/30">
       
       <DesktopBackground />
 
       {/* Main Content Area */}
-      <main className="relative z-10 w-full h-full">
+      <main className="relative z-10 w-full h-full flex flex-col">
         
-        {/* Desktop View (Icons & Clock) */}
+        {/* Desktop View (Scrollable Bento Grid) */}
         <div 
           className={`
-            w-full h-full flex flex-col items-center justify-center p-6 pb-24
-            transition-all duration-300 ease-in-out
-            ${activeAppId ? 'opacity-0 pointer-events-none' : 'opacity-100'}
+            flex-1 w-full relative
+            transition-all duration-500 ease-in-out
+            ${activeAppId ? 'opacity-0 scale-95 pointer-events-none blur-sm' : 'opacity-100 scale-100 blur-0'}
           `}
-          style={{ paddingBottom: 'calc(6rem + env(safe-area-inset-bottom))' }} 
         >
-          <div className="mb-12">
-            <Clock />
-          </div>
-          
-          {/* App Grid Panel */}
-          <div className="
-            grid grid-cols-4 md:grid-cols-6 gap-x-8 gap-y-10 p-10 
-            rounded-[2.5rem] 
-            bg-black/20 backdrop-blur-xl 
-            border border-white/10 
-            shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] 
-            max-w-5xl max-h-[60vh] overflow-y-auto scrollbar-hide
-          ">
-            {allApps.map((app) => (
-              <DesktopIcon 
-                key={app.id} 
-                app={app} 
-                onClick={openApp}
-                onDragStart={handleDragStart}
-                onDrop={handleDrop}
-                isDragging={draggedAppId === app.id}
-              />
-            ))}
+          {/* Scrollable Container */}
+          <div 
+            className="w-full h-full overflow-y-auto scrollbar-hide"
+            style={{ 
+              // Mask image creates the fading effect at top and bottom
+              maskImage: 'linear-gradient(to bottom, transparent, black 5%, black 90%, transparent)',
+              WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 5%, black 90%, transparent)'
+            }}
+          >
+            {/* Inner Wrapper for Centering & Padding */}
+            <div className="min-h-full flex flex-col items-center justify-center p-6 pb-32 pt-16">
+               <BentoGrid apps={allApps} onOpenApp={handleOpenApp} onMoveApp={moveApp} />
+               
+               {/* Optional: Visual hint that end of list is reached if many apps */}
+               {allApps.length > 12 && (
+                 <div className="mt-8 text-slate-700 text-[10px] uppercase tracking-widest opacity-50 font-medium">
+                   End of Workspace
+                 </div>
+               )}
+            </div>
           </div>
         </div>
 
         {/* Active App Window Container */}
         <div 
           className={`
-            absolute inset-0 transition-all duration-300 ease-out
-            ${activeAppId && isAppOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}
+            absolute inset-0 transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1) z-20
+            ${activeAppId && isAppOpen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-12 scale-95 pointer-events-none'}
           `}
         >
           {activeApp && renderAppContent()}
@@ -156,7 +169,7 @@ function App() {
       <FloatingDock 
         activeAppId={activeAppId}
         apps={allApps}
-        onSwitchApp={openApp}
+        onSwitchApp={handleOpenApp}
         onCloseApp={closeApp}
       />
 
