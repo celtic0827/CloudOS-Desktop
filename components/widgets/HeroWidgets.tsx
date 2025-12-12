@@ -231,10 +231,10 @@ export const DropZoneWidget: React.FC<{
             {/* CONTENT LAYER (Z-10) */}
             <div className={`flex flex-col z-10 min-w-0 ${isVertical ? 'items-center gap-3 mt-4' : ''}`}>
                 <div className={`
-                    w-10 h-10 rounded-xl ${color} flex items-center justify-center shadow-lg ring-1 ring-white/10 backdrop-blur-sm
+                    w-12 h-12 rounded-2xl ${color} flex items-center justify-center shadow-lg ring-1 ring-white/10 backdrop-blur-sm
                     group-hover:scale-110 transition-transform duration-300
                 `}>
-                    <MainIcon size={20} className="text-white" />
+                    <MainIcon size={24} className="text-white" />
                 </div>
                 
                 <div className={`${isVertical ? '' : 'ml-4'}`}>
@@ -284,8 +284,8 @@ export const StatusWidget: React.FC<{ name: string, icon: any, color: string, de
     return (
         <div className="w-full h-full flex flex-col justify-center p-4 relative overflow-hidden group">
              <div className="flex items-center gap-3 z-10">
-                <div className={`w-10 h-10 rounded-xl ${color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                    <Icon size={20} className="text-white" />
+                <div className={`w-12 h-12 rounded-2xl ${color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                    <Icon size={24} className="text-white" />
                 </div>
                 <div className="flex flex-col min-w-0">
                     <span className="text-sm font-bold text-slate-200 truncate pr-2">{name}</span>
