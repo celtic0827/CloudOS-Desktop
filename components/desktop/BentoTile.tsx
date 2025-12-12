@@ -22,12 +22,14 @@ export const BentoTile: React.FC<BentoTileProps> = ({
   const [isDragOver, setIsDragOver] = useState(false);
 
   // Determine Layout Classes based on Grid Size
+  // CRITICAL FIX: Only 1x1 and 2x2 should enforce aspect-square to drive the row heights.
+  // Spanning items (2x1, 1x2) must fill the available grid space (h-full w-full) to align perfectly with gaps.
   const getLayoutClasses = () => {
     switch (app.gridSize) {
       case '2x2': return 'col-span-2 row-span-2 aspect-square';
-      case '2x1': return 'col-span-2 row-span-1 aspect-[2/1]';
-      case '1x2': return 'col-span-1 row-span-2 aspect-[1/2]';
-      case '4x2': return 'col-span-2 row-span-2 md:col-span-4 md:row-span-2 aspect-[2/1]';
+      case '2x1': return 'col-span-2 row-span-1'; 
+      case '1x2': return 'col-span-1 row-span-2';
+      case '4x2': return 'col-span-2 row-span-2 md:col-span-4 md:row-span-2';
       case '1x1':
       default: return 'col-span-1 row-span-1 aspect-square';
     }
@@ -37,7 +39,6 @@ export const BentoTile: React.FC<BentoTileProps> = ({
     if (onDragStart) {
         setIsDragging(true);
         onDragStart(e);
-        // Optional: Custom drag image
     }
   };
 
@@ -47,7 +48,7 @@ export const BentoTile: React.FC<BentoTileProps> = ({
   };
 
   const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault(); // Necessary to allow dropping
+    e.preventDefault(); 
     if (!isDragOver) setIsDragOver(true);
   };
 
@@ -77,7 +78,7 @@ export const BentoTile: React.FC<BentoTileProps> = ({
       className={`
         relative group overflow-hidden rounded-3xl cursor-grab active:cursor-grabbing
         bg-[#0a0a0a]/40 backdrop-blur-xl border 
-        transition-all duration-300 ease-out
+        transition-all duration-300 ease-out w-full h-full
         ${getLayoutClasses()}
         ${isOneByOne || !showWidget ? 'flex flex-col items-center justify-center' : ''}
         
@@ -90,7 +91,7 @@ export const BentoTile: React.FC<BentoTileProps> = ({
       `}
       style={style}
     >
-      {/* Drag Handle Hint (Visible on hover for clarity) */}
+      {/* Drag Handle Hint */}
       <div className="absolute top-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-30 transition-opacity z-20 pointer-events-none">
          <GripHorizontal size={12} className="text-white" />
       </div>
@@ -98,7 +99,6 @@ export const BentoTile: React.FC<BentoTileProps> = ({
       {/* 1. Custom Widget View */}
       {showWidget ? (
         <div className="w-full h-full pointer-events-none">
-            {/* Pointer events none on children ensures drag events bubble up to the container */}
             {app.widgetComponent}
         </div>
       ) : (

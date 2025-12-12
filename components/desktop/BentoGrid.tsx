@@ -5,18 +5,14 @@ import { BentoTile } from './BentoTile';
 interface BentoGridProps {
   apps: AppDefinition[];
   onOpenApp: (id: string) => void;
-  onMoveApp?: (sourceId: string, targetId: string) => void; // New prop
+  onMoveApp?: (sourceId: string, targetId: string) => void;
 }
 
 export const BentoGrid: React.FC<BentoGridProps> = ({ apps, onOpenApp, onMoveApp }) => {
   
-  // Apps are now pre-sorted by useAppConfig based on user preference.
-  // We simply render them in order.
-
   const handleDragStart = useCallback((e: React.DragEvent, id: string) => {
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', id);
-    // Add a ghost image or styling class if needed
   }, []);
 
   const handleDrop = useCallback((e: React.DragEvent, targetId: string) => {
@@ -31,9 +27,11 @@ export const BentoGrid: React.FC<BentoGridProps> = ({ apps, onOpenApp, onMoveApp
   return (
     <div className="w-full max-w-[1600px] mx-auto px-4 md:px-8">
       {/* 
-         Grid Column Updates: 2 (mobile) -> 4 (tab) -> 6 (lap) -> 8 (desk)
+         Grid Column Updates: 
+         - Increased spacing (gap-4 -> gap-6) for a cleaner, luxury feel.
+         - grid-flow-row-dense ensures items pack tightly.
       */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3 md:gap-4 grid-flow-row-dense">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 md:gap-6 grid-flow-row-dense">
         {apps.map(app => (
           <BentoTile 
             key={app.id} 
