@@ -76,7 +76,7 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
     heroOffsetY: 0,
     heroRotation: 0,
     heroEffect: 'none',
-    heroEffectIntensity: 20,
+    heroEffectIntensity: 5,
     widgetStyle: 'standard',
     gridSize: '1x1'
   });
@@ -107,7 +107,7 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
       heroOffsetY: 0,
       heroRotation: 0,
       heroEffect: 'none',
-      heroEffectIntensity: 20,
+      heroEffectIntensity: 5,
       widgetStyle: 'standard',
       gridSize: '1x1'
     });
@@ -124,7 +124,7 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
         heroOffsetY: app.heroOffsetY ?? 0,
         heroRotation: app.heroRotation ?? 0,
         heroEffect: app.heroEffect ?? 'none',
-        heroEffectIntensity: app.heroEffectIntensity ?? 20,
+        heroEffectIntensity: app.heroEffectIntensity ?? 5,
         widgetStyle: app.widgetStyle || 'standard',
         gridSize: app.gridSize || '1x1'
     });
@@ -151,7 +151,7 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
       heroOffsetY: 0,
       heroRotation: 0,
       heroEffect: 'none',
-      heroEffectIntensity: 20,
+      heroEffectIntensity: 5,
       widgetStyle: 'standard',
       gridSize: '1x1'
     });
@@ -253,7 +253,7 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
               heroOffsetY: formData.heroOffsetY || 0,
               heroRotation: 0,
               heroEffect: 'none',
-              heroEffectIntensity: 20
+              heroEffectIntensity: 5
           });
       }
   };
@@ -478,30 +478,17 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
                                         {formData.heroIconName && (
                                             <div className="mt-2 pt-3 border-t border-white/5 space-y-4">
                                                 
-                                                {/* Visual Effect Mode - Full Width */}
-                                                <div className="space-y-2">
-                                                    <div className="text-[10px] text-slate-500 uppercase font-bold flex items-center gap-1"><Sparkles size={10} /> Visual Effect</div>
-                                                    <div className="grid grid-cols-3 gap-2">
-                                                        {[
-                                                            { id: 'none', label: 'None', icon: Ban },
-                                                            { id: 'shadow', label: 'Shadow', icon: Moon },
-                                                            { id: 'glow', label: 'Glow', icon: Sun },
-                                                        ].map(mode => (
-                                                            <button
-                                                                key={mode.id}
-                                                                onClick={() => setFormData({...formData, heroEffect: mode.id as HeroEffect})}
-                                                                className={`
-                                                                    flex items-center justify-center gap-2 p-2 rounded-lg border transition-all
-                                                                    ${formData.heroEffect === mode.id 
-                                                                        ? 'bg-amber-600 text-white border-amber-500 shadow-md' 
-                                                                        : 'bg-[#151515] border-white/5 text-slate-500 hover:text-slate-300'}
-                                                                `}
-                                                            >
-                                                                <mode.icon size={14} />
-                                                                <span className="text-[9px] font-bold uppercase">{mode.label}</span>
-                                                            </button>
-                                                        ))}
+                                                {/* Visual Effect Mode - Full Width Toggle */}
+                                                <div className="flex items-center justify-between">
+                                                    <div className="text-[10px] text-slate-500 uppercase font-bold flex items-center gap-1">
+                                                        <Sparkles size={10} /> Glow Effect
                                                     </div>
+                                                    <button 
+                                                        onClick={() => setFormData({...formData, heroEffect: formData.heroEffect === 'glow' ? 'none' : 'glow'})}
+                                                        className={`transition-colors duration-300 ${formData.heroEffect === 'glow' ? 'text-amber-500' : 'text-slate-600'}`}
+                                                    >
+                                                        {formData.heroEffect === 'glow' ? <ToggleRight size={24} /> : <ToggleLeft size={24} />}
+                                                    </button>
                                                 </div>
 
                                                 <div className="grid grid-cols-2 gap-x-6 gap-y-4">
@@ -548,16 +535,16 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
                                                     </div>
 
                                                     {/* Effect Intensity (Conditional, else Spacer) */}
-                                                    {formData.heroEffect && formData.heroEffect !== 'none' ? (
+                                                    {formData.heroEffect === 'glow' ? (
                                                         <div className="space-y-1 animate-in fade-in">
                                                             <div className="flex justify-between text-[10px] text-slate-500 uppercase font-bold">
                                                                 <span>Intensity</span>
-                                                                <span>{formData.heroEffectIntensity}px</span>
+                                                                <span>{formData.heroEffectIntensity}</span>
                                                             </div>
                                                             <input 
-                                                                type="range" min="5" max="100" step="5"
-                                                                value={formData.heroEffectIntensity || 20}
-                                                                onChange={(e) => setFormData({...formData, heroEffectIntensity: parseInt(e.target.value)})}
+                                                                type="range" min="0" max="10" step="0.5"
+                                                                value={formData.heroEffectIntensity || 5}
+                                                                onChange={(e) => setFormData({...formData, heroEffectIntensity: parseFloat(e.target.value)})}
                                                                 className="w-full h-1 bg-white/10 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-amber-500 [&::-webkit-slider-thumb]:rounded-full cursor-pointer hover:[&::-webkit-slider-thumb]:scale-125 transition-all"
                                                             />
                                                         </div>

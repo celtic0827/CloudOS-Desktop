@@ -174,7 +174,7 @@ export const DropZoneWidget: React.FC<{
   color,
   gridSize = '2x1',
   heroIcon: HeroIcon,
-  heroSettings = { scale: 8, opacity: 30, x: 40, y: 0, rotate: 0, effect: 'none', effectIntensity: 20 }
+  heroSettings = { scale: 8, opacity: 30, x: 40, y: 0, rotate: 0, effect: 'none', effectIntensity: 5 }
 }) => {
     
     const isVertical = gridSize === '1x2';
@@ -182,13 +182,15 @@ export const DropZoneWidget: React.FC<{
     // Calculate Filter for Effects
     // We apply the filter to the container, and opacity to the child SVG to keep shadows strong.
     let filter = 'none';
-    const intensity = heroSettings.effectIntensity || 20;
+    const rawIntensity = heroSettings.effectIntensity || 0;
     
-    if (heroSettings.effect === 'shadow') {
-        // Strong black shadow
-        filter = `drop-shadow(0px 10px ${intensity}px rgba(0,0,0,1))`;
-    } else if (heroSettings.effect === 'glow') {
+    // Multiplier to make 0-10 range look good in pixels.
+    // 5 -> 10px blur. 10 -> 20px blur.
+    const intensity = rawIntensity * 2; 
+
+    if (heroSettings.effect === 'glow') {
         // Bright white/amber glow. Using a mix helps visibility on dark bg.
+        // We use the calculated intensity for the spread.
         filter = `drop-shadow(0px 0px ${intensity}px rgba(255,255,255,0.8)) drop-shadow(0px 0px ${intensity * 0.5}px rgba(245,158,11,0.5))`;
     }
 
@@ -217,10 +219,7 @@ export const DropZoneWidget: React.FC<{
                         color: '#94a3b8' // Slate-400 equivalent
                     }}
                 >
-                    {/* Apply opacity here directly to the icon, allowing the shadow/glow (filter) to remain distinct if needed, 
-                        though drop-shadow naturally relies on alpha. 
-                        However, this structure ensures the filter is calculated on the transformed shape. 
-                    */}
+                    {/* Apply opacity here directly to the icon */}
                     <div style={{ opacity: heroSettings.opacity / 100 }}>
                         <HeroIcon size={24} strokeWidth={1} />
                     </div>
