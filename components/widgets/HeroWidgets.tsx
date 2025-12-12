@@ -40,12 +40,15 @@ export const ClockWidget: React.FC = () => {
   // Render Layouts based on Grid Size
   const size = clockConfig.gridSize || '2x2';
 
+  // Common Gradient Class for that "Original Desktop" look
+  const goldGradientText = "text-transparent bg-clip-text bg-gradient-to-b from-amber-400 via-amber-600 to-amber-800 drop-shadow-sm";
+
   // Layout: 1x1 (Mini Stack)
   if (size === '1x1') {
       return (
         <div className="w-full h-full flex flex-col justify-center items-center p-2 relative overflow-hidden bg-gradient-to-br from-amber-900/20 to-black/40">
            <div className="flex flex-col items-center leading-none">
-              <span className="text-2xl font-bold text-slate-100">{hour}</span>
+              <span className={`text-2xl font-bold ${goldGradientText}`}>{hour}</span>
               <span className="text-2xl font-light text-amber-500 opacity-90">{minute}</span>
            </div>
            {ampm && <span className="text-[9px] uppercase tracking-widest text-slate-500 mt-1">{ampm}</span>}
@@ -58,7 +61,7 @@ export const ClockWidget: React.FC = () => {
       return (
         <div className="w-full h-full flex items-center justify-between p-4 relative overflow-hidden">
              <div className="flex flex-col z-10">
-                <span className="text-4xl font-thin text-slate-100 tracking-tighter">{timeString}</span>
+                <span className={`text-4xl font-thin tracking-tighter ${goldGradientText}`}>{timeString}</span>
              </div>
              <div className="flex flex-col items-end z-10 border-l border-white/10 pl-4">
                 <span className="text-[10px] text-amber-500 font-bold uppercase tracking-widest">{clockConfig.label || 'Local'}</span>
@@ -78,7 +81,7 @@ export const ClockWidget: React.FC = () => {
                  <div className="p-1.5 bg-amber-500/10 rounded-full inline-block mb-2">
                      <ClockIcon size={12} className="text-amber-500" />
                  </div>
-                 <div className="text-2xl font-light text-slate-100 tracking-tight leading-none">{hour}:{minute}</div>
+                 <div className={`text-2xl font-light tracking-tight leading-none ${goldGradientText}`}>{hour}:{minute}</div>
                  {ampm && <div className="text-[10px] text-slate-500 uppercase mt-0.5">{ampm}</div>}
              </div>
              <div className="border-t border-white/10 pt-2 mb-2">
@@ -108,7 +111,7 @@ export const ClockWidget: React.FC = () => {
       </div>
 
       <div className="z-10">
-        <h1 className="text-5xl font-thin text-slate-100 tracking-tighter whitespace-nowrap">
+        <h1 className={`text-5xl font-thin tracking-tighter whitespace-nowrap ${goldGradientText}`}>
           {timeString}
         </h1>
         <p className="text-sm text-slate-500 font-medium mt-1 uppercase tracking-widest truncate">
