@@ -328,15 +328,10 @@ export const DropZoneWidget: React.FC<{
     // We apply the filter to the container, and opacity to the child SVG to keep shadows strong.
     let filter = 'none';
     const rawIntensity = heroSettings.effectIntensity || 0;
-    
-    // Multiplier to make 0-10 range look good in pixels.
     const intensity = rawIntensity * 2; 
-    
-    // Determine color (default to slate-400 if not set)
     const iconColor = heroSettings.color || '#94a3b8';
 
     if (heroSettings.effect === 'glow') {
-        // Bright glow using the same icon color, plus a standard white core
         filter = `drop-shadow(0px 0px ${intensity}px ${iconColor}) drop-shadow(0px 0px ${intensity * 0.5}px rgba(255,255,255,0.5))`;
     }
 
@@ -359,13 +354,10 @@ export const DropZoneWidget: React.FC<{
                             rotate(${heroSettings.rotate || 0}deg) 
                             scale(${heroSettings.scale})
                         `,
-                        // Apply filter here so it wraps the shape
                         filter: filter,
-                        // Color is set here
                         color: iconColor
                     }}
                 >
-                    {/* Apply opacity here directly to the icon */}
                     <div style={{ opacity: heroSettings.opacity / 100 }}>
                         <HeroIcon size={24} strokeWidth={1} />
                     </div>
@@ -374,15 +366,21 @@ export const DropZoneWidget: React.FC<{
 
             {/* CONTENT LAYER (Z-10) */}
             <div className={`flex flex-col z-10 min-w-0 ${isVertical ? 'items-center gap-3 mt-4' : ''}`}>
-                <div className={`
-                    w-12 h-12 rounded-2xl ${color} flex items-center justify-center shadow-lg ring-1 ring-white/10 backdrop-blur-sm
-                    group-hover:scale-110 transition-transform duration-300
-                `}>
-                    <MainIcon size={24} className="text-white" />
+                <div className="relative">
+                    {/* Glow Layer */}
+                    <div className={`absolute inset-0 rounded-2xl ${color} blur-xl opacity-0 group-hover:opacity-50 transition-all duration-500 brightness-150 saturate-150`} />
+                    
+                    {/* Icon Box */}
+                    <div className={`
+                        relative w-12 h-12 rounded-2xl ${color} flex items-center justify-center shadow-lg ring-1 ring-white/10 backdrop-blur-sm
+                        group-hover:scale-110 transition-transform duration-300
+                    `}>
+                        <MainIcon size={24} className="text-white" />
+                    </div>
                 </div>
                 
                 <div className={`${isVertical ? '' : 'ml-4'}`}>
-                     {/* For Horizontal, maybe push text to the left if graphic is right, handled by flex-row justify-between */}
+                     {/* Horizontal text handled by flex */}
                 </div>
             </div>
             
@@ -391,7 +389,7 @@ export const DropZoneWidget: React.FC<{
                  <span className="text-[10px] text-amber-500 uppercase tracking-widest font-bold mt-1.5 opacity-90">Open App</span>
             </div>
 
-            {/* Optional Overlay Gradient to ensure text readability if icon is too bright */}
+            {/* Overlay Gradient */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none z-0" />
         </div>
     );
@@ -411,9 +409,16 @@ export const StatusWidget: React.FC<{ name: string, icon: any, color: string, de
     if (isVertical) {
         return (
             <div className="w-full h-full flex flex-col items-center justify-center p-4 relative overflow-hidden group text-center">
-                 <div className={`w-12 h-12 rounded-2xl ${color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300 mb-3 relative z-10`}>
-                    <Icon size={24} className="text-white" />
+                 <div className="relative mb-3 z-10">
+                    {/* Glow Layer */}
+                    <div className={`absolute inset-0 rounded-2xl ${color} blur-xl opacity-0 group-hover:opacity-50 transition-all duration-500 brightness-150 saturate-150`} />
+                    
+                    {/* Icon Box */}
+                    <div className={`relative w-12 h-12 rounded-2xl ${color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                        <Icon size={24} className="text-white" />
+                    </div>
                  </div>
+
                  <div className="flex flex-col min-w-0 z-10">
                     <span className="text-sm font-bold text-slate-200 truncate leading-tight">{name}</span>
                     <span className="text-[10px] text-slate-500 truncate mt-1">{description || 'Shortcut'}</span>
@@ -428,9 +433,16 @@ export const StatusWidget: React.FC<{ name: string, icon: any, color: string, de
     return (
         <div className="w-full h-full flex flex-col justify-center p-4 relative overflow-hidden group">
              <div className="flex items-center gap-3 z-10">
-                <div className={`w-12 h-12 rounded-2xl ${color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                    <Icon size={24} className="text-white" />
+                <div className="relative">
+                    {/* Glow Layer */}
+                    <div className={`absolute inset-0 rounded-2xl ${color} blur-xl opacity-0 group-hover:opacity-50 transition-all duration-500 brightness-150 saturate-150`} />
+                    
+                    {/* Icon Box */}
+                    <div className={`relative w-12 h-12 rounded-2xl ${color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                        <Icon size={24} className="text-white" />
+                    </div>
                 </div>
+
                 <div className="flex flex-col min-w-0">
                     <span className="text-sm font-bold text-slate-200 truncate pr-2">{name}</span>
                     <span className="text-xs text-slate-500 truncate pr-2">{description || 'Shortcut'}</span>

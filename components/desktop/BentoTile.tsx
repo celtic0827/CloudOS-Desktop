@@ -22,8 +22,6 @@ export const BentoTile: React.FC<BentoTileProps> = ({
   const [isDragOver, setIsDragOver] = useState(false);
 
   // Determine Layout Classes based on Grid Size
-  // CRITICAL FIX: Only 1x1 and 2x2 should enforce aspect-square to drive the row heights.
-  // Spanning items (2x1, 1x2) must fill the available grid space (h-full w-full) to align perfectly with gaps.
   const getLayoutClasses = () => {
     switch (app.gridSize) {
       case '2x2': return 'col-span-2 row-span-2 aspect-square';
@@ -104,27 +102,44 @@ export const BentoTile: React.FC<BentoTileProps> = ({
       ) : (
         /* 2. Standard Icon View */
         <>
-           <div className={`
-              relative w-12 h-12 rounded-2xl flex items-center justify-center mb-3 pointer-events-none
-              ${app.color} 
-              shadow-lg group-hover:scale-110 transition-transform duration-300
-              border border-white/10 overflow-hidden
-           `}>
-             <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-black/10" />
-             
-             {app.iconUrl && !hasError ? (
-                <img 
-                  src={app.iconUrl} 
-                  alt={app.name} 
-                  className="w-6 h-6 object-contain z-10 drop-shadow-md"
-                  onError={() => setHasError(true)}
-                />
-             ) : (
-                React.createElement(app.icon || Globe, { size: 24, className: 'text-white z-10', strokeWidth: 1.5 })
-             )}
+           {/* Wrapper for Icon & Glow */}
+           <div className="relative mb-3 pointer-events-none">
+                {/* Glow Layer 
+                    Updates:
+                    - Removed mix-blend-screen (caused issues on dark glass)
+                    - Used brightness-150 saturate-150 to pop colors naturally
+                    - Adjusted opacity for smoother blend
+                */}
+                 <div className={`
+                    absolute inset-0 rounded-2xl ${app.color}
+                    blur-xl opacity-0 group-hover:opacity-60
+                    transition-all duration-500 scale-110 group-hover:scale-125
+                    brightness-150 saturate-150
+                 `} />
+
+                 {/* Main Icon Box */}
+                 <div className={`
+                    relative w-12 h-12 rounded-2xl flex items-center justify-center
+                    ${app.color} 
+                    shadow-lg group-hover:scale-110 transition-transform duration-300
+                    border border-white/10 overflow-hidden
+                 `}>
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-black/10" />
+                    
+                    {app.iconUrl && !hasError ? (
+                        <img 
+                        src={app.iconUrl} 
+                        alt={app.name} 
+                        className="w-6 h-6 object-contain z-10 drop-shadow-md"
+                        onError={() => setHasError(true)}
+                        />
+                    ) : (
+                        React.createElement(app.icon || Globe, { size: 24, className: 'text-white z-10', strokeWidth: 1.5 })
+                    )}
+                 </div>
            </div>
            
-           <span className="text-xs font-medium text-slate-300 group-hover:text-white transition-colors truncate w-full text-center px-3 pointer-events-none">
+           <span className="text-xs font-medium text-slate-300 group-hover:text-white transition-colors truncate w-full text-center px-3 pointer-events-none relative z-10">
              {app.name}
            </span>
         </>

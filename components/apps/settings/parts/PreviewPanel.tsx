@@ -62,14 +62,33 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
                     {formData.gridSize === '1x1' ? (
                         // Standard 1x1 Icon Tile
                         <div className="w-full h-full flex flex-col items-center justify-center relative group">
-                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-3 ${formData.color} shadow-lg relative z-10`}>
-                                {formData.iconUrl ? (
-                                    <img src={formData.iconUrl} alt="Preview" className="w-6 h-6 object-contain" />
-                                ) : (
-                                    <MainIconToRender size={24} className="text-white" />
-                                )}
+                            
+                            {/* Wrapper for Icon & Glow */}
+                            <div className="relative mb-3">
+                                {/* Glow Layer (Updated to match Desktop) */}
+                                <div className={`
+                                    absolute inset-0 rounded-2xl ${formData.color}
+                                    blur-xl opacity-0 group-hover:opacity-60 
+                                    transition-all duration-500 scale-110 group-hover:scale-125
+                                    brightness-150 saturate-150
+                                `} />
+
+                                {/* Icon Box */}
+                                <div className={`
+                                    relative w-12 h-12 rounded-2xl flex items-center justify-center 
+                                    ${formData.color} shadow-lg relative z-10
+                                    group-hover:scale-110 transition-transform duration-300
+                                    border border-white/10 overflow-hidden
+                                `}>
+                                    {formData.iconUrl ? (
+                                        <img src={formData.iconUrl} alt="Preview" className="w-6 h-6 object-contain" />
+                                    ) : (
+                                        <MainIconToRender size={24} className="text-white" />
+                                    )}
+                                </div>
                             </div>
-                            <span className="text-xs font-medium text-slate-300 truncate w-full text-center px-2">{formData.name || 'App Name'}</span>
+
+                            <span className="text-xs font-medium text-slate-300 truncate w-full text-center px-2 relative z-10">{formData.name || 'App Name'}</span>
                         </div>
                     ) : (
                         // Complex Widgets (Using Real Components)
