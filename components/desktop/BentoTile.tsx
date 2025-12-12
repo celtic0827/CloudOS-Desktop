@@ -8,6 +8,7 @@ interface BentoTileProps {
   style?: React.CSSProperties;
   onDragStart?: (e: React.DragEvent) => void;
   onDrop?: (e: React.DragEvent) => void;
+  isFlipped?: boolean; // New prop to handle bottom-up correction
 }
 
 export const BentoTile: React.FC<BentoTileProps> = ({ 
@@ -15,14 +16,14 @@ export const BentoTile: React.FC<BentoTileProps> = ({
   onClick, 
   style,
   onDragStart,
-  onDrop
+  onDrop,
+  isFlipped
 }) => {
   const [hasError, setHasError] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
 
   // Determine Layout Classes based on Grid Size
-  // Added aspect ratios to rectangular shapes to prevent flattening
   const getLayoutClasses = () => {
     switch (app.gridSize) {
       case '2x2': return 'col-span-2 row-span-2 aspect-square';
@@ -88,7 +89,11 @@ export const BentoTile: React.FC<BentoTileProps> = ({
         active:scale-[0.98] 
         text-left select-none
       `}
-      style={style}
+      style={{
+          ...style,
+          // Counter-flip if the grid is reversed (bottom-up mode)
+          transform: isFlipped ? 'scaleY(-1)' : style?.transform 
+      }}
     >
       {/* Drag Handle Hint */}
       <div className="absolute top-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-30 transition-opacity z-20 pointer-events-none">
@@ -105,11 +110,7 @@ export const BentoTile: React.FC<BentoTileProps> = ({
         <>
            {/* Wrapper for Icon & Glow */}
            <div className="relative mb-3 pointer-events-none">
-                {/* Glow Layer 
-                    Updates:
-                    - Base opacity increased to 20% (opacity-20) for ambient glow
-                    - Hover opacity remains higher (opacity-60)
-                */}
+                 {/* Glow Layer */}
                  <div className={`
                     absolute inset-0 rounded-2xl ${app.color}
                     blur-xl opacity-20 group-hover:opacity-60

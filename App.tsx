@@ -159,13 +159,17 @@ function App() {
                   stackingDirection={clockConfig.stackingDirection}
                />
                
-               {/* Optional: Visual hint that end of list is reached if many apps */}
+               {/* 
+                  Visual hint logic:
+                  - If stacking down (standard), the "End" is at the bottom (mt-12).
+                  - If stacking up (flipped), the "End" is actually physically at the top (order-first mb-12).
+               */}
                {allApps.length > 12 && (
                  <div className={`
                     text-slate-700 text-[10px] uppercase tracking-widest opacity-50 font-medium
                     ${isStackUp ? 'order-first mb-12 mt-0' : 'mt-12 mb-0'}
                  `}>
-                   {isStackUp ? 'Start of Workspace' : 'End of Workspace'}
+                   End of Workspace
                  </div>
                )}
             </div>

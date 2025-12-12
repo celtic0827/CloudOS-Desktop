@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback } from 'react';
 import { AppDefinition } from '../../types';
 import { BentoTile } from './BentoTile';
 
@@ -16,10 +16,11 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
   stackingDirection = 'down' 
 }) => {
   
-  // If stacking up (bottom-up), we reverse the visual order so the "first" items (Clock, etc) appear at the bottom
-  const displayApps = useMemo(() => {
-    return stackingDirection === 'up' ? [...apps].reverse() : apps;
-  }, [apps, stackingDirection]);
+  // NOTE: When stacking 'up', we DO NOT reverse the array anymore.
+  // Instead we flip the grid container. This allows CSS Grid auto-placement
+  // to fill "Row 1" first, which we visually position at the bottom via transform.
+  // This creates a natural "gravity" effect where items pile up from the floor.
+  const isStackUp = stackingDirection === 'up';
 
   const handleDragStart = useCallback((e: React.DragEvent, id: string) => {
     e.dataTransfer.effectAllowed = 'move';
@@ -41,15 +42,20 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
          Grid Column Updates: 
          - Increased spacing (gap-4 -> gap-6) for a cleaner, luxury feel.
          - grid-flow-row-dense ensures items pack tightly.
+         - Transform applied if stacking up to flip the grid coordinate system vertically.
       */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 md:gap-6 grid-flow-row-dense">
-        {displayApps.map(app => (
+      <div 
+        className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 md:gap-6 grid-flow-row-dense transition-transform duration-500"
+        style={isStackUp ? { transform: 'scaleY(-1)' } : undefined}
+      >
+        {apps.map(app => (
           <BentoTile 
             key={app.id} 
             app={app} 
             onClick={onOpenApp}
             onDragStart={(e) => handleDragStart(e, app.id)}
             onDrop={(e) => handleDrop(e, app.id)}
+            isFlipped={isStackUp} // Pass flip state so tile can correct its own orientation
           />
         ))}
       </div>
