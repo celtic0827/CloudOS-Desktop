@@ -16,10 +16,6 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
   stackingDirection = 'down' 
 }) => {
   
-  // NOTE: When stacking 'up', we DO NOT reverse the array anymore.
-  // Instead we flip the grid container. This allows CSS Grid auto-placement
-  // to fill "Row 1" first, which we visually position at the bottom via transform.
-  // This creates a natural "gravity" effect where items pile up from the floor.
   const isStackUp = stackingDirection === 'up';
 
   const handleDragStart = useCallback((e: React.DragEvent, id: string) => {
@@ -37,7 +33,8 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
   }, [onMoveApp]);
 
   return (
-    <div className="w-full max-w-[1600px] mx-auto px-4 md:px-8">
+    // Changed max-w-[1600px] to max-w-[1920px] for better 2K/Ultrawide support
+    <div className="w-full max-w-[1920px] mx-auto px-4 md:px-8 transition-all duration-300">
       {/* 
          Grid Column Updates: 
          - Increased spacing (gap-4 -> gap-6) for a cleaner, luxury feel.

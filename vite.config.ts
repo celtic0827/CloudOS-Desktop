@@ -25,27 +25,51 @@ export default defineConfig(({ mode }) => {
           manifest: {
             name: 'CloudOS Desktop',
             short_name: 'CloudOS',
-            description: 'A web-based desktop environment',
+            description: 'A professional web-based desktop environment with integrated AI tools.',
             theme_color: '#050505',
             background_color: '#050505',
             display: 'standalone',
+            display_override: ["window-controls-overlay", "standalone"],
             orientation: 'any',
             start_url: '/',
+            id: '/',
+            // PC Optimization: Screenshots allow the install prompt to look like a Store App
+            screenshots: [
+              {
+                src: "https://upload.cc/i1/2025/12/12/1TC9NI.jpg",
+                sizes: "1920x1080",
+                type: "image/jpg",
+                form_factor: "wide",
+                label: "CloudOS Desktop Interface"
+              },
+              {
+                src: "https://upload.cc/i1/2025/12/12/1TC9NI.jpg",
+                sizes: "1920x1080",
+                type: "image/jpg",
+                form_factor: "narrow", // Fallback for mobile views
+                label: "CloudOS Mobile View"
+              }
+            ],
             icons: [
               {
                 src: '/pwa-192x192.png',
                 sizes: '192x192',
                 type: 'image/png',
-                purpose: 'any maskable'
+                purpose: 'any' // 'any' keeps transparency for desktop icons
               },
               {
                 src: '/pwa-512x512.png',
                 sizes: '512x512',
                 type: 'image/png',
-                purpose: 'any maskable'
+                purpose: 'any'
+              },
+              {
+                src: '/pwa-512x512.png',
+                sizes: '512x512',
+                type: 'image/png',
+                purpose: 'maskable' // 'maskable' fills the square (Android/Windows Tiles)
               }
             ],
-            // Shortcuts allow right-click menu on the app icon in OS
             shortcuts: [
               {
                 name: "Settings",
@@ -53,9 +77,22 @@ export default defineConfig(({ mode }) => {
                 description: "Open System Settings",
                 url: "/?app=settings",
                 icons: [{ src: "/pwa-192x192.png", sizes: "192x192" }]
+              },
+              {
+                name: "AI Assistant",
+                short_name: "Gemini",
+                description: "Chat with Gemini AI",
+                url: "/?app=gemini-assistant",
+                icons: [{ src: "/pwa-192x192.png", sizes: "192x192" }]
               }
             ],
-            categories: ["productivity", "utilities", "personalization"]
+            categories: ["productivity", "utilities", "personalization"],
+            launch_handler: {
+                client_mode: "auto"
+            },
+            edge_side_panel: {
+                preferred_width: 480
+            }
           }
         })
       ],

@@ -1,19 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { FloatingDock } from './components/navigation/FloatingDock';
 import { GlassCard } from './components/ui/GlassCard';
+import { ContextMenu } from './components/ui/ContextMenu'; // Import ContextMenu
 import { WebFrame } from './components/apps/WebFrame';
 import { Settings } from './components/apps/Settings';
 import { DesktopBackground } from './components/desktop/DesktopBackground';
 import { BentoGrid } from './components/desktop/BentoGrid';
 import { useAppConfig } from './hooks/useAppConfig';
-import { useSystemConfig } from './hooks/useSystemConfig'; // Import here
+import { useSystemConfig } from './hooks/useSystemConfig';
 import { useWindowManager } from './hooks/useWindowManager';
 
 function App() {
-  // 1. Initialize System Config (Clock, etc.) at Top Level
+  // 1. Initialize System Config
   const { clockConfig, updateClockConfig } = useSystemConfig();
 
-  // 2. Pass clockConfig to useAppConfig so the Grid knows the correct sizes
+  // 2. App Config
   const { 
     userApps, 
     allApps, 
@@ -34,21 +35,42 @@ function App() {
     closeApp 
   } = useWindowManager();
 
-  // New State for Settings Context
   const [settingsContext, setSettingsContext] = useState<{tab?: string, appId?: string | null}>({});
+  
+  // Context Menu State
+  const [contextMenu, setContextMenu] = useState<{x: number, y: number} | null>(null);
+
+  // --- PC Optimization: Keyboard Shortcuts ---
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // ESC to close active window
+      if (e.key === 'Escape' && activeAppId) {
+        closeApp();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeAppId, closeApp]);
+
+  // --- PC Optimization: Right Click Handler ---
+  const handleContextMenu = useCallback((e: React.MouseEvent) => {
+    // Only trigger on the background/grid, not inside apps
+    // We rely on stopPropagation in app windows, but checking target helps
+    e.preventDefault();
+    setContextMenu({ x: e.clientX, y: e.clientY });
+  }, []);
+
+  const handleCloseContextMenu = () => setContextMenu(null);
 
   const handleOpenApp = (id: string) => {
       const app = allApps.find(a => a.id === id);
       
-      // Special Handling for Widgets (No Window)
-      // If it's a widget and NOT the AI (which has a chat window), open Settings
       if (app?.isWidget && app.id !== 'gemini-assistant') {
           setSettingsContext({ tab: 'widgets', appId: app.id });
           openApp('settings');
           return;
       }
       
-      // Default behavior
       if (app?.id === 'settings') {
           setSettingsContext({ tab: 'apps' });
       }
@@ -61,18 +83,16 @@ function App() {
   const renderAppContent = () => {
     if (!activeApp) return null;
 
-    // Special case: Settings App
     if (activeApp.id === 'settings') {
       return (
         <div className="flex items-center justify-center w-full h-full pointer-events-none p-4 pb-[env(safe-area-inset-bottom)]">
-          {/* Increased Size for better layout (1280x850) */}
           <div className="w-[1280px] h-[850px] max-w-full max-h-full pointer-events-auto transition-all duration-300">
             <GlassCard className="w-full h-full flex flex-col overflow-hidden shadow-2xl !bg-[#0a0a0a] !border-amber-500/20 !shadow-black/50">
               <Settings 
                 userApps={userApps}
                 activeWidgetIds={activeWidgetIds}
-                clockConfig={clockConfig} // Pass current config
-                onUpdateClockConfig={updateClockConfig} // Pass updater
+                clockConfig={clockConfig} 
+                onUpdateClockConfig={updateClockConfig} 
                 onAddApp={addApp}
                 onUpdateApp={updateApp}
                 onDeleteApp={deleteApp}
@@ -89,7 +109,6 @@ function App() {
       );
     }
 
-    // Priority 1: Internal Components (e.g. Gemini Chat)
     if (activeApp.component) {
       return (
         <div className="p-4 md:p-8 w-full h-full pb-[calc(2rem+env(safe-area-inset-bottom))]">
@@ -100,7 +119,6 @@ function App() {
       );
     }
 
-    // Priority 2: External Web Frames
     if (activeApp.isExternal && activeApp.url) {
       return (
         <WebFrame 
@@ -118,14 +136,32 @@ function App() {
   const isStackUp = clockConfig.stackingDirection === 'up';
 
   return (
-    <div className="relative w-screen h-[100dvh] overflow-hidden bg-[#020202] font-sans text-slate-900 selection:bg-amber-500/30">
+    <div 
+      className="relative w-screen h-[100dvh] overflow-hidden bg-[#020202] font-sans text-slate-900 selection:bg-amber-500/30"
+      onContextMenu={handleContextMenu} // Capture right click globally
+      onClick={handleCloseContextMenu} // Left click closes menu
+    >
       
       <DesktopBackground />
+
+      {/* Context Menu (Conditional Render) */}
+      {contextMenu && (
+        <ContextMenu 
+          x={contextMenu.x} 
+          y={contextMenu.y} 
+          onClose={handleCloseContextMenu}
+          onOpenSettings={() => {
+              setSettingsContext({ tab: 'apps' });
+              openApp('settings');
+          }}
+          onResetLayout={resetApps}
+        />
+      )}
 
       {/* Main Content Area */}
       <main className="relative z-10 w-full h-full flex flex-col">
         
-        {/* Desktop View (Scrollable Bento Grid) */}
+        {/* Desktop View */}
         <div 
           className={`
             flex-1 w-full relative
@@ -133,21 +169,13 @@ function App() {
             ${activeAppId ? 'opacity-0 scale-95 pointer-events-none blur-sm' : 'opacity-100 scale-100 blur-0'}
           `}
         >
-          {/* Scrollable Container */}
           <div 
             className="w-full h-full overflow-y-auto scrollbar-hide"
             style={{ 
-              // Mask image creates the fading effect at top and bottom
               maskImage: 'linear-gradient(to bottom, transparent, black 5%, black 90%, transparent)',
               WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 5%, black 90%, transparent)'
             }}
           >
-            {/* Inner Wrapper for Centering & Padding */}
-            {/* 
-                Alignment Logic:
-                - Down (Standard): justify-start (Align to Top), pt-24 (Top Padding), pb-32 (Bottom space for dock/scroll)
-                - Up (Bottom Up): justify-end (Align to Bottom), pt-32 (Top space for scroll), pb-28 (Bottom Padding above dock)
-            */}
             <div className={`
                 min-h-full flex flex-col items-center p-6 transition-all duration-500
                 ${isStackUp ? 'justify-end pt-32 pb-28' : 'justify-start pt-24 pb-32'}
@@ -159,29 +187,25 @@ function App() {
                   stackingDirection={clockConfig.stackingDirection}
                />
                
-               {/* 
-                  Visual hint logic:
-                  - If stacking down (standard), the "End" is at the bottom (mt-12).
-                  - If stacking up (flipped), the "End" is actually physically at the top (order-first mb-12).
-               */}
                {allApps.length > 12 && (
                  <div className={`
                     text-slate-700 text-[10px] uppercase tracking-widest opacity-50 font-medium
                     ${isStackUp ? 'order-first mb-12 mt-0' : 'mt-12 mb-0'}
                  `}>
-                   End of Workspace
+                   {isStackUp ? 'Start of Workspace' : 'End of Workspace'}
                  </div>
                )}
             </div>
           </div>
         </div>
 
-        {/* Active App Window Container */}
+        {/* Active App Window */}
         <div 
           className={`
             absolute inset-0 transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1) z-20
             ${activeAppId && isAppOpen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-12 scale-95 pointer-events-none'}
           `}
+          onContextMenu={(e) => e.stopPropagation()} // Allow default browser menu inside apps if needed, or customize
         >
           {activeApp && renderAppContent()}
         </div>
