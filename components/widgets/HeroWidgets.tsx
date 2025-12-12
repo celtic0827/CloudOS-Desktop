@@ -111,7 +111,8 @@ const AnalogClock: React.FC<{ time: Date, className?: string, opacity?: number }
                 </g>
 
                 {/* 4. Second Hand (Antique Gold Needle) */}
-                <g transform={`rotate(${secondDeg} 100 100)`} filter="url(#metalGlow)">
+                {/* Updated: Added opacity="0.5" for semi-transparent look */}
+                <g transform={`rotate(${secondDeg} 100 100)`} filter="url(#metalGlow)" opacity="0.5">
                     <line x1="100" y1="110" x2="100" y2="20" stroke={secondHandColor} strokeWidth="1" />
                     <circle cx="100" cy="100" r="2" fill={secondHandColor} />
                 </g>
