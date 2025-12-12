@@ -3,6 +3,100 @@ import { Sparkles, ArrowRight, Upload, Calendar, Clock as ClockIcon } from 'luci
 import { useSystemConfig } from '../../hooks/useSystemConfig';
 import { GridSize, HeroEffect } from '../../types';
 
+// --- Helper: Luxury Analog Clock Component ---
+const AnalogClock: React.FC<{ time: Date, className?: string, opacity?: number }> = ({ time, className = "", opacity = 1 }) => {
+    // Calculate angles
+    const seconds = time.getSeconds();
+    const minutes = time.getMinutes();
+    const hours = time.getHours();
+
+    const secondDeg = seconds * 6;
+    const minuteDeg = minutes * 6 + seconds * 0.1;
+    const hourDeg = (hours % 12) * 30 + minutes * 0.5;
+
+    // Colors
+    const goldColor = "#b45309"; // Amber-700 (Dark Gold)
+    const tickColor = "#78350f"; // Amber-900 (Deep Bronze)
+    
+    return (
+        <div className={`relative ${className}`} style={{ opacity }}>
+            <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-xl">
+                <defs>
+                    {/* Glow Effects for Gems */}
+                    <filter id="rubyGlow" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur stdDeviation="2" result="blur" />
+                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                    </filter>
+                    <filter id="sapphireGlow" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur stdDeviation="2" result="blur" />
+                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                    </filter>
+                </defs>
+
+                {/* 1. Ticks (No Face/Frame) */}
+                {/* Minute Ticks (Small) */}
+                {[...Array(60)].map((_, i) => (
+                    i % 5 !== 0 && (
+                        <line 
+                            key={`m-${i}`}
+                            x1="100" y1="15" x2="100" y2="18"
+                            transform={`rotate(${i * 6} 100 100)`}
+                            stroke={tickColor}
+                            strokeWidth="1"
+                            opacity="0.5"
+                        />
+                    )
+                ))}
+                {/* Hour Ticks (Large, Dark Gold) */}
+                {[...Array(12)].map((_, i) => (
+                    <line 
+                        key={`h-${i}`}
+                        x1="100" y1="10" x2="100" y2="25"
+                        transform={`rotate(${i * 30} 100 100)`}
+                        stroke={goldColor}
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                    />
+                ))}
+
+                {/* 2. Hour Hand (Ruby Tip) */}
+                <g transform={`rotate(${hourDeg} 100 100)`}>
+                    {/* Shaft */}
+                    <line x1="100" y1="100" x2="100" y2="55" stroke={goldColor} strokeWidth="3" strokeLinecap="round" />
+                    {/* Gem Mount */}
+                    <rect x="97" y="55" width="6" height="4" fill={goldColor} />
+                    {/* Ruby Gem */}
+                    <rect x="98" y="40" width="4" height="15" fill="#991b1b" stroke={goldColor} strokeWidth="0.5" filter="url(#rubyGlow)" />
+                    {/* Gem Reflection */}
+                    <rect x="99" y="42" width="1" height="8" fill="#fca5a5" opacity="0.6" />
+                </g>
+
+                {/* 3. Minute Hand (Sapphire Tip) */}
+                <g transform={`rotate(${minuteDeg} 100 100)`}>
+                    {/* Shaft */}
+                    <line x1="100" y1="100" x2="100" y2="45" stroke={goldColor} strokeWidth="2" strokeLinecap="round" />
+                    {/* Gem Mount */}
+                    <rect x="98" y="45" width="4" height="4" fill={goldColor} />
+                    {/* Sapphire Gem */}
+                    <rect x="98.5" y="25" width="3" height="20" fill="#1e3a8a" stroke={goldColor} strokeWidth="0.5" filter="url(#sapphireGlow)" />
+                     {/* Gem Reflection */}
+                     <rect x="99.5" y="27" width="1" height="12" fill="#93c5fd" opacity="0.6" />
+                </g>
+
+                {/* 4. Second Hand (Simple Gold Needle) */}
+                <g transform={`rotate(${secondDeg} 100 100)`}>
+                    <line x1="100" y1="110" x2="100" y2="20" stroke="#f59e0b" strokeWidth="1" />
+                    <circle cx="100" cy="100" r="2" fill="#f59e0b" />
+                </g>
+
+                {/* Center Cap */}
+                <circle cx="100" cy="100" r="4" fill="#1c1917" stroke={goldColor} strokeWidth="2" />
+            </svg>
+        </div>
+    );
+};
+
+
 // --- 1. The Hero Clock Widget (Responsive to GridSize) ---
 export const ClockWidget: React.FC = () => {
   const [time, setTime] = useState(new Date());
@@ -46,12 +140,17 @@ export const ClockWidget: React.FC = () => {
   // Layout: 1x1 (Mini Stack)
   if (size === '1x1') {
       return (
-        <div className="w-full h-full flex flex-col justify-center items-center p-2 relative overflow-hidden bg-gradient-to-br from-amber-900/20 to-black/40">
-           <div className="flex flex-col items-center leading-none">
+        <div className="w-full h-full flex flex-col justify-center items-center p-2 relative overflow-hidden bg-gradient-to-br from-amber-900/20 to-black/40 group">
+           {/* Background Analog */}
+           <div className="absolute inset-0 flex items-center justify-center opacity-30 scale-125 group-hover:scale-110 group-hover:opacity-40 transition-all duration-500">
+                <AnalogClock time={time} />
+           </div>
+           
+           <div className="flex flex-col items-center leading-none z-10 relative">
               <span className={`text-2xl font-bold ${goldGradientText}`}>{hour}</span>
               <span className="text-2xl font-light text-amber-500 opacity-90">{minute}</span>
            </div>
-           {ampm && <span className="text-[9px] uppercase tracking-widest text-slate-500 mt-1">{ampm}</span>}
+           {ampm && <span className="text-[9px] uppercase tracking-widest text-slate-500 mt-1 z-10 relative">{ampm}</span>}
         </div>
       );
   }
@@ -59,16 +158,19 @@ export const ClockWidget: React.FC = () => {
   // Layout: 2x1 (Horizontal Wide)
   if (size === '2x1') {
       return (
-        <div className="w-full h-full flex items-center justify-between p-4 relative overflow-hidden">
+        <div className="w-full h-full flex items-center justify-between p-4 relative overflow-hidden group">
+             {/* Analog Clock Positioned Right */}
+             <div className="absolute right-[-20px] top-[-20px] bottom-[-20px] w-[180px] opacity-40 group-hover:opacity-60 transition-opacity duration-500">
+                 <AnalogClock time={time} />
+             </div>
+
              <div className="flex flex-col z-10">
                 <span className={`text-4xl font-thin tracking-tighter ${goldGradientText}`}>{timeString}</span>
              </div>
-             <div className="flex flex-col items-end z-10 border-l border-white/10 pl-4">
+             <div className="flex flex-col items-end z-10 border-l border-white/10 pl-4 bg-black/20 backdrop-blur-sm rounded-l-xl p-2">
                 <span className="text-[10px] text-amber-500 font-bold uppercase tracking-widest">{clockConfig.label || 'Local'}</span>
                 <span className="text-xs text-slate-400 font-medium whitespace-nowrap">{dateString}</span>
              </div>
-             {/* Decor */}
-             <div className="absolute -right-4 -bottom-4 w-16 h-16 bg-amber-500/10 rounded-full blur-xl" />
         </div>
       );
   }
@@ -76,15 +178,20 @@ export const ClockWidget: React.FC = () => {
   // Layout: 1x2 (Vertical Tall)
   if (size === '1x2') {
       return (
-        <div className="w-full h-full flex flex-col justify-between p-3 relative overflow-hidden text-center">
-             <div className="mt-2">
-                 <div className="p-1.5 bg-amber-500/10 rounded-full inline-block mb-2">
+        <div className="w-full h-full flex flex-col justify-between p-3 relative overflow-hidden text-center group">
+             {/* Analog Clock centered in background */}
+             <div className="absolute top-[10%] left-[-20%] right-[-20%] h-[200px] opacity-30 group-hover:opacity-50 transition-opacity duration-500">
+                 <AnalogClock time={time} />
+             </div>
+
+             <div className="mt-2 z-10">
+                 <div className="p-1.5 bg-amber-500/10 rounded-full inline-block mb-2 backdrop-blur-md border border-amber-500/20">
                      <ClockIcon size={12} className="text-amber-500" />
                  </div>
                  <div className={`text-2xl font-light tracking-tight leading-none ${goldGradientText}`}>{hour}:{minute}</div>
                  {ampm && <div className="text-[10px] text-slate-500 uppercase mt-0.5">{ampm}</div>}
              </div>
-             <div className="border-t border-white/10 pt-2 mb-2">
+             <div className="border-t border-white/10 pt-2 mb-2 z-10">
                  <div className="text-xs text-slate-300 font-medium leading-tight">{time.toLocaleDateString([], { weekday: 'short', timeZone: clockConfig.timezone })}</div>
                  <div className="text-lg font-bold text-amber-500 leading-none">{time.toLocaleDateString([], { day: 'numeric', timeZone: clockConfig.timezone })}</div>
              </div>
@@ -95,10 +202,15 @@ export const ClockWidget: React.FC = () => {
   // Layout: 2x2 (Standard Hero)
   return (
     <div className="w-full h-full flex flex-col justify-between p-6 relative overflow-hidden group">
-      {/* Background Decor */}
-      <div className="absolute top-[-20%] right-[-20%] w-32 h-32 bg-amber-500/20 rounded-full blur-3xl group-hover:bg-amber-500/30 transition-all duration-500" />
       
-      <div className="flex justify-between items-start z-10">
+      {/* --- Visual Analog Clock (Hero Position) --- */}
+      {/* Positioned to the right side, large and luxurious */}
+      <div className="absolute top-[-10%] right-[-10%] w-[120%] h-[120%] md:w-[240px] md:h-[240px] md:top-1/2 md:-translate-y-1/2 md:right-[-20px] transition-transform duration-700 ease-out group-hover:scale-105 opacity-90">
+         <AnalogClock time={time} />
+      </div>
+      
+      {/* Header Info */}
+      <div className="flex justify-between items-start z-10 relative">
         <div className="flex flex-col">
             <span className="text-amber-500 font-bold tracking-widest text-[10px] uppercase truncate max-w-[120px]">
               {clockConfig.label || 'Local Time'}
@@ -107,16 +219,20 @@ export const ClockWidget: React.FC = () => {
               {clockConfig.timezone.split('/')[1]?.replace('_', ' ') || clockConfig.timezone}
             </span>
         </div>
-        <ClockIcon size={16} className="text-amber-500/50" />
+        {/* Removed standard Icon, the Analog clock is the icon now */}
       </div>
 
-      <div className="z-10">
-        <h1 className={`text-5xl font-thin tracking-tighter whitespace-nowrap ${goldGradientText}`}>
-          {timeString}
-        </h1>
-        <p className="text-sm text-slate-500 font-medium mt-1 uppercase tracking-widest truncate">
-          {dateString}
-        </p>
+      {/* Digital Time Overlay */}
+      <div className="z-10 relative mt-auto">
+        {/* Added a subtle backdrop to ensure text is readable over the clock hands if they overlap */}
+        <div className="inline-block">
+            <h1 className={`text-5xl font-thin tracking-tighter whitespace-nowrap ${goldGradientText} drop-shadow-2xl`}>
+            {timeString}
+            </h1>
+            <p className="text-sm text-slate-400 font-medium mt-1 uppercase tracking-widest truncate pl-1">
+            {dateString}
+            </p>
+        </div>
       </div>
     </div>
   );
