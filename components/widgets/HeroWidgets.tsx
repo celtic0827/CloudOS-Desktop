@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Sparkles, ArrowRight, Upload, Calendar, Clock as ClockIcon } from 'lucide-react';
 import { useSystemConfig } from '../../hooks/useSystemConfig';
+import { GridSize } from '../../types';
 
 // --- 1. The Hero Clock Widget (Responsive to GridSize) ---
 export const ClockWidget: React.FC = () => {
@@ -150,31 +151,104 @@ export const AIWidget: React.FC = () => {
     );
 };
 
-// --- 3. The "Drop Zone" Widget (2x1) ---
-export const DropZoneWidget: React.FC<{ name: string, icon: any, color: string }> = ({ name, icon: Icon, color }) => {
+// --- 3. The "Hero Graphic" Widget (Replaces old DropZone) ---
+// Renders Main Icon + Background Illustration (Scale/Opacity/Offset)
+export const DropZoneWidget: React.FC<{ 
+  name: string, 
+  icon: any, 
+  color: string, 
+  gridSize?: GridSize,
+  heroIcon?: any,
+  heroSettings?: {
+      scale: number,
+      opacity: number,
+      x: number,
+      y: number
+  }
+}> = ({ 
+  name, 
+  icon: MainIcon, 
+  color,
+  gridSize = '2x1',
+  heroIcon: HeroIcon,
+  heroSettings = { scale: 8, opacity: 30, x: 40, y: 0 }
+}) => {
+    
+    const isVertical = gridSize === '1x2';
+
     return (
-        <div className="w-full h-full flex items-center justify-between p-4 relative overflow-hidden group">
-            <div className="flex items-center gap-3 z-10">
-                <div className={`w-10 h-10 rounded-xl ${color} flex items-center justify-center shadow-lg`}>
-                    <Icon size={20} className="text-white" />
+        <div className={`w-full h-full flex p-4 relative overflow-hidden group ${isVertical ? 'flex-col justify-between items-center text-center' : 'flex-row items-center justify-between'}`}>
+            
+            {/* BACKGROUND GRAPHIC (Hero Icon) */}
+            {HeroIcon && (
+                <div 
+                    className="absolute z-0 pointer-events-none text-slate-400 origin-center transition-all duration-500 ease-out"
+                    style={{
+                        top: '50%',
+                        left: '50%',
+                        marginTop: '-12px', // Half of base size (24px)
+                        marginLeft: '-12px',
+                        transform: `translate(${heroSettings.x}px, ${heroSettings.y}px) scale(${heroSettings.scale})`,
+                        opacity: heroSettings.opacity / 100
+                    }}
+                >
+                    <HeroIcon size={24} strokeWidth={1} />
                 </div>
-                <div className="flex flex-col">
-                    <span className="text-sm font-bold text-slate-200">{name}</span>
-                    <span className="text-[10px] text-amber-500 uppercase tracking-wider font-bold">Ready</span>
+            )}
+
+            {/* CONTENT LAYER (Z-10) */}
+            <div className={`flex flex-col z-10 min-w-0 ${isVertical ? 'items-center gap-3 mt-4' : ''}`}>
+                <div className={`
+                    w-10 h-10 rounded-xl ${color} flex items-center justify-center shadow-lg ring-1 ring-white/10 backdrop-blur-sm
+                    group-hover:scale-110 transition-transform duration-300
+                `}>
+                    <MainIcon size={20} className="text-white" />
+                </div>
+                
+                <div className={`${isVertical ? '' : 'ml-4'}`}>
+                     {/* For Horizontal, maybe push text to the left if graphic is right, handled by flex-row justify-between */}
                 </div>
             </div>
             
-            {/* Visual Drop Hint */}
-            <div className="h-full w-24 border-2 border-dashed border-white/10 rounded-lg flex flex-col items-center justify-center gap-1 group-hover:border-amber-500/50 group-hover:bg-amber-500/5 transition-all">
-                <Upload size={14} className="text-slate-500 group-hover:text-amber-400 transition-colors" />
-                <span className="text-[9px] text-slate-600 uppercase font-bold">Drop</span>
+            <div className={`z-10 flex flex-col ${isVertical ? 'mb-2' : 'items-end text-right'}`}>
+                 <span className="text-base font-bold text-slate-100 leading-none drop-shadow-md">{name}</span>
+                 <span className="text-[10px] text-amber-500 uppercase tracking-widest font-bold mt-1.5 opacity-90">Open App</span>
             </div>
+
+            {/* Optional Overlay Gradient to ensure text readability if icon is too bright */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none z-0" />
         </div>
     );
 };
 
-// --- 4. The "Status" Widget (2x1) ---
-export const StatusWidget: React.FC<{ name: string, icon: any, color: string, description: string }> = ({ name, icon: Icon, color, description }) => {
+// --- 4. The "Status/Card" Widget ---
+// Standard layout without extra graphic
+export const StatusWidget: React.FC<{ name: string, icon: any, color: string, description: string, gridSize?: GridSize }> = ({ 
+    name, 
+    icon: Icon, 
+    color, 
+    description,
+    gridSize = '2x1'
+}) => {
+    const isVertical = gridSize === '1x2';
+
+    if (isVertical) {
+        return (
+            <div className="w-full h-full flex flex-col items-center justify-center p-4 relative overflow-hidden group text-center">
+                 <div className={`w-12 h-12 rounded-2xl ${color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300 mb-3 relative z-10`}>
+                    <Icon size={24} className="text-white" />
+                 </div>
+                 <div className="flex flex-col min-w-0 z-10">
+                    <span className="text-sm font-bold text-slate-200 truncate leading-tight">{name}</span>
+                    <span className="text-[10px] text-slate-500 truncate mt-1">{description || 'Shortcut'}</span>
+                 </div>
+                 {/* Bg Glow */}
+                 <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+        );
+    }
+
+    // Default Horizontal (2x1)
     return (
         <div className="w-full h-full flex flex-col justify-center p-4 relative overflow-hidden group">
              <div className="flex items-center gap-3 z-10">
@@ -183,7 +257,7 @@ export const StatusWidget: React.FC<{ name: string, icon: any, color: string, de
                 </div>
                 <div className="flex flex-col min-w-0">
                     <span className="text-sm font-bold text-slate-200 truncate pr-2">{name}</span>
-                    <span className="text-xs text-slate-500 truncate pr-2">{description || 'Active'}</span>
+                    <span className="text-xs text-slate-500 truncate pr-2">{description || 'Shortcut'}</span>
                 </div>
             </div>
             <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />

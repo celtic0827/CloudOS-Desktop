@@ -65,7 +65,8 @@ function App() {
     if (activeApp.id === 'settings') {
       return (
         <div className="flex items-center justify-center w-full h-full pointer-events-none p-4 pb-[env(safe-area-inset-bottom)]">
-          <div className="w-[900px] h-[600px] max-w-full max-h-full pointer-events-auto">
+          {/* Increased Size for better layout (1280x850) */}
+          <div className="w-[1280px] h-[850px] max-w-full max-h-full pointer-events-auto transition-all duration-300">
             <GlassCard className="w-full h-full flex flex-col overflow-hidden shadow-2xl !bg-[#0a0a0a] !border-amber-500/20 !shadow-black/50">
               <Settings 
                 userApps={userApps}

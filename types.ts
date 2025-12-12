@@ -2,7 +2,7 @@ import { LucideIcon } from 'lucide-react';
 import { ReactNode } from 'react';
 
 export type GridSize = '1x1' | '2x1' | '1x2' | '2x2' | '4x2';
-export type WidgetStyle = 'standard' | 'status' | 'dropzone';
+export type WidgetStyle = 'standard' | 'vertical' | 'status' | 'dropzone' | 'horizontal';
 
 export interface ClockConfig {
   timezone: string;
@@ -17,6 +17,14 @@ export interface AppConfig {
   url: string;
   iconUrl?: string;
   iconName?: string;
+  heroIconName?: string; // New: Extra graphic for hero widgets
+  
+  // Hero Graphic Customization
+  heroScale?: number;    // 1 to 20
+  heroOpacity?: number;  // 0 to 100
+  heroOffsetX?: number;  // -200 to 200
+  heroOffsetY?: number;  // -200 to 200
+  
   color: string;
   description: string;
   gridSize?: GridSize;

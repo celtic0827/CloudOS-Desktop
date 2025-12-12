@@ -8,7 +8,8 @@ import {
   ShoppingCart, CreditCard, Map, Gift, Coffee, Sun, Moon, Zap, Shield, Lock,
   Gamepad2, Radio, Tv, Briefcase, LucideIcon,
   Mic, Speaker, Battery, Bluetooth, Signal, Mouse, Keyboard, 
-  Printer, HardDrive, FolderOpen, FileCode, TerminalSquare, Command, Sparkles
+  Printer, HardDrive, FolderOpen, FileCode, TerminalSquare, Command, Sparkles,
+  LayoutTemplate
 } from 'lucide-react';
 import { GeminiChat } from './components/apps/GeminiChat';
 import { ClockWidget, AIWidget, DropZoneWidget, StatusWidget } from './components/widgets/HeroWidgets';
@@ -24,7 +25,7 @@ export const getFavicon = (url: string) => {
 };
 
 export const ICON_LIBRARY: Record<string, LucideIcon> = {
-  Globe, Home, Search, User, Star, Heart, Sparkles,
+  Globe, Home, Search, User, Star, Heart, Sparkles, LayoutTemplate,
   FileText, Mail, Calendar, Calculator, Briefcase, Archive,
   Image, Music, Video, Headphones, Camera, Gamepad2, Radio, Tv,
   Cpu, Database, Cloud, Wifi, Terminal, Code, Laptop, Smartphone,
@@ -53,8 +54,13 @@ export const DEFAULT_USER_APPS: AppConfig[] = [
     description: 'Drop images to convert',
     iconUrl: '',
     iconName: 'Image',
+    heroIconName: 'Image', 
+    heroScale: 8,
+    heroOpacity: 25,
+    heroOffsetX: 50,
+    heroOffsetY: 20,
     gridSize: '2x1',
-    widgetStyle: 'dropzone'
+    widgetStyle: 'horizontal'
   },
   {
     id: 'comfy-meta',
@@ -119,22 +125,56 @@ export const configToDefinition = (config: AppConfig): AppDefinition => {
   const ResolvedIcon = (config.iconName && ICON_LIBRARY[config.iconName]) 
     ? ICON_LIBRARY[config.iconName] 
     : Globe;
+  
+  // Legacy support for 'dropzone' -> horizontal + hero icon logic
+  let heroIconName = config.heroIconName;
+  if (config.widgetStyle === 'dropzone' && !heroIconName) {
+      heroIconName = 'Upload'; // Default for legacy dropzones
+  }
+
+  const HeroIcon = (heroIconName && ICON_LIBRARY[heroIconName])
+    ? ICON_LIBRARY[heroIconName]
+    : undefined;
 
   let WidgetComp = undefined;
   
-  const style = config.widgetStyle || 'standard';
-
-  if (style === 'dropzone') {
-      WidgetComp = <DropZoneWidget name={config.name} icon={ResolvedIcon} color={config.color} />;
-  } else if (style === 'status') {
-      WidgetComp = <StatusWidget name={config.name} icon={ResolvedIcon} color={config.color} description={config.description} />;
+  // Normalize Style
+  const style = config.widgetStyle === 'dropzone' ? 'horizontal' : (config.widgetStyle || 'standard');
+  let finalGridSize = config.gridSize;
+  
+  // Default sizes if missing
+  if (!finalGridSize) {
+      if (style === 'status' || style === 'horizontal') {
+          finalGridSize = '2x1';
+      } else if (style === 'vertical') {
+          finalGridSize = '1x2';
+      } else {
+          finalGridSize = '1x1';
+      }
   }
 
-  let finalGridSize = config.gridSize;
-  if (style === 'dropzone' || style === 'status') {
-      finalGridSize = '2x1';
-  } else {
-      finalGridSize = '1x1';
+  // Determine Component
+  // If style is standard (1x1), no widget component (just icon).
+  if (style !== 'standard') {
+      // If we have a Hero Icon, use the Hero/Drop layout (Graphic + Text)
+      if (HeroIcon) {
+          WidgetComp = <DropZoneWidget 
+            name={config.name} 
+            icon={ResolvedIcon} 
+            color={config.color} 
+            gridSize={finalGridSize} 
+            heroIcon={HeroIcon}
+            heroSettings={{
+                scale: config.heroScale ?? 8,
+                opacity: config.heroOpacity ?? 30,
+                x: config.heroOffsetX ?? 40,
+                y: config.heroOffsetY ?? 0
+            }}
+          />;
+      } else {
+          // Otherwise use Status/Card layout (Icon + Text)
+          WidgetComp = <StatusWidget name={config.name} icon={ResolvedIcon} color={config.color} description={config.description} gridSize={finalGridSize} />;
+      }
   }
 
   return {
@@ -147,7 +187,7 @@ export const configToDefinition = (config: AppConfig): AppDefinition => {
     url: config.url,
     isExternal: true,
     isSystem: false,
-    gridSize: finalGridSize || '1x1',
+    gridSize: finalGridSize,
     widgetComponent: WidgetComp
   };
 };
