@@ -22,12 +22,13 @@ export const BentoTile: React.FC<BentoTileProps> = ({
   const [isDragOver, setIsDragOver] = useState(false);
 
   // Determine Layout Classes based on Grid Size
+  // Added aspect ratios to rectangular shapes to prevent flattening
   const getLayoutClasses = () => {
     switch (app.gridSize) {
       case '2x2': return 'col-span-2 row-span-2 aspect-square';
-      case '2x1': return 'col-span-2 row-span-1'; 
-      case '1x2': return 'col-span-1 row-span-2';
-      case '4x2': return 'col-span-2 row-span-2 md:col-span-4 md:row-span-2';
+      case '2x1': return 'col-span-2 row-span-1 aspect-[2/1]'; 
+      case '1x2': return 'col-span-1 row-span-2 aspect-[1/2]';
+      case '4x2': return 'col-span-2 row-span-2 aspect-square md:col-span-4 md:row-span-2 md:aspect-[2/1]';
       case '1x1':
       default: return 'col-span-1 row-span-1 aspect-square';
     }
