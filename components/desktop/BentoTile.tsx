@@ -106,13 +106,12 @@ export const BentoTile: React.FC<BentoTileProps> = ({
            <div className="relative mb-3 pointer-events-none">
                 {/* Glow Layer 
                     Updates:
-                    - Removed mix-blend-screen (caused issues on dark glass)
-                    - Used brightness-150 saturate-150 to pop colors naturally
-                    - Adjusted opacity for smoother blend
+                    - Base opacity increased to 20% (opacity-20) for ambient glow
+                    - Hover opacity remains higher (opacity-60)
                 */}
                  <div className={`
                     absolute inset-0 rounded-2xl ${app.color}
-                    blur-xl opacity-0 group-hover:opacity-60
+                    blur-xl opacity-20 group-hover:opacity-60
                     transition-all duration-500 scale-110 group-hover:scale-125
                     brightness-150 saturate-150
                  `} />

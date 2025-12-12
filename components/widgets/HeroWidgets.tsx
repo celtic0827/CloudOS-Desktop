@@ -368,7 +368,7 @@ export const DropZoneWidget: React.FC<{
             <div className={`flex flex-col z-10 min-w-0 ${isVertical ? 'items-center gap-3 mt-4' : ''}`}>
                 <div className="relative">
                     {/* Glow Layer */}
-                    <div className={`absolute inset-0 rounded-2xl ${color} blur-xl opacity-0 group-hover:opacity-50 transition-all duration-500 brightness-150 saturate-150`} />
+                    <div className={`absolute inset-0 rounded-2xl ${color} blur-xl opacity-20 group-hover:opacity-50 transition-all duration-500 brightness-150 saturate-150`} />
                     
                     {/* Icon Box */}
                     <div className={`
@@ -411,7 +411,7 @@ export const StatusWidget: React.FC<{ name: string, icon: any, color: string, de
             <div className="w-full h-full flex flex-col items-center justify-center p-4 relative overflow-hidden group text-center">
                  <div className="relative mb-3 z-10">
                     {/* Glow Layer */}
-                    <div className={`absolute inset-0 rounded-2xl ${color} blur-xl opacity-0 group-hover:opacity-50 transition-all duration-500 brightness-150 saturate-150`} />
+                    <div className={`absolute inset-0 rounded-2xl ${color} blur-xl opacity-20 group-hover:opacity-50 transition-all duration-500 brightness-150 saturate-150`} />
                     
                     {/* Icon Box */}
                     <div className={`relative w-12 h-12 rounded-2xl ${color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
@@ -435,7 +435,7 @@ export const StatusWidget: React.FC<{ name: string, icon: any, color: string, de
              <div className="flex items-center gap-3 z-10">
                 <div className="relative">
                     {/* Glow Layer */}
-                    <div className={`absolute inset-0 rounded-2xl ${color} blur-xl opacity-0 group-hover:opacity-50 transition-all duration-500 brightness-150 saturate-150`} />
+                    <div className={`absolute inset-0 rounded-2xl ${color} blur-xl opacity-20 group-hover:opacity-50 transition-all duration-500 brightness-150 saturate-150`} />
                     
                     {/* Icon Box */}
                     <div className={`relative w-12 h-12 rounded-2xl ${color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>

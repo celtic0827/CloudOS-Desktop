@@ -68,7 +68,7 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({
                                 {/* Glow Layer (Updated to match Desktop) */}
                                 <div className={`
                                     absolute inset-0 rounded-2xl ${formData.color}
-                                    blur-xl opacity-0 group-hover:opacity-60 
+                                    blur-xl opacity-20 group-hover:opacity-60 
                                     transition-all duration-500 scale-110 group-hover:scale-125
                                     brightness-150 saturate-150
                                 `} />
