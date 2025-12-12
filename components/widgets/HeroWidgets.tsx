@@ -180,15 +180,16 @@ export const DropZoneWidget: React.FC<{
     const isVertical = gridSize === '1x2';
 
     // Calculate Filter for Effects
+    // We apply the filter to the container, and opacity to the child SVG to keep shadows strong.
     let filter = 'none';
     const intensity = heroSettings.effectIntensity || 20;
     
     if (heroSettings.effect === 'shadow') {
-        // Deep, offset dark shadow
-        filter = `drop-shadow(0px 10px ${intensity}px rgba(0,0,0,0.8))`;
+        // Strong black shadow
+        filter = `drop-shadow(0px 10px ${intensity}px rgba(0,0,0,1))`;
     } else if (heroSettings.effect === 'glow') {
-        // Bright, centered glow (simulating neon/backlight)
-        filter = `drop-shadow(0px 0px ${intensity}px rgba(255,255,255,0.6))`;
+        // Bright white/amber glow. Using a mix helps visibility on dark bg.
+        filter = `drop-shadow(0px 0px ${intensity}px rgba(255,255,255,0.8)) drop-shadow(0px 0px ${intensity * 0.5}px rgba(245,158,11,0.5))`;
     }
 
     return (
@@ -197,22 +198,32 @@ export const DropZoneWidget: React.FC<{
             {/* BACKGROUND GRAPHIC (Hero Icon) */}
             {HeroIcon && (
                 <div 
-                    className="absolute z-0 pointer-events-none text-slate-400 origin-center transition-all duration-500 ease-out will-change-transform"
+                    className="absolute z-0 pointer-events-none origin-center transition-all duration-500 ease-out will-change-transform"
                     style={{
                         top: '50%',
                         left: '50%',
-                        marginTop: '-12px', // Half of base size (24px)
+                        width: '24px',
+                        height: '24px',
+                        marginTop: '-12px',
                         marginLeft: '-12px',
                         transform: `
                             translate(${heroSettings.x}px, ${heroSettings.y}px) 
                             rotate(${heroSettings.rotate || 0}deg) 
                             scale(${heroSettings.scale})
                         `,
-                        opacity: heroSettings.opacity / 100,
-                        filter: filter
+                        // Apply filter here so it wraps the shape
+                        filter: filter,
+                        // Color is set here
+                        color: '#94a3b8' // Slate-400 equivalent
                     }}
                 >
-                    <HeroIcon size={24} strokeWidth={1} />
+                    {/* Apply opacity here directly to the icon, allowing the shadow/glow (filter) to remain distinct if needed, 
+                        though drop-shadow naturally relies on alpha. 
+                        However, this structure ensures the filter is calculated on the transformed shape. 
+                    */}
+                    <div style={{ opacity: heroSettings.opacity / 100 }}>
+                        <HeroIcon size={24} strokeWidth={1} />
+                    </div>
                 </div>
             )}
 

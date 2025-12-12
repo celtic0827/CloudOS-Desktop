@@ -390,8 +390,8 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
                  {/* 2. Main Content Grid */}
                  <div className="flex-1 grid grid-cols-12 gap-8 min-h-0">
                     
-                    {/* Left Column: Visual Settings - Span 5 */}
-                    <div className="col-span-5 flex flex-col gap-6 overflow-y-auto scrollbar-hide pr-2">
+                    {/* Left Column: Visual Settings (Increased width to 7) */}
+                    <div className="col-span-7 flex flex-col gap-6 overflow-y-auto scrollbar-hide pr-2">
                         
                         {/* Layout Style */}
                         <div className="p-5 bg-[#0a0a0a] border border-white/5 rounded-2xl shrink-0">
@@ -474,53 +474,11 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
                                             </button>
                                         </div>
 
-                                        {/* SLIDERS & EFFECTS */}
+                                        {/* COMPACT UI: 2-COLUMN GRID FOR SLIDERS */}
                                         {formData.heroIconName && (
                                             <div className="mt-2 pt-3 border-t border-white/5 space-y-4">
                                                 
-                                                {/* Scale */}
-                                                <div className="space-y-1">
-                                                    <div className="flex justify-between text-[10px] text-slate-500 uppercase font-bold">
-                                                        <span className="flex items-center gap-1"><Maximize size={10} /> Scale</span>
-                                                        <span>{formData.heroScale}x</span>
-                                                    </div>
-                                                    <input 
-                                                        type="range" min="1" max="20" step="0.5"
-                                                        value={formData.heroScale}
-                                                        onChange={(e) => setFormData({...formData, heroScale: parseFloat(e.target.value)})}
-                                                        className="w-full h-1 bg-white/10 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-amber-500 [&::-webkit-slider-thumb]:rounded-full cursor-pointer hover:[&::-webkit-slider-thumb]:scale-125 transition-all"
-                                                    />
-                                                </div>
-
-                                                {/* Rotation */}
-                                                <div className="space-y-1">
-                                                    <div className="flex justify-between text-[10px] text-slate-500 uppercase font-bold">
-                                                        <span className="flex items-center gap-1"><RotateCw size={10} /> Rotation</span>
-                                                        <span>{formData.heroRotation}°</span>
-                                                    </div>
-                                                    <input 
-                                                        type="range" min="0" max="360" step="5"
-                                                        value={formData.heroRotation || 0}
-                                                        onChange={(e) => setFormData({...formData, heroRotation: parseInt(e.target.value)})}
-                                                        className="w-full h-1 bg-white/10 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-amber-500 [&::-webkit-slider-thumb]:rounded-full cursor-pointer hover:[&::-webkit-slider-thumb]:scale-125 transition-all"
-                                                    />
-                                                </div>
-
-                                                {/* Opacity */}
-                                                <div className="space-y-1">
-                                                    <div className="flex justify-between text-[10px] text-slate-500 uppercase font-bold">
-                                                        <span className="flex items-center gap-1"><Droplets size={10} /> Opacity</span>
-                                                        <span>{formData.heroOpacity}%</span>
-                                                    </div>
-                                                    <input 
-                                                        type="range" min="0" max="100" step="5"
-                                                        value={formData.heroOpacity}
-                                                        onChange={(e) => setFormData({...formData, heroOpacity: parseInt(e.target.value)})}
-                                                        className="w-full h-1 bg-white/10 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-amber-500 [&::-webkit-slider-thumb]:rounded-full cursor-pointer hover:[&::-webkit-slider-thumb]:scale-125 transition-all"
-                                                    />
-                                                </div>
-
-                                                {/* Effect Mode */}
+                                                {/* Visual Effect Mode - Full Width */}
                                                 <div className="space-y-2">
                                                     <div className="text-[10px] text-slate-500 uppercase font-bold flex items-center gap-1"><Sparkles size={10} /> Visual Effect</div>
                                                     <div className="grid grid-cols-3 gap-2">
@@ -533,37 +491,79 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
                                                                 key={mode.id}
                                                                 onClick={() => setFormData({...formData, heroEffect: mode.id as HeroEffect})}
                                                                 className={`
-                                                                    flex flex-col items-center justify-center p-2 rounded-lg border transition-all
+                                                                    flex items-center justify-center gap-2 p-2 rounded-lg border transition-all
                                                                     ${formData.heroEffect === mode.id 
                                                                         ? 'bg-amber-600 text-white border-amber-500 shadow-md' 
                                                                         : 'bg-[#151515] border-white/5 text-slate-500 hover:text-slate-300'}
                                                                 `}
                                                             >
-                                                                <mode.icon size={14} className="mb-1" />
+                                                                <mode.icon size={14} />
                                                                 <span className="text-[9px] font-bold uppercase">{mode.label}</span>
                                                             </button>
                                                         ))}
                                                     </div>
                                                 </div>
 
-                                                {/* Effect Intensity (Conditional) */}
-                                                {formData.heroEffect && formData.heroEffect !== 'none' && (
-                                                    <div className="space-y-1 animate-in fade-in slide-in-from-top-1">
+                                                <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+                                                    {/* Scale */}
+                                                    <div className="space-y-1">
                                                         <div className="flex justify-between text-[10px] text-slate-500 uppercase font-bold">
-                                                            <span>Intensity</span>
-                                                            <span>{formData.heroEffectIntensity}px</span>
+                                                            <span className="flex items-center gap-1"><Maximize size={10} /> Scale</span>
+                                                            <span>{formData.heroScale}x</span>
                                                         </div>
                                                         <input 
-                                                            type="range" min="5" max="100" step="5"
-                                                            value={formData.heroEffectIntensity || 20}
-                                                            onChange={(e) => setFormData({...formData, heroEffectIntensity: parseInt(e.target.value)})}
+                                                            type="range" min="1" max="20" step="0.5"
+                                                            value={formData.heroScale}
+                                                            onChange={(e) => setFormData({...formData, heroScale: parseFloat(e.target.value)})}
                                                             className="w-full h-1 bg-white/10 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-amber-500 [&::-webkit-slider-thumb]:rounded-full cursor-pointer hover:[&::-webkit-slider-thumb]:scale-125 transition-all"
                                                         />
                                                     </div>
-                                                )}
 
-                                                {/* Offsets */}
-                                                <div className="grid grid-cols-2 gap-3 pt-1">
+                                                    {/* Rotation (-180 to 180) */}
+                                                    <div className="space-y-1">
+                                                        <div className="flex justify-between text-[10px] text-slate-500 uppercase font-bold">
+                                                            <span className="flex items-center gap-1"><RotateCw size={10} /> Rotation</span>
+                                                            <span>{formData.heroRotation}°</span>
+                                                        </div>
+                                                        <input 
+                                                            type="range" min="-180" max="180" step="5"
+                                                            value={formData.heroRotation || 0}
+                                                            onChange={(e) => setFormData({...formData, heroRotation: parseInt(e.target.value)})}
+                                                            className="w-full h-1 bg-white/10 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-amber-500 [&::-webkit-slider-thumb]:rounded-full cursor-pointer hover:[&::-webkit-slider-thumb]:scale-125 transition-all"
+                                                        />
+                                                    </div>
+
+                                                    {/* Opacity */}
+                                                    <div className="space-y-1">
+                                                        <div className="flex justify-between text-[10px] text-slate-500 uppercase font-bold">
+                                                            <span className="flex items-center gap-1"><Droplets size={10} /> Opacity</span>
+                                                            <span>{formData.heroOpacity}%</span>
+                                                        </div>
+                                                        <input 
+                                                            type="range" min="0" max="100" step="5"
+                                                            value={formData.heroOpacity}
+                                                            onChange={(e) => setFormData({...formData, heroOpacity: parseInt(e.target.value)})}
+                                                            className="w-full h-1 bg-white/10 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-amber-500 [&::-webkit-slider-thumb]:rounded-full cursor-pointer hover:[&::-webkit-slider-thumb]:scale-125 transition-all"
+                                                        />
+                                                    </div>
+
+                                                    {/* Effect Intensity (Conditional, else Spacer) */}
+                                                    {formData.heroEffect && formData.heroEffect !== 'none' ? (
+                                                        <div className="space-y-1 animate-in fade-in">
+                                                            <div className="flex justify-between text-[10px] text-slate-500 uppercase font-bold">
+                                                                <span>Intensity</span>
+                                                                <span>{formData.heroEffectIntensity}px</span>
+                                                            </div>
+                                                            <input 
+                                                                type="range" min="5" max="100" step="5"
+                                                                value={formData.heroEffectIntensity || 20}
+                                                                onChange={(e) => setFormData({...formData, heroEffectIntensity: parseInt(e.target.value)})}
+                                                                className="w-full h-1 bg-white/10 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-amber-500 [&::-webkit-slider-thumb]:rounded-full cursor-pointer hover:[&::-webkit-slider-thumb]:scale-125 transition-all"
+                                                            />
+                                                        </div>
+                                                    ) : <div />}
+
+                                                    {/* Offset X */}
                                                     <div className="space-y-1">
                                                         <div className="flex justify-between text-[10px] text-slate-500 uppercase font-bold">
                                                             <span className="flex items-center gap-1"><Move size={10} /> Offset X</span>
@@ -576,6 +576,8 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
                                                             className="w-full h-1 bg-white/10 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-amber-500 [&::-webkit-slider-thumb]:rounded-full cursor-pointer hover:[&::-webkit-slider-thumb]:scale-125 transition-all"
                                                         />
                                                     </div>
+
+                                                    {/* Offset Y */}
                                                     <div className="space-y-1">
                                                         <div className="flex justify-between text-[10px] text-slate-500 uppercase font-bold">
                                                             <span className="flex items-center gap-1"><Move size={10} className="rotate-90"/> Offset Y</span>
@@ -597,8 +599,8 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
                         </div>
                     </div>
 
-                    {/* Right Column: Colors & Preview - Span 7 */}
-                    <div className="col-span-7 flex flex-col gap-6">
+                    {/* Right Column: Colors & Preview - Reduced to Span 5 */}
+                    <div className="col-span-5 flex flex-col gap-6">
                          
                         {/* Live Preview (Fixed Dimensions / Scrolling) */}
                         <div className="flex-1 bg-[#0a0a0a] border border-white/5 rounded-2xl flex flex-col relative overflow-hidden min-h-[250px]">
