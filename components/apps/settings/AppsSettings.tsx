@@ -305,7 +305,7 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
   return (
     <>
         {/* LEFT SIDEBAR: LIST */}
-        <div className="w-[280px] border-r border-white/5 flex flex-col bg-[#080808] shrink-0">
+        <div className="w-[260px] border-r border-white/5 flex flex-col bg-[#080808] shrink-0">
           <div className="p-4 border-b border-white/5 flex items-center justify-between bg-[#0a0a0a]">
              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-1">My Shortcuts</span>
              <button 
@@ -317,7 +317,7 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
              </button>
           </div>
           
-          <div className="flex-1 overflow-y-auto scrollbar-hide p-3 space-y-2">
+          <div className="flex-1 overflow-y-auto scrollbar-hide p-3 space-y-1">
              {userApps.map(app => {
                 const isActive = selectedAppId === app.id;
                 const AppIcon = app.iconName && ICON_LIBRARY[app.iconName] ? ICON_LIBRARY[app.iconName] : Globe;
@@ -326,7 +326,7 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
                    <button
                       key={app.id}
                       onClick={() => handleSelectApp(app)}
-                      className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 group text-left border ${
+                      className={`w-full flex items-center gap-3 p-2.5 rounded-xl transition-all duration-200 group text-left border ${
                          isActive 
                            ? 'bg-white/5 border-amber-500/20 shadow-md' 
                            : 'border-transparent hover:bg-white/5 hover:border-white/5'
@@ -355,281 +355,283 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none" />
 
            {(selectedAppId || isNewApp) ? (
-              <div className="flex flex-col h-full relative z-10 p-8">
+              <div className="flex flex-col h-full relative z-10 p-6">
                  
-                 {/* 1. Header Row */}
-                 <div className="flex gap-4 mb-8 shrink-0">
+                 {/* 1. Header Row (More Compact) */}
+                 <div className="flex gap-4 mb-5 shrink-0">
                      <div className="w-1/4">
-                        <label className="text-[10px] font-bold uppercase tracking-widest text-amber-500/80 mb-2 block">Name</label>
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-amber-500/80 mb-1.5 block">Name</label>
                         <input 
                             type="text" 
                             value={formData.name}
                             onChange={e => setFormData({...formData, name: e.target.value})}
-                            className="w-full bg-[#0f0f0f] border border-white/10 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-amber-500/50 focus:bg-[#151515] transition-all placeholder:text-slate-700"
+                            className="w-full bg-[#0f0f0f] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500/50 focus:bg-[#151515] transition-all placeholder:text-slate-700"
                             placeholder="App Name"
                         />
                      </div>
                      <div className="w-2/5">
-                        <label className="text-[10px] font-bold uppercase tracking-widest text-amber-500/80 mb-2 block">URL</label>
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-amber-500/80 mb-1.5 block">URL</label>
                         <div className="relative">
                             <input 
                                 type="text" 
                                 value={formData.url}
                                 onChange={e => setFormData({...formData, url: e.target.value})}
                                 onBlur={handleAutoFetchIcon}
-                                className="w-full bg-[#0f0f0f] border border-white/10 rounded-xl pl-4 pr-10 py-3 text-sm font-mono text-amber-500/90 focus:outline-none focus:border-amber-500/50 focus:bg-[#151515] transition-all placeholder:text-slate-700"
+                                className="w-full bg-[#0f0f0f] border border-white/10 rounded-xl pl-3 pr-8 py-2.5 text-sm font-mono text-amber-500/90 focus:outline-none focus:border-amber-500/50 focus:bg-[#151515] transition-all placeholder:text-slate-700"
                                 placeholder="https://..."
                             />
                             <button 
                                 onClick={handleAutoFetchIcon}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-600 hover:text-amber-400 p-1.5 rounded-md hover:bg-white/5 transition-colors"
+                                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-600 hover:text-amber-400 p-1 rounded-md hover:bg-white/5 transition-colors"
                                 title="Auto-fetch Favicon"
                             >
-                                <RefreshCcw size={16} />
+                                <RefreshCcw size={14} />
                             </button>
                         </div>
                      </div>
                      <div className="flex-1">
-                        <label className="text-[10px] font-bold uppercase tracking-widest text-amber-500/80 mb-2 block">Description</label>
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-amber-500/80 mb-1.5 block">Description</label>
                         <input 
                             type="text" 
                             value={formData.description}
                             onChange={e => setFormData({...formData, description: e.target.value})}
-                            className="w-full bg-[#0f0f0f] border border-white/10 rounded-xl px-4 py-3 text-sm text-slate-300 focus:outline-none focus:border-amber-500/50 focus:bg-[#151515] transition-all placeholder:text-slate-700"
+                            className="w-full bg-[#0f0f0f] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-slate-300 focus:outline-none focus:border-amber-500/50 focus:bg-[#151515] transition-all placeholder:text-slate-700"
                             placeholder="Optional"
                         />
                      </div>
                  </div>
 
                  {/* 2. Main Content Grid */}
-                 <div className="flex-1 grid grid-cols-12 gap-8 min-h-0">
+                 <div className="flex-1 grid grid-cols-12 gap-6 min-h-0">
                     
-                    {/* Left Column: Visual Settings (Increased width to 7) */}
-                    <div className="col-span-7 flex flex-col gap-6 overflow-y-auto scrollbar-hide pr-2">
+                    {/* Left Column: Visual Appearance (Unified) */}
+                    <div className="col-span-7 flex flex-col overflow-y-auto scrollbar-hide pr-2">
                         
-                        {/* Layout Style */}
-                        <div className="p-5 bg-[#0a0a0a] border border-white/5 rounded-2xl shrink-0">
-                            <div className="flex items-center gap-2 text-slate-400 mb-3">
-                                <LayoutTemplate size={14} />
-                                <span className="text-[10px] font-bold uppercase tracking-widest">Layout Style</span>
-                            </div>
-                            <div className="grid grid-cols-3 gap-3">
-                                {[
-                                    { id: 'standard', label: 'Standard', icon: Square, desc: '1x1' },
-                                    { id: 'vertical', label: 'Portrait', icon: RectangleVertical, desc: '1x2' },
-                                    { id: 'horizontal', label: 'Landscape', icon: RectangleHorizontal, desc: '2x1' },
-                                ].map((style) => (
-                                    <button
-                                        key={style.id}
-                                        onClick={() => handleStyleSelect(style.id as WidgetStyle)}
-                                        className={`
-                                            flex flex-col items-center justify-center gap-2 p-3 rounded-xl border transition-all duration-200 text-center
-                                            ${(formData.widgetStyle === style.id || (style.id === 'horizontal' && formData.widgetStyle === 'dropzone'))
-                                                ? 'bg-amber-600/10 border-amber-500/50 text-amber-500 shadow-md shadow-amber-900/10' 
-                                                : 'bg-[#111] border-white/5 text-slate-500 hover:bg-white/5 hover:text-slate-300'}
-                                        `}
-                                    >
-                                        <style.icon size={20} />
-                                        <div className="text-[10px] font-bold uppercase">{style.label}</div>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Icons Configuration */}
-                        <div className="p-5 bg-[#0a0a0a] border border-white/5 rounded-2xl flex-1 flex flex-col">
-                             <div className="flex items-center gap-2 text-slate-400 mb-4">
-                                <ImageIcon size={14} />
-                                <span className="text-[10px] font-bold uppercase tracking-widest">Iconography</span>
-                            </div>
-
-                            <div className="space-y-4">
-                                {/* Main Icon */}
-                                <div className="flex items-center justify-between p-3 bg-[#111] border border-white/5 rounded-xl">
-                                    <div className="flex items-center gap-3">
-                                        <div className={`w-10 h-10 rounded-lg ${formData.color} flex items-center justify-center shadow-lg border border-white/5`}>
-                                            {formData.iconUrl ? (
-                                                <img src={formData.iconUrl} className="w-5 h-5 object-contain" alt="Icon" />
-                                            ) : (
-                                                <MainIconToRender size={20} className="text-white" />
-                                            )}
-                                        </div>
-                                        <div>
-                                            <div className="text-xs font-bold text-slate-200">Main Icon</div>
-                                            <div className="text-[10px] text-slate-500">Standard display</div>
-                                        </div>
+                        {/* Unified Container */}
+                        <div className="p-4 bg-[#0a0a0a] border border-white/5 rounded-2xl flex-1 flex flex-col">
+                            
+                            <div className="flex flex-col gap-4 pt-1">
+                                {/* 1. Layout Style (Merged Here) */}
+                                <div>
+                                    <label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">Layout Style</label>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {[
+                                            { id: 'standard', label: 'Standard', icon: Square, desc: '1x1' },
+                                            { id: 'vertical', label: 'Portrait', icon: RectangleVertical, desc: '1x2' },
+                                            { id: 'horizontal', label: 'Landscape', icon: RectangleHorizontal, desc: '2x1' },
+                                        ].map((style) => (
+                                            <button
+                                                key={style.id}
+                                                onClick={() => handleStyleSelect(style.id as WidgetStyle)}
+                                                className={`
+                                                    flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-xl border transition-all duration-200 text-center
+                                                    ${(formData.widgetStyle === style.id || (style.id === 'horizontal' && formData.widgetStyle === 'dropzone'))
+                                                        ? 'bg-amber-600/10 border-amber-500/50 text-amber-500 shadow-md shadow-amber-900/10' 
+                                                        : 'bg-[#111] border-white/5 text-slate-500 hover:bg-white/5 hover:text-slate-300'}
+                                                `}
+                                            >
+                                                <style.icon size={18} />
+                                                <div className="text-[10px] font-bold uppercase">{style.label}</div>
+                                            </button>
+                                        ))}
                                     </div>
-                                    <button 
-                                        onClick={openIconPicker}
-                                        className="px-3 py-1.5 bg-[#151515] hover:bg-amber-600 hover:text-white border border-white/10 rounded-lg text-[10px] font-bold uppercase transition-all text-slate-400"
-                                    >
-                                        Change
-                                    </button>
                                 </div>
 
-                                {/* Hero Icon Toggle & Sliders */}
-                                {(formData.gridSize === '1x2' || formData.gridSize === '2x1') && (
-                                    <div className="flex flex-col gap-3 p-3 bg-[#111] border border-white/5 rounded-xl animate-in fade-in slide-in-from-top-2">
-                                        <div className="flex items-center justify-between">
+                                {/* Divider */}
+                                <div className="h-px bg-white/5 w-full" />
+
+                                {/* 2. Iconography Section */}
+                                <div>
+                                    <label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">Iconography</label>
+                                    <div className="space-y-3">
+                                        {/* Main Icon */}
+                                        <div className="flex items-center justify-between p-2.5 bg-[#111] border border-white/5 rounded-xl">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center border border-white/5">
-                                                    {formData.heroIconName ? <MainIconToRender size={20} className="text-amber-500" /> : <Sparkles size={16} className="text-slate-600" />}
+                                                <div className={`w-9 h-9 rounded-lg ${formData.color} flex items-center justify-center shadow-lg border border-white/5`}>
+                                                    {formData.iconUrl ? (
+                                                        <img src={formData.iconUrl} className="w-5 h-5 object-contain" alt="Icon" />
+                                                    ) : (
+                                                        <MainIconToRender size={18} className="text-white" />
+                                                    )}
                                                 </div>
                                                 <div>
-                                                    <div className="text-xs font-bold text-slate-200">Background Illustration</div>
-                                                    <div className="text-[10px] text-slate-500">Enable decorative graphic</div>
+                                                    <div className="text-xs font-bold text-slate-200 leading-tight">Main Icon</div>
+                                                    <div className="text-[10px] text-slate-500 leading-tight mt-0.5">Standard display</div>
                                                 </div>
                                             </div>
                                             <button 
-                                                onClick={toggleHeroGraphic}
-                                                className={`transition-colors duration-300 ${formData.heroIconName ? 'text-amber-500' : 'text-slate-600'}`}
+                                                onClick={openIconPicker}
+                                                className="px-3 py-1.5 bg-[#151515] hover:bg-amber-600 hover:text-white border border-white/10 rounded-lg text-[10px] font-bold uppercase transition-all text-slate-400"
                                             >
-                                                {formData.heroIconName ? <ToggleRight size={32} /> : <ToggleLeft size={32} />}
+                                                Change
                                             </button>
                                         </div>
 
-                                        {/* COMPACT UI: 2-COLUMN GRID FOR SLIDERS */}
-                                        {formData.heroIconName && (
-                                            <div className="mt-2 pt-3 border-t border-white/5 space-y-4">
-                                                
-                                                {/* Color Palette Selection */}
-                                                <div className="flex flex-col gap-2">
-                                                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Color Tone</label>
-                                                     <div className="flex gap-2">
-                                                        {HERO_COLORS.map(color => (
-                                                            <button
-                                                                key={color.value}
-                                                                onClick={() => setFormData({...formData, heroColor: color.value})}
-                                                                className={`
-                                                                    w-6 h-6 rounded-full border transition-all duration-300
-                                                                    ${formData.heroColor === color.value 
-                                                                        ? 'border-white scale-110 shadow-[0_0_10px_rgba(255,255,255,0.3)]' 
-                                                                        : 'border-transparent opacity-60 hover:opacity-100 hover:scale-105'}
-                                                                `}
-                                                                style={{ backgroundColor: color.value }}
-                                                                title={color.label}
-                                                            />
-                                                        ))}
-                                                     </div>
-                                                </div>
-
-                                                {/* Visual Effect Mode - Full Width Toggle */}
+                                        {/* Hero Icon Toggle & Sliders */}
+                                        {(formData.gridSize === '1x2' || formData.gridSize === '2x1') && (
+                                            <div className="flex flex-col gap-2 p-3 bg-[#111] border border-white/5 rounded-xl animate-in fade-in slide-in-from-top-2">
                                                 <div className="flex items-center justify-between">
-                                                    <div className="text-[10px] text-slate-500 uppercase font-bold flex items-center gap-1">
-                                                        <Sparkles size={10} /> Glow Effect
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center border border-white/5">
+                                                            {formData.heroIconName ? <MainIconToRender size={18} className="text-amber-500" /> : <Sparkles size={16} className="text-slate-600" />}
+                                                        </div>
+                                                        <div>
+                                                            <div className="text-xs font-bold text-slate-200 leading-tight">Background Illustration</div>
+                                                            <div className="text-[10px] text-slate-500 leading-tight mt-0.5">Enable decorative graphic</div>
+                                                        </div>
                                                     </div>
                                                     <button 
-                                                        onClick={() => setFormData({...formData, heroEffect: formData.heroEffect === 'glow' ? 'none' : 'glow'})}
-                                                        className={`transition-colors duration-300 ${formData.heroEffect === 'glow' ? 'text-amber-500' : 'text-slate-600'}`}
+                                                        onClick={toggleHeroGraphic}
+                                                        className={`transition-colors duration-300 ${formData.heroIconName ? 'text-amber-500' : 'text-slate-600'}`}
                                                     >
-                                                        {formData.heroEffect === 'glow' ? <ToggleRight size={24} /> : <ToggleLeft size={24} />}
+                                                        {formData.heroIconName ? <ToggleRight size={28} /> : <ToggleLeft size={28} />}
                                                     </button>
                                                 </div>
 
-                                                <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-                                                    {/* Scale */}
-                                                    <div className="space-y-1">
-                                                        <div className="flex justify-between text-[10px] text-slate-500 uppercase font-bold">
-                                                            <span className="flex items-center gap-1"><Maximize size={10} /> Scale</span>
-                                                            <span>{formData.heroScale}x</span>
-                                                        </div>
-                                                        <input 
-                                                            type="range" min="1" max="20" step="0.5"
-                                                            value={formData.heroScale}
-                                                            onChange={(e) => setFormData({...formData, heroScale: parseFloat(e.target.value)})}
-                                                            className="w-full h-1 bg-white/10 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-amber-500 [&::-webkit-slider-thumb]:rounded-full cursor-pointer hover:[&::-webkit-slider-thumb]:scale-125 transition-all"
-                                                        />
-                                                    </div>
-
-                                                    {/* Rotation (-180 to 180) */}
-                                                    <div className="space-y-1">
-                                                        <div className="flex justify-between text-[10px] text-slate-500 uppercase font-bold">
-                                                            <span className="flex items-center gap-1"><RotateCw size={10} /> Rotation</span>
-                                                            <span>{formData.heroRotation}°</span>
-                                                        </div>
-                                                        <input 
-                                                            type="range" min="-180" max="180" step="5"
-                                                            value={formData.heroRotation || 0}
-                                                            onChange={(e) => setFormData({...formData, heroRotation: parseInt(e.target.value)})}
-                                                            className="w-full h-1 bg-white/10 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-amber-500 [&::-webkit-slider-thumb]:rounded-full cursor-pointer hover:[&::-webkit-slider-thumb]:scale-125 transition-all"
-                                                        />
-                                                    </div>
-
-                                                    {/* Opacity */}
-                                                    <div className="space-y-1">
-                                                        <div className="flex justify-between text-[10px] text-slate-500 uppercase font-bold">
-                                                            <span className="flex items-center gap-1"><Droplets size={10} /> Opacity</span>
-                                                            <span>{formData.heroOpacity}%</span>
-                                                        </div>
-                                                        <input 
-                                                            type="range" min="0" max="100" step="5"
-                                                            value={formData.heroOpacity}
-                                                            onChange={(e) => setFormData({...formData, heroOpacity: parseInt(e.target.value)})}
-                                                            className="w-full h-1 bg-white/10 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-amber-500 [&::-webkit-slider-thumb]:rounded-full cursor-pointer hover:[&::-webkit-slider-thumb]:scale-125 transition-all"
-                                                        />
-                                                    </div>
-
-                                                    {/* Effect Intensity (Conditional, else Spacer) */}
-                                                    {formData.heroEffect === 'glow' ? (
-                                                        <div className="space-y-1 animate-in fade-in">
-                                                            <div className="flex justify-between text-[10px] text-slate-500 uppercase font-bold">
-                                                                <span>Intensity</span>
-                                                                <span>{formData.heroEffectIntensity}</span>
+                                                {/* Hero Config Panel */}
+                                                {formData.heroIconName && (
+                                                    <div className="mt-2 pt-2 border-t border-white/5 space-y-2.5">
+                                                        
+                                                        {/* Color Palette Selection */}
+                                                        <div className="flex flex-col gap-1.5">
+                                                            <label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Color Tone</label>
+                                                            <div className="flex gap-2">
+                                                                {HERO_COLORS.map(color => (
+                                                                    <button
+                                                                        key={color.value}
+                                                                        onClick={() => setFormData({...formData, heroColor: color.value})}
+                                                                        className={`
+                                                                            w-5 h-5 rounded-full border transition-all duration-300
+                                                                            ${formData.heroColor === color.value 
+                                                                                ? 'border-white scale-110 shadow-[0_0_8px_rgba(255,255,255,0.3)]' 
+                                                                                : 'border-transparent opacity-60 hover:opacity-100 hover:scale-105'}
+                                                                        `}
+                                                                        style={{ backgroundColor: color.value }}
+                                                                        title={color.label}
+                                                                    />
+                                                                ))}
                                                             </div>
-                                                            <input 
-                                                                type="range" min="0" max="10" step="0.5"
-                                                                value={formData.heroEffectIntensity || 5}
-                                                                onChange={(e) => setFormData({...formData, heroEffectIntensity: parseFloat(e.target.value)})}
-                                                                className="w-full h-1 bg-white/10 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-amber-500 [&::-webkit-slider-thumb]:rounded-full cursor-pointer hover:[&::-webkit-slider-thumb]:scale-125 transition-all"
-                                                            />
                                                         </div>
-                                                    ) : <div />}
 
-                                                    {/* Offset X */}
-                                                    <div className="space-y-1">
-                                                        <div className="flex justify-between text-[10px] text-slate-500 uppercase font-bold">
-                                                            <span className="flex items-center gap-1"><Move size={10} /> Offset X</span>
-                                                            <span>{formData.heroOffsetX}</span>
+                                                        {/* Visual Effect Mode */}
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="text-[9px] text-slate-500 uppercase font-bold flex items-center gap-1.5">
+                                                                <Sparkles size={10} /> Glow Effect
+                                                            </div>
+                                                            <button 
+                                                                onClick={() => setFormData({...formData, heroEffect: formData.heroEffect === 'glow' ? 'none' : 'glow'})}
+                                                                className={`transition-colors duration-300 ${formData.heroEffect === 'glow' ? 'text-amber-500' : 'text-slate-600'}`}
+                                                            >
+                                                                {formData.heroEffect === 'glow' ? <ToggleRight size={20} /> : <ToggleLeft size={20} />}
+                                                            </button>
                                                         </div>
-                                                        <input 
-                                                            type="range" min="-150" max="150" step="5"
-                                                            value={formData.heroOffsetX}
-                                                            onChange={(e) => setFormData({...formData, heroOffsetX: parseInt(e.target.value)})}
-                                                            className="w-full h-1 bg-white/10 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-amber-500 [&::-webkit-slider-thumb]:rounded-full cursor-pointer hover:[&::-webkit-slider-thumb]:scale-125 transition-all"
-                                                        />
-                                                    </div>
 
-                                                    {/* Offset Y */}
-                                                    <div className="space-y-1">
-                                                        <div className="flex justify-between text-[10px] text-slate-500 uppercase font-bold">
-                                                            <span className="flex items-center gap-1"><Move size={10} className="rotate-90"/> Offset Y</span>
-                                                            <span>{formData.heroOffsetY}</span>
+                                                        <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                                                            {/* Scale */}
+                                                            <div className="space-y-0.5">
+                                                                <div className="flex justify-between text-[9px] text-slate-500 uppercase font-bold">
+                                                                    <span className="flex items-center gap-1"><Maximize size={9} /> Scale</span>
+                                                                    <span>{formData.heroScale}x</span>
+                                                                </div>
+                                                                <input 
+                                                                    type="range" min="1" max="20" step="0.5"
+                                                                    value={formData.heroScale}
+                                                                    onChange={(e) => setFormData({...formData, heroScale: parseFloat(e.target.value)})}
+                                                                    className="w-full h-1 bg-white/10 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2.5 [&::-webkit-slider-thumb]:h-2.5 [&::-webkit-slider-thumb]:bg-amber-500 [&::-webkit-slider-thumb]:rounded-full cursor-pointer hover:[&::-webkit-slider-thumb]:scale-125 transition-all"
+                                                                />
+                                                            </div>
+
+                                                            {/* Rotation */}
+                                                            <div className="space-y-0.5">
+                                                                <div className="flex justify-between text-[9px] text-slate-500 uppercase font-bold">
+                                                                    <span className="flex items-center gap-1"><RotateCw size={9} /> Rotation</span>
+                                                                    <span>{formData.heroRotation}°</span>
+                                                                </div>
+                                                                <input 
+                                                                    type="range" min="-180" max="180" step="5"
+                                                                    value={formData.heroRotation || 0}
+                                                                    onChange={(e) => setFormData({...formData, heroRotation: parseInt(e.target.value)})}
+                                                                    className="w-full h-1 bg-white/10 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2.5 [&::-webkit-slider-thumb]:h-2.5 [&::-webkit-slider-thumb]:bg-amber-500 [&::-webkit-slider-thumb]:rounded-full cursor-pointer hover:[&::-webkit-slider-thumb]:scale-125 transition-all"
+                                                                />
+                                                            </div>
+
+                                                            {/* Opacity */}
+                                                            <div className="space-y-0.5">
+                                                                <div className="flex justify-between text-[9px] text-slate-500 uppercase font-bold">
+                                                                    <span className="flex items-center gap-1"><Droplets size={9} /> Opacity</span>
+                                                                    <span>{formData.heroOpacity}%</span>
+                                                                </div>
+                                                                <input 
+                                                                    type="range" min="0" max="100" step="5"
+                                                                    value={formData.heroOpacity}
+                                                                    onChange={(e) => setFormData({...formData, heroOpacity: parseInt(e.target.value)})}
+                                                                    className="w-full h-1 bg-white/10 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2.5 [&::-webkit-slider-thumb]:h-2.5 [&::-webkit-slider-thumb]:bg-amber-500 [&::-webkit-slider-thumb]:rounded-full cursor-pointer hover:[&::-webkit-slider-thumb]:scale-125 transition-all"
+                                                                />
+                                                            </div>
+
+                                                            {/* Effect Intensity */}
+                                                            {formData.heroEffect === 'glow' ? (
+                                                                <div className="space-y-0.5 animate-in fade-in">
+                                                                    <div className="flex justify-between text-[9px] text-slate-500 uppercase font-bold">
+                                                                        <span>Intensity</span>
+                                                                        <span>{formData.heroEffectIntensity}</span>
+                                                                    </div>
+                                                                    <input 
+                                                                        type="range" min="0" max="10" step="0.5"
+                                                                        value={formData.heroEffectIntensity || 5}
+                                                                        onChange={(e) => setFormData({...formData, heroEffectIntensity: parseFloat(e.target.value)})}
+                                                                        className="w-full h-1 bg-white/10 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2.5 [&::-webkit-slider-thumb]:h-2.5 [&::-webkit-slider-thumb]:bg-amber-500 [&::-webkit-slider-thumb]:rounded-full cursor-pointer hover:[&::-webkit-slider-thumb]:scale-125 transition-all"
+                                                                    />
+                                                                </div>
+                                                            ) : <div />}
+
+                                                            {/* Offset X */}
+                                                            <div className="space-y-0.5">
+                                                                <div className="flex justify-between text-[9px] text-slate-500 uppercase font-bold">
+                                                                    <span className="flex items-center gap-1"><Move size={9} /> Offset X</span>
+                                                                    <span>{formData.heroOffsetX}</span>
+                                                                </div>
+                                                                <input 
+                                                                    type="range" min="-150" max="150" step="5"
+                                                                    value={formData.heroOffsetX}
+                                                                    onChange={(e) => setFormData({...formData, heroOffsetX: parseInt(e.target.value)})}
+                                                                    className="w-full h-1 bg-white/10 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2.5 [&::-webkit-slider-thumb]:h-2.5 [&::-webkit-slider-thumb]:bg-amber-500 [&::-webkit-slider-thumb]:rounded-full cursor-pointer hover:[&::-webkit-slider-thumb]:scale-125 transition-all"
+                                                                />
+                                                            </div>
+
+                                                            {/* Offset Y */}
+                                                            <div className="space-y-0.5">
+                                                                <div className="flex justify-between text-[9px] text-slate-500 uppercase font-bold">
+                                                                    <span className="flex items-center gap-1"><Move size={9} className="rotate-90"/> Offset Y</span>
+                                                                    <span>{formData.heroOffsetY}</span>
+                                                                </div>
+                                                                <input 
+                                                                    type="range" min="-100" max="100" step="5"
+                                                                    value={formData.heroOffsetY}
+                                                                    onChange={(e) => setFormData({...formData, heroOffsetY: parseInt(e.target.value)})}
+                                                                    className="w-full h-1 bg-white/10 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2.5 [&::-webkit-slider-thumb]:h-2.5 [&::-webkit-slider-thumb]:bg-amber-500 [&::-webkit-slider-thumb]:rounded-full cursor-pointer hover:[&::-webkit-slider-thumb]:scale-125 transition-all"
+                                                                />
+                                                            </div>
                                                         </div>
-                                                        <input 
-                                                            type="range" min="-100" max="100" step="5"
-                                                            value={formData.heroOffsetY}
-                                                            onChange={(e) => setFormData({...formData, heroOffsetY: parseInt(e.target.value)})}
-                                                            className="w-full h-1 bg-white/10 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-amber-500 [&::-webkit-slider-thumb]:rounded-full cursor-pointer hover:[&::-webkit-slider-thumb]:scale-125 transition-all"
-                                                        />
                                                     </div>
-                                                </div>
+                                                )}
                                             </div>
                                         )}
                                     </div>
-                                )}
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     {/* Right Column: Colors & Preview - Reduced to Span 5 */}
-                    <div className="col-span-5 flex flex-col gap-6">
+                    <div className="col-span-5 flex flex-col gap-4 min-h-0">
                          
                         {/* Live Preview (Fixed Dimensions / Scrolling) */}
                         <div className="flex-1 bg-[#0a0a0a] border border-white/5 rounded-2xl flex flex-col relative overflow-hidden min-h-[250px]">
                             <div className="absolute top-4 left-4 text-[10px] font-bold uppercase tracking-widest text-slate-600 z-20">Live Preview</div>
                             
                             {/* Scrollable Area for Fixed Content */}
-                            <div className="w-full h-full overflow-auto flex items-center justify-center p-8 custom-scrollbar relative z-10">
+                            <div className="w-full h-full overflow-auto flex items-center justify-center p-6 custom-scrollbar relative z-10">
                                 <div 
                                     style={{ 
                                         width: previewDim.width, 
@@ -688,17 +690,17 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
                         </div>
 
                          {/* Color Picker */}
-                        <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-5 shrink-0">
+                        <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-4 shrink-0">
                             <div className="flex items-center gap-2 text-slate-400 mb-3">
                                 <Palette size={14} />
                                 <span className="text-[10px] font-bold uppercase tracking-widest">Theme Color</span>
                             </div>
-                            <div className="flex flex-wrap gap-3">
+                            <div className="flex flex-wrap gap-2.5">
                                 {COLORS.map(c => (
                                 <button
                                     key={c}
                                     onClick={() => handleColorSelect(c)}
-                                    className={`w-8 h-8 rounded-full ${c} ${formData.color === c ? 'ring-2 ring-amber-500 scale-110 shadow-lg' : 'opacity-40 hover:opacity-100'} transition-all`}
+                                    className={`w-7 h-7 rounded-full ${c} ${formData.color === c ? 'ring-2 ring-amber-500 scale-110 shadow-lg' : 'opacity-40 hover:opacity-100'} transition-all`}
                                     title={c.replace('bg-', '')}
                                 />
                                 ))}
@@ -708,11 +710,11 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
                  </div>
                  
                  {/* Footer Actions */}
-                 <div className="pt-6 mt-6 border-t border-white/5 flex justify-between items-center shrink-0">
+                 <div className="pt-4 mt-4 border-t border-white/5 flex justify-between items-center shrink-0">
                      {!isNewApp ? (
                         <button 
                             onClick={handleDeleteCurrent}
-                            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-900/10 text-red-500 hover:bg-red-900/30 transition-colors border border-red-900/20 text-[10px] font-bold uppercase tracking-wider"
+                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-900/10 text-red-500 hover:bg-red-900/30 transition-colors border border-red-900/20 text-[10px] font-bold uppercase tracking-wider"
                         >
                             <Trash2 size={14} /> Delete
                         </button>
@@ -723,14 +725,14 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
                      <div className="flex items-center gap-3">
                          <button 
                             onClick={resetForm} 
-                            className="px-6 py-2.5 rounded-xl text-[10px] font-bold text-slate-500 hover:text-slate-300 uppercase tracking-wider transition-colors"
+                            className="px-6 py-2 rounded-xl text-[10px] font-bold text-slate-500 hover:text-slate-300 uppercase tracking-wider transition-colors"
                          >
                             Reset
                          </button>
                          <button 
                             onClick={handleSave} 
                             disabled={saveStatus === 'saved'}
-                            className={`px-8 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider flex items-center gap-2 shadow-lg transition-all duration-300 ${
+                            className={`px-8 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider flex items-center gap-2 shadow-lg transition-all duration-300 ${
                                 saveStatus === 'saved' 
                                 ? 'bg-emerald-600 text-white hover:bg-emerald-600' 
                                 : 'bg-amber-600 text-white hover:bg-amber-500 hover:shadow-amber-500/20'
