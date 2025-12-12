@@ -14,16 +14,14 @@ const AnalogClock: React.FC<{ time: Date, className?: string, opacity?: number }
     const minuteDeg = minutes * 6 + seconds * 0.1;
     const hourDeg = (hours % 12) * 30 + minutes * 0.5;
 
-    // Colors - Refined for "Antique Bronze" look (Sat -30%, Light -20%)
-    // Old Gold: #b45309 -> New: #856036 (Desaturated Bronze/Gold)
-    // Old Tick: #78350f -> New: #594226 (Deep Coffee Bronze)
-    const goldColor = "#856036"; 
-    const tickColor = "#594226"; 
-    const secondHandColor = "#a17228"; // Darkened Amber
+    // Colors - Specified Dark Bronze
+    const goldColor = "#443520"; // Dark Antique Bronze
+    const tickColor = "#4a3b2a"; // Adjusted slightly lighter than gold for visibility of small ticks
+    const secondHandColor = "#8c6b3f"; // Lighter contrast for second hand
 
     return (
         <div className={`relative ${className}`} style={{ opacity }}>
-            <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-xl">
+            <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-2xl">
                 <defs>
                     {/* Glow Effects for Gems */}
                     <filter id="rubyGlow" x="-50%" y="-50%" width="200%" height="200%">
@@ -34,74 +32,92 @@ const AnalogClock: React.FC<{ time: Date, className?: string, opacity?: number }
                         <feGaussianBlur stdDeviation="2" result="blur" />
                         <feComposite in="SourceGraphic" in2="blur" operator="over" />
                     </filter>
+                    
+                    {/* Metal Glow (Intensity 3) */}
+                    <filter id="metalGlow" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur stdDeviation="1.5" result="blur" /> 
+                        {/* Glow color matches the lighter second hand to simulate specular highlight */}
+                        <feFlood floodColor="#8c6b3f" floodOpacity="0.4" result="glowColor" />
+                        <feComposite in="glowColor" in2="blur" operator="in" result="coloredBlur" />
+                        <feMerge>
+                            <feMergeNode in="coloredBlur" />
+                            <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                    </filter>
                 </defs>
 
-                {/* 1. Ticks (No Face/Frame) */}
-                {/* Minute Ticks (Small) */}
-                {[...Array(60)].map((_, i) => (
-                    i % 5 !== 0 && (
-                        <line 
-                            key={`m-${i}`}
-                            x1="100" y1="15" x2="100" y2="18"
-                            transform={`rotate(${i * 6} 100 100)`}
-                            stroke={tickColor}
-                            strokeWidth="1"
-                            opacity="0.6"
-                        />
-                    )
-                ))}
-                
-                {/* Hour Ticks (Modified Logic) */}
-                {[...Array(12)].map((_, i) => {
-                    const isCardinal = i % 3 === 0; // 0(12), 3, 6, 9
-                    // Cardinal: 10 to 25 (Length 15)
-                    // Others: 10 to 17.5 (Length 7.5 - 50% shorter)
-                    const y2 = isCardinal ? "25" : "17.5"; 
+                {/* 1. Ticks Group - Filter applied to group to prevent clipping on thin lines */}
+                <g filter="url(#metalGlow)">
+                    {/* Minute Ticks (Small) */}
+                    {[...Array(60)].map((_, i) => (
+                        i % 5 !== 0 && (
+                            <line 
+                                key={`m-${i}`}
+                                x1="100" y1="10" x2="100" y2="14"
+                                transform={`rotate(${i * 6} 100 100)`}
+                                stroke={tickColor}
+                                strokeWidth="1"
+                                opacity="0.6"
+                            />
+                        )
+                    ))}
                     
-                    return (
-                        <line 
-                            key={`h-${i}`}
-                            x1="100" y1="10" x2="100" y2={y2}
-                            transform={`rotate(${i * 30} 100 100)`}
-                            stroke={goldColor}
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                        />
-                    );
-                })}
+                    {/* Hour Ticks - Explicit Lengths */}
+                    {[...Array(12)].map((_, i) => {
+                        const isCardinal = i % 3 === 0; // 0(12), 3, 6, 9
+                        
+                        // Logic: 
+                        // Cardinal (12,3,6,9): Start 10, End 28 (Length 18)
+                        // Others: Start 10, End 19 (Length 9)
+                        const yStart = 10;
+                        const yEnd = isCardinal ? 28 : 19;
+                        const strokeW = isCardinal ? 3 : 2;
+                        
+                        return (
+                            <line 
+                                key={`h-${i}`}
+                                x1="100" y1={yStart} x2="100" y2={yEnd}
+                                transform={`rotate(${i * 30} 100 100)`}
+                                stroke={goldColor}
+                                strokeWidth={strokeW}
+                                strokeLinecap="round"
+                            />
+                        );
+                    })}
+                </g>
 
                 {/* 2. Hour Hand (Ruby Tip) */}
-                <g transform={`rotate(${hourDeg} 100 100)`}>
+                <g transform={`rotate(${hourDeg} 100 100)`} filter="url(#metalGlow)">
                     {/* Shaft */}
                     <line x1="100" y1="100" x2="100" y2="55" stroke={goldColor} strokeWidth="3" strokeLinecap="round" />
                     {/* Gem Mount */}
                     <rect x="97" y="55" width="6" height="4" fill={goldColor} />
                     {/* Ruby Gem */}
-                    <rect x="98" y="40" width="4" height="15" fill="#991b1b" stroke={goldColor} strokeWidth="0.5" filter="url(#rubyGlow)" />
+                    <rect x="98" y="40" width="4" height="15" fill="#7f1d1d" stroke={goldColor} strokeWidth="0.5" filter="url(#rubyGlow)" />
                     {/* Gem Reflection */}
-                    <rect x="99" y="42" width="1" height="8" fill="#fca5a5" opacity="0.5" />
+                    <rect x="99" y="42" width="1" height="8" fill="#fca5a5" opacity="0.4" />
                 </g>
 
                 {/* 3. Minute Hand (Sapphire Tip) */}
-                <g transform={`rotate(${minuteDeg} 100 100)`}>
+                <g transform={`rotate(${minuteDeg} 100 100)`} filter="url(#metalGlow)">
                     {/* Shaft */}
                     <line x1="100" y1="100" x2="100" y2="45" stroke={goldColor} strokeWidth="2" strokeLinecap="round" />
                     {/* Gem Mount */}
                     <rect x="98" y="45" width="4" height="4" fill={goldColor} />
                     {/* Sapphire Gem */}
-                    <rect x="98.5" y="25" width="3" height="20" fill="#1e3a8a" stroke={goldColor} strokeWidth="0.5" filter="url(#sapphireGlow)" />
+                    <rect x="98.5" y="25" width="3" height="20" fill="#172554" stroke={goldColor} strokeWidth="0.5" filter="url(#sapphireGlow)" />
                      {/* Gem Reflection */}
-                     <rect x="99.5" y="27" width="1" height="12" fill="#93c5fd" opacity="0.5" />
+                     <rect x="99.5" y="27" width="1" height="12" fill="#93c5fd" opacity="0.4" />
                 </g>
 
-                {/* 4. Second Hand (Simple Antique Gold Needle) */}
-                <g transform={`rotate(${secondDeg} 100 100)`}>
+                {/* 4. Second Hand (Antique Gold Needle) */}
+                <g transform={`rotate(${secondDeg} 100 100)`} filter="url(#metalGlow)">
                     <line x1="100" y1="110" x2="100" y2="20" stroke={secondHandColor} strokeWidth="1" />
                     <circle cx="100" cy="100" r="2" fill={secondHandColor} />
                 </g>
 
                 {/* Center Cap */}
-                <circle cx="100" cy="100" r="4" fill="#1c1917" stroke={goldColor} strokeWidth="2" />
+                <circle cx="100" cy="100" r="3.5" fill="#1c1917" stroke={goldColor} strokeWidth="2" filter="url(#metalGlow)" />
             </svg>
         </div>
     );
