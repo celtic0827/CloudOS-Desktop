@@ -115,6 +115,8 @@ function App() {
     return <div className="flex items-center justify-center h-full text-white">App configuration error</div>;
   };
 
+  const isStackUp = clockConfig.stackingDirection === 'up';
+
   return (
     <div className="relative w-screen h-[100dvh] overflow-hidden bg-[#020202] font-sans text-slate-900 selection:bg-amber-500/30">
       
@@ -141,13 +143,19 @@ function App() {
             }}
           >
             {/* Inner Wrapper for Centering & Padding */}
-            <div className="min-h-full flex flex-col items-center justify-center p-6 pb-32 pt-16">
-               <BentoGrid apps={allApps} onOpenApp={handleOpenApp} onMoveApp={moveApp} />
+            {/* Updated: Justify logic changes based on direction */}
+            <div className={`min-h-full flex flex-col items-center p-6 pb-32 pt-16 ${isStackUp ? 'justify-end' : 'justify-center'}`}>
+               <BentoGrid 
+                  apps={allApps} 
+                  onOpenApp={handleOpenApp} 
+                  onMoveApp={moveApp} 
+                  stackingDirection={clockConfig.stackingDirection}
+               />
                
                {/* Optional: Visual hint that end of list is reached if many apps */}
                {allApps.length > 12 && (
-                 <div className="mt-8 text-slate-700 text-[10px] uppercase tracking-widest opacity-50 font-medium">
-                   End of Workspace
+                 <div className={`mt-8 text-slate-700 text-[10px] uppercase tracking-widest opacity-50 font-medium ${isStackUp ? 'order-first mb-8 mt-0' : ''}`}>
+                   {isStackUp ? 'Start of Workspace' : 'End of Workspace'}
                  </div>
                )}
             </div>

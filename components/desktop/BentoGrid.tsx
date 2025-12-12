@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { AppDefinition } from '../../types';
 import { BentoTile } from './BentoTile';
 
@@ -6,10 +6,21 @@ interface BentoGridProps {
   apps: AppDefinition[];
   onOpenApp: (id: string) => void;
   onMoveApp?: (sourceId: string, targetId: string) => void;
+  stackingDirection?: 'down' | 'up';
 }
 
-export const BentoGrid: React.FC<BentoGridProps> = ({ apps, onOpenApp, onMoveApp }) => {
+export const BentoGrid: React.FC<BentoGridProps> = ({ 
+  apps, 
+  onOpenApp, 
+  onMoveApp,
+  stackingDirection = 'down' 
+}) => {
   
+  // If stacking up (bottom-up), we reverse the visual order so the "first" items (Clock, etc) appear at the bottom
+  const displayApps = useMemo(() => {
+    return stackingDirection === 'up' ? [...apps].reverse() : apps;
+  }, [apps, stackingDirection]);
+
   const handleDragStart = useCallback((e: React.DragEvent, id: string) => {
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', id);
@@ -32,7 +43,7 @@ export const BentoGrid: React.FC<BentoGridProps> = ({ apps, onOpenApp, onMoveApp
          - grid-flow-row-dense ensures items pack tightly.
       */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 md:gap-6 grid-flow-row-dense">
-        {apps.map(app => (
+        {displayApps.map(app => (
           <BentoTile 
             key={app.id} 
             app={app} 

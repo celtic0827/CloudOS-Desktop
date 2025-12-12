@@ -10,6 +10,7 @@ export interface ClockConfig {
   label: string;
   use24Hour: boolean;
   gridSize: GridSize; // Added for layout customization
+  stackingDirection?: 'down' | 'up'; // New: Controls visual flow
 }
 
 export interface AppConfig {
