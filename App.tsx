@@ -190,18 +190,19 @@ function App() {
           <div 
             className="w-full h-full overflow-y-auto scrollbar-hide"
             style={{ 
-              maskImage: 'linear-gradient(to bottom, transparent, black 5%, black 90%, transparent)',
-              WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 5%, black 90%, transparent)'
+              maskImage: 'linear-gradient(to bottom, transparent, black 2%, black 90%, transparent)',
+              WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 2%, black 90%, transparent)'
             }}
           >
             {/* 
-                LAYOUT SIMPLIFICATION:
-                Standard Top-Down Layout (justify-start).
-                Padding accounts for Dock at the bottom.
+                LAYOUT UPDATE:
+                - Removed generic 'p-6' to allow BentoGrid to handle horizontal spacing more accurately on mobile.
+                - Increased 'pb-48' (12rem) to ensure apps are never covered by the Dock.
+                - Standardized 'pt-24' (6rem) for top spacing.
             */}
             <div className={`
-                min-h-full flex flex-col p-6 transition-all duration-500
-                justify-start pt-24 pb-32
+                min-h-full flex flex-col transition-all duration-500
+                justify-start pt-24 pb-48
             `}>
                
                <div className="w-full">
@@ -213,7 +214,7 @@ function App() {
                  
                  {/* Only show "End of Workspace" if we have enough apps to scroll */}
                  {dockApps.length > 12 && (
-                   <div className="text-slate-700 text-[10px] uppercase tracking-widest opacity-50 font-medium text-center mt-6">
+                   <div className="text-slate-700 text-[10px] uppercase tracking-widest opacity-50 font-medium text-center mt-8">
                      End of Workspace
                    </div>
                  )}
