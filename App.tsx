@@ -193,23 +193,27 @@ function App() {
             }}
           >
             {/* 
-                LAYOUT FIX - FINAL VERSION: 
-                We use standard flex-col. 
-                If 'Stack Up': We use 'mt-auto' on the inner content wrapper.
-                This pushes the content to the bottom of the scroll view. 
-                If content grows, it expands UP into the empty space.
-                If it overflows, it scrolls normally.
+                LAYOUT LOGIC:
+                - isStackUp (Bottom-Up): 
+                    We use `justify-end` to push content to the bottom. 
+                    `mt-auto` on the child also helps ensure it sticks to bottom.
+                    The padding is adjusted to give space at top (pt-32).
+                - Default (Top-Down):
+                    Standard flow.
             */}
             <div className={`
                 min-h-full flex flex-col p-6 transition-all duration-500
-                ${isStackUp ? 'pt-32 pb-0' : 'justify-start pt-24 pb-32'}
+                ${isStackUp ? 'justify-end pt-32 pb-0' : 'justify-start pt-24 pb-32'}
             `}>
                
-               {/* 
-                  Wrapper for Grid & Label. 
-                  mt-auto is the magic: It consumes top margin, pushing this block to the bottom.
-               */}
-               <div className={`w-full ${isStackUp ? 'mt-auto' : ''}`}>
+               <div className="w-full">
+                 {/* Top Label (Only for Bottom-Up) */}
+                 {isStackUp && allApps.length > 12 && (
+                   <div className="text-slate-700 text-[10px] uppercase tracking-widest opacity-50 font-medium text-center mb-6">
+                     End of Workspace
+                   </div>
+                 )}
+
                  <BentoGrid 
                     apps={allApps} 
                     onOpenApp={handleOpenApp} 
@@ -217,14 +221,15 @@ function App() {
                     stackingDirection={clockConfig.stackingDirection}
                  />
                  
-                 {allApps.length > 12 && (
+                 {/* Bottom Label (Only for Top-Down) */}
+                 {!isStackUp && allApps.length > 12 && (
                    <div className="text-slate-700 text-[10px] uppercase tracking-widest opacity-50 font-medium text-center mt-6">
-                     {isStackUp ? 'Start of Workspace' : 'End of Workspace'}
+                     End of Workspace
                    </div>
                  )}
                </div>
 
-               {/* Explicit Spacer (Bottom) - Keeps grid above Dock/Taskbar */}
+               {/* Explicit Spacer (Bottom) - Keeps grid above Dock/Taskbar when Stacking Up */}
                {isStackUp && <div className="w-full h-48 shrink-0" />}
             </div>
           </div>

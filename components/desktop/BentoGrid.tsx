@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { AppDefinition } from '../../types';
 import { BentoTile } from './BentoTile';
 
@@ -16,8 +16,17 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
   stackingDirection = 'down' 
 }) => {
   
-  // Note: We handled visual stacking in App.tsx using mt-auto.
-  // We no longer need to flip the grid physically.
+  // LOGIC FIX: When stacking 'up', we want the visual order to be reversed.
+  // The 'Clock' (usually first in list) should be at the visual bottom.
+  // The 'New Apps' (usually last in list) should be at the visual top.
+  // Since we anchor the whole grid to the bottom using justify-end in App.tsx,
+  // Reversing the array places the "First" items at the "HTML Bottom", which aligns with the screen bottom.
+  const visibleApps = useMemo(() => {
+    if (stackingDirection === 'up') {
+        return [...apps].reverse();
+    }
+    return apps;
+  }, [apps, stackingDirection]);
 
   const handleDragStart = useCallback((e: React.DragEvent, id: string) => {
     e.dataTransfer.effectAllowed = 'move';
@@ -39,7 +48,7 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
       <div 
         className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 md:gap-6 grid-flow-row-dense"
       >
-        {apps.map(app => (
+        {visibleApps.map(app => (
           <BentoTile 
             key={app.id} 
             app={app} 
