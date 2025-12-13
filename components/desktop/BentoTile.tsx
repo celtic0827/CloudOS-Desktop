@@ -7,13 +7,15 @@ interface BentoTileProps {
   onClick: (appId: string) => void;
   style?: React.CSSProperties;
   onDragStart?: (e: React.DragEvent) => void;
+  isGridDragging?: boolean;
 }
 
 export const BentoTile: React.FC<BentoTileProps> = ({ 
   app, 
   onClick, 
   style,
-  onDragStart
+  onDragStart,
+  isGridDragging = false
 }) => {
   const [hasError, setHasError] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -44,6 +46,11 @@ export const BentoTile: React.FC<BentoTileProps> = ({
   const showWidget = app.widgetComponent !== undefined;
   const isOneByOne = app.gridSize === '1x1';
 
+  // Conditional Styling: Disable hover effects if grid is currently being dragged
+  const hoverInteractionClasses = !isGridDragging 
+    ? "group hover:bg-[#111]/60 hover:border-amber-500/30 hover:shadow-[0_8px_32px_-8px_rgba(245,158,11,0.15)] active:scale-[0.98]"
+    : ""; // Static state during drag
+
   return (
     <div
       draggable
@@ -60,20 +67,23 @@ export const BentoTile: React.FC<BentoTileProps> = ({
       <div 
         onClick={() => onClick(app.id)}
         className={`
-          w-full h-full group overflow-hidden rounded-3xl cursor-grab active:cursor-grabbing
+          w-full h-full overflow-hidden rounded-3xl cursor-grab active:cursor-grabbing
           bg-[#0a0a0a]/40 backdrop-blur-xl border 
           transition-all duration-300 ease-out
           ${isOneByOne || !showWidget ? 'flex flex-col items-center justify-center' : ''}
           
-          border-white/5 hover:bg-[#111]/60 hover:border-amber-500/30 hover:shadow-[0_8px_32px_-8px_rgba(245,158,11,0.15)]
-          active:scale-[0.98] 
+          border-white/5 
+          ${hoverInteractionClasses}
+          
           text-left select-none
         `}
       >
-        {/* Drag Handle Hint */}
-        <div className="absolute top-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-30 transition-opacity z-20 pointer-events-none">
-          <GripHorizontal size={12} className="text-white" />
-        </div>
+        {/* Drag Handle Hint - Hide during drag to reduce noise */}
+        {!isGridDragging && (
+            <div className="absolute top-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-30 transition-opacity z-20 pointer-events-none">
+             <GripHorizontal size={12} className="text-white" />
+            </div>
+        )}
 
         {showWidget ? (
           <div className="w-full h-full pointer-events-none">

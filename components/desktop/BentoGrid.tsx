@@ -265,6 +265,7 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
                     app={app} 
                     onClick={onOpenApp}
                     onDragStart={(e) => handleDragStart(e, app.id)}
+                    isGridDragging={isDragging}
                   />
                   
                   {/* Overlay for drop target feedback on top of existing widgets */}
