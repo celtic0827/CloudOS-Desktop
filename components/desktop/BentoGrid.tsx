@@ -200,9 +200,11 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
       let colSpan = 1;
       let rowSpan = 1;
 
-      if (span === 'col-span-2') colSpan = 2;
-      if (span === 'row-span-2') rowSpan = 2;
-      if (span === 'col-span-2 row-span-2') { colSpan = 2; rowSpan = 2; }
+      // Robust parsing of span classes
+      if (span?.includes('col-span-2')) colSpan = 2;
+      else if (span?.includes('col-span-4')) colSpan = 4;
+      
+      if (span?.includes('row-span-2')) rowSpan = 2;
 
       return {
           gridColumnStart: colStart,
@@ -226,9 +228,9 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
             let spanClass = '';
             if (app) {
                 if (app.gridSize === '2x2') spanClass = 'col-span-2 row-span-2';
-                else if (app.gridSize === '2x1' || app.gridSize === '4x2') spanClass = 'col-span-2';
+                else if (app.gridSize === '2x1') spanClass = 'col-span-2';
                 else if (app.gridSize === '1x2') spanClass = 'row-span-2';
-                else if (app.gridSize === '4x2') spanClass = 'col-span-2'; 
+                else if (app.gridSize === '4x2') spanClass = 'col-span-4 row-span-2'; 
             }
 
             const style = getGridStyle(index, spanClass);
