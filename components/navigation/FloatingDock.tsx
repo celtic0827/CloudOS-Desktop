@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { AppDefinition } from '../../types';
-import { LayoutGrid, Globe, LayoutDashboard } from 'lucide-react';
+import { LayoutGrid, Globe, LayoutDashboard, Download } from 'lucide-react';
 
 interface FloatingDockProps {
   activeAppId: string | null;
   apps: AppDefinition[];
   onSwitchApp: (appId: string) => void;
   onCloseApp: () => void;
+  installPrompt?: any;
+  onInstallClick?: () => void;
 }
 
 const STORAGE_KEY = 'cloudos_dock_position';
@@ -57,7 +59,9 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
   activeAppId, 
   apps, 
   onSwitchApp, 
-  onCloseApp 
+  onCloseApp,
+  installPrompt,
+  onInstallClick
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const activeApp = apps.find(a => a.id === activeAppId);
@@ -250,6 +254,24 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
           >
             <LayoutDashboard size={16} strokeWidth={1.5} />
           </button>
+
+          {/* Install Button (Only visible if prompt is captured) */}
+          {installPrompt && (
+              <>
+                  <div className="w-px h-6 bg-white/10 mx-1" />
+                  <button
+                      onClick={() => {
+                          if (onInstallClick) onInstallClick();
+                          setIsExpanded(false);
+                      }}
+                      className="p-2 rounded-xl bg-amber-600/20 text-amber-500 hover:bg-amber-500 hover:text-white transition-all shadow-lg shadow-amber-900/10 animate-pulse"
+                      title="Install App"
+                  >
+                      <Download size={16} strokeWidth={2} />
+                  </button>
+              </>
+          )}
+
         </div>
 
         {/* FAB */}

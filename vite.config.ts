@@ -18,7 +18,6 @@ export default defineConfig(({ mode }) => {
         react(),
         VitePWA({
           registerType: 'autoUpdate',
-          // Only include the SVG, ignore favicon.ico to prevent V logo fallback
           includeAssets: ['icon.svg'], 
           devOptions: {
             enabled: true
@@ -30,28 +29,11 @@ export default defineConfig(({ mode }) => {
             theme_color: '#050505',
             background_color: '#050505',
             display: 'standalone',
-            display_override: ["window-controls-overlay", "standalone"],
-            orientation: 'any',
+            // Specific for Mobile/Tablet to ensure scope is locked
+            scope: '/',
             start_url: '/',
-            id: '/',
-            screenshots: [
-              {
-                src: "https://upload.cc/i1/2025/12/12/1TC9NI.jpg",
-                sizes: "1920x1080",
-                type: "image/jpg",
-                form_factor: "wide",
-                label: "CloudOS Desktop Interface"
-              },
-              {
-                src: "https://upload.cc/i1/2025/12/12/1TC9NI.jpg",
-                sizes: "1920x1080",
-                type: "image/jpg",
-                form_factor: "narrow", // Fallback for mobile views
-                label: "CloudOS Mobile View"
-              }
-            ],
-            // EXPLICITLY define standard sizes pointing to the SVG
-            // Removing query strings (?v=2) to ensure Windows desktop PWA installs recognize the file correctly
+            orientation: 'any',
+            prefer_related_applications: false,
             icons: [
               {
                 src: '/icon.svg',
@@ -67,15 +49,31 @@ export default defineConfig(({ mode }) => {
               },
               {
                 src: '/icon.svg',
-                sizes: '512x512',
+                sizes: '192x192',
                 type: 'image/svg+xml',
                 purpose: 'maskable'
               },
               {
                 src: '/icon.svg',
-                sizes: 'any',
+                sizes: '512x512',
                 type: 'image/svg+xml',
-                purpose: 'any'
+                purpose: 'maskable'
+              }
+            ],
+            screenshots: [
+              {
+                src: "https://upload.cc/i1/2025/12/12/1TC9NI.jpg",
+                sizes: "1920x1080",
+                type: "image/jpg",
+                form_factor: "wide",
+                label: "CloudOS Desktop Interface"
+              },
+              {
+                src: "https://upload.cc/i1/2025/12/12/1TC9NI.jpg",
+                sizes: "1920x1080",
+                type: "image/jpg",
+                form_factor: "narrow", 
+                label: "CloudOS Mobile View"
               }
             ],
             shortcuts: [

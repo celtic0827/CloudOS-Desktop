@@ -40,6 +40,22 @@ function App() {
   // Context Menu State
   const [contextMenu, setContextMenu] = useState<{x: number, y: number} | null>(null);
 
+  // PWA Install Prompt State
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: any) => {
+      // Prevent Chrome 67 and earlier from automatically showing the prompt
+      e.preventDefault();
+      // Stash the event so it can be triggered later.
+      setInstallPrompt(e);
+      console.log("PWA Install Prompt captured");
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  }, []);
+
   // --- PC Optimization: Keyboard Shortcuts ---
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -218,6 +234,17 @@ function App() {
         apps={allApps}
         onSwitchApp={handleOpenApp}
         onCloseApp={closeApp}
+        installPrompt={installPrompt}
+        onInstallClick={() => {
+            if (installPrompt) {
+                installPrompt.prompt();
+                installPrompt.userChoice.then((choiceResult: any) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        setInstallPrompt(null);
+                    }
+                });
+            }
+        }}
       />
 
     </div>
