@@ -194,8 +194,8 @@ function App() {
           >
             <div className={`
                 min-h-full flex flex-col items-center p-6 transition-all duration-500
-                /* Increased bottom padding (pb-48) when stacking up to clear Windows Taskbar area */
-                ${isStackUp ? 'justify-end pt-32 pb-48' : 'justify-start pt-24 pb-32'}
+                /* Removed pb-48 from here, using explicit spacer instead */
+                ${isStackUp ? 'justify-end pt-32 pb-0' : 'justify-start pt-24 pb-32'}
             `}>
                <BentoGrid 
                   apps={allApps} 
@@ -212,6 +212,9 @@ function App() {
                    {isStackUp ? 'Start of Workspace' : 'End of Workspace'}
                  </div>
                )}
+
+               {/* Explicit Spacer for Bottom Up Mode to ensure Taskbar clearance */}
+               {isStackUp && <div className="w-full h-48 shrink-0" />}
             </div>
           </div>
         </div>
