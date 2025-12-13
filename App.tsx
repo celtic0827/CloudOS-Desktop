@@ -149,8 +149,6 @@ function App() {
     return <div className="flex items-center justify-center h-full text-white">App configuration error</div>;
   };
 
-  const isStackUp = clockConfig.stackingDirection === 'up';
-
   return (
     <div 
       className="relative w-screen h-[100dvh] overflow-hidden bg-[#020202] font-sans text-slate-900 selection:bg-amber-500/30"
@@ -194,21 +192,12 @@ function App() {
           >
             {/* 
                 LAYOUT SIMPLIFICATION:
-                We removed all 'reverse' logic.
-                
-                - isStackUp ('Bottom Up'): 
-                  We use `justify-end`. This pushes the entire Grid container to the bottom.
-                  Padding top (pt-32) ensures it doesn't hit the very top.
-                  Padding bottom (pb-0) + Spacer ensures it doesn't hit the dock.
-                  
-                - Default ('Top Down'):
-                  Standard `justify-start`.
-                  
-                Because `BentoGrid` is now just a standard grid, Drag & Drop will work perfectly.
+                Standard Top-Down Layout (justify-start).
+                Padding accounts for Dock at the bottom.
             */}
             <div className={`
                 min-h-full flex flex-col p-6 transition-all duration-500
-                ${isStackUp ? 'justify-end pt-32 pb-0' : 'justify-start pt-24 pb-32'}
+                justify-start pt-24 pb-32
             `}>
                
                <div className="w-full">
@@ -216,19 +205,14 @@ function App() {
                     apps={allApps} 
                     onOpenApp={handleOpenApp} 
                     onMoveApp={moveApp} 
-                    stackingDirection={clockConfig.stackingDirection}
                  />
                  
-                 {/* Only show "End of Workspace" if we have enough apps to scroll */}
                  {allApps.length > 12 && (
                    <div className="text-slate-700 text-[10px] uppercase tracking-widest opacity-50 font-medium text-center mt-6">
                      End of Workspace
                    </div>
                  )}
                </div>
-
-               {/* Spacer for Dock Clearance when Stacking Up */}
-               {isStackUp && <div className="w-full h-48 shrink-0" />}
             </div>
           </div>
         </div>

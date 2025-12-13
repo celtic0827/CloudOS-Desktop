@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ClockConfig, GridSize } from '../../../types';
 import { WIDGET_REGISTRY } from '../../../constants';
-import { AppWindow, MapPin, Globe, ChevronRight, Box, Columns, Rows, LayoutGrid, ToggleRight, ToggleLeft, Save, Check, ArrowDown, ArrowUp } from 'lucide-react';
+import { AppWindow, MapPin, Globe, ChevronRight, Box, Columns, Rows, LayoutGrid, ToggleRight, ToggleLeft, Save, Check } from 'lucide-react';
 
 interface WidgetsSettingsProps {
   activeWidgetIds: string[];
@@ -37,7 +37,7 @@ export const WidgetsSettings: React.FC<WidgetsSettingsProps> = ({
 
   // Clock Form State
   const [clockForm, setClockForm] = useState<ClockConfig>(clockConfig || {
-      label: 'Local', timezone: 'UTC', use24Hour: true, gridSize: '2x2', stackingDirection: 'down'
+      label: 'Local', timezone: 'UTC', use24Hour: true, gridSize: '2x2'
   });
 
   useEffect(() => {
@@ -199,37 +199,6 @@ export const WidgetsSettings: React.FC<WidgetsSettingsProps> = ({
                           </div>
                        </div>
                       
-                      {/* Stack Direction */}
-                      <div className="group relative">
-                          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Stacking Direction</label>
-                          <div className="grid grid-cols-2 gap-2">
-                              <button
-                                  onClick={() => setClockForm({...clockForm, stackingDirection: 'down'})}
-                                  className={`
-                                      flex items-center justify-center gap-2 p-3 rounded-xl border transition-all duration-200
-                                      ${(!clockForm.stackingDirection || clockForm.stackingDirection === 'down')
-                                          ? 'bg-amber-600/20 border-amber-500 text-amber-500' 
-                                          : 'bg-[#0f0f0f] border-white/10 text-slate-500 hover:bg-white/5 hover:text-slate-300'}
-                                  `}
-                              >
-                                  <ArrowDown size={16} />
-                                  <span className="text-[10px] font-bold uppercase">Top Down</span>
-                              </button>
-                              <button
-                                  onClick={() => setClockForm({...clockForm, stackingDirection: 'up'})}
-                                  className={`
-                                      flex items-center justify-center gap-2 p-3 rounded-xl border transition-all duration-200
-                                      ${clockForm.stackingDirection === 'up' 
-                                          ? 'bg-amber-600/20 border-amber-500 text-amber-500' 
-                                          : 'bg-[#0f0f0f] border-white/10 text-slate-500 hover:bg-white/5 hover:text-slate-300'}
-                                  `}
-                              >
-                                  <ArrowUp size={16} />
-                                  <span className="text-[10px] font-bold uppercase">Bottom Up</span>
-                              </button>
-                          </div>
-                       </div>
-
                       {/* Clock: 24h Toggle */}
                       <div className="flex items-center justify-between bg-[#0f0f0f] border border-white/10 rounded-xl p-4">
                           <div>

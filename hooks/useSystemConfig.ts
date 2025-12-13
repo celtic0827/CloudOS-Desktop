@@ -8,7 +8,6 @@ const DEFAULT_CLOCK_CONFIG: ClockConfig = {
   label: 'Local Time',
   use24Hour: true,
   gridSize: '2x2', // Default size
-  stackingDirection: 'down', // Default to top-down
 };
 
 export const useSystemConfig = () => {

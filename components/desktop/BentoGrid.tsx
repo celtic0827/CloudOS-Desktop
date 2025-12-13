@@ -6,7 +6,6 @@ interface BentoGridProps {
   apps: AppDefinition[];
   onOpenApp: (id: string) => void;
   onMoveApp?: (sourceId: string, targetId: string) => void;
-  stackingDirection?: 'down' | 'up'; // Kept in interface to avoid breaking prop passing, but ignored in logic
 }
 
 export const BentoGrid: React.FC<BentoGridProps> = ({ 
@@ -15,11 +14,12 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
   onMoveApp
 }) => {
   
-  // SIMPLIFICATION: 
-  // We removed the "reverse" logic. 
-  // Now, the grid ALWAYS renders from Index 0 -> Index N (Left-to-Right, Top-to-Bottom).
-  // The "Stack Up" visual effect is handled purely by the parent container in App.tsx 
-  // using 'justify-end', which pushes this entire grid block to the bottom of the screen.
+  // LOGIC CHANGE: 
+  // Removed 'grid-flow-row-dense'. 
+  // Using default 'row' flow ensures strict ordering.
+  // If there is a gap caused by a large widget, it will remain a gap visually 
+  // rather than reordering subsequent items to fill it. 
+  // This is essential for a predictable "Android-like" manual drag experience.
 
   const handleDragStart = useCallback((e: React.DragEvent, id: string) => {
     e.dataTransfer.effectAllowed = 'move';
@@ -39,7 +39,7 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
     // Changed max-w-[1600px] to max-w-[1920px] for better 2K/Ultrawide support
     <div className="w-full max-w-[1920px] mx-auto px-4 md:px-8 transition-all duration-300">
       <div 
-        className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 md:gap-6 grid-flow-row-dense"
+        className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 md:gap-6"
       >
         {apps.map(app => (
           <BentoTile 
