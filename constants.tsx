@@ -110,7 +110,7 @@ export const WIDGET_REGISTRY: Record<string, WidgetRegistryItem> = {
     id: 'clock-widget',
     name: 'System Clock',
     description: 'Large digital clock with timezone support',
-    icon: Calendar,
+    icon: Globe, // Changed from Calendar to Globe
     defaultGridSize: '2x2',
     component: <ClockWidget />
   },

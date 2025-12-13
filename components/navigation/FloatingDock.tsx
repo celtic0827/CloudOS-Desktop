@@ -221,7 +221,7 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
               ...getMenuPositionStyle()
           }}
         >
-          {apps.slice(0, 8).map(app => (
+          {apps.filter(app => app.id !== 'clock-widget').slice(0, 8).map(app => (
             <button
               key={app.id}
               onClick={() => {

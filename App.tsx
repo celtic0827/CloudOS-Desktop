@@ -192,29 +192,49 @@ function App() {
               WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 5%, black 90%, transparent)'
             }}
           >
+            {/* 
+                LAYOUT FIX: 
+                Use flex-col-reverse when stacking up. 
+                This anchors content to the bottom (start) and forces expansion upwards. 
+            */}
             <div className={`
-                min-h-full flex flex-col items-center p-6 transition-all duration-500
-                /* Removed pb-48 from here, using explicit spacer instead */
-                ${isStackUp ? 'justify-end pt-32 pb-0' : 'justify-start pt-24 pb-32'}
+                min-h-full flex items-center p-6 transition-all duration-500
+                ${isStackUp 
+                    ? 'flex-col-reverse justify-start pt-32 pb-0'  // Reverse Column: Start is Bottom
+                    : 'flex-col justify-start pt-24 pb-32'        // Standard Column: Start is Top
+                }
             `}>
-               <BentoGrid 
-                  apps={allApps} 
-                  onOpenApp={handleOpenApp} 
-                  onMoveApp={moveApp} 
-                  stackingDirection={clockConfig.stackingDirection}
-               />
+               {/* 
+                  ORDERING:
+                  When flex-col-reverse is active, items flow from Bottom (Start) to Top (End).
+                  We use `order` classes to ensure the correct visual sequence:
+                  1. Spacer (Bottom-most)
+                  2. Grid (Middle)
+                  3. Label (Top-most)
+               */}
+
+               {/* 1. Bento Grid (Middle) */}
+               <div className={`w-full ${isStackUp ? 'order-2' : ''}`}>
+                 <BentoGrid 
+                    apps={allApps} 
+                    onOpenApp={handleOpenApp} 
+                    onMoveApp={moveApp} 
+                    stackingDirection={clockConfig.stackingDirection}
+                 />
+               </div>
                
+               {/* 2. Workspace Label (Top) */}
                {allApps.length > 12 && (
                  <div className={`
                     text-slate-700 text-[10px] uppercase tracking-widest opacity-50 font-medium
-                    ${isStackUp ? 'order-first mb-12 mt-0' : 'mt-12 mb-0'}
+                    ${isStackUp ? 'order-3 mb-12 mt-0' : 'mt-12 mb-0'}
                  `}>
                    {isStackUp ? 'Start of Workspace' : 'End of Workspace'}
                  </div>
                )}
 
-               {/* Explicit Spacer for Bottom Up Mode to ensure Taskbar clearance */}
-               {isStackUp && <div className="w-full h-48 shrink-0" />}
+               {/* 3. Explicit Spacer (Bottom) - Ensures clearance from Dock/Taskbar */}
+               {isStackUp && <div className="w-full h-48 shrink-0 order-1" />}
             </div>
           </div>
         </div>
