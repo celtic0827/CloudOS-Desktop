@@ -16,7 +16,8 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
   stackingDirection = 'down' 
 }) => {
   
-  const isStackUp = stackingDirection === 'up';
+  // Note: We handled visual stacking in App.tsx using mt-auto.
+  // We no longer need to flip the grid physically.
 
   const handleDragStart = useCallback((e: React.DragEvent, id: string) => {
     e.dataTransfer.effectAllowed = 'move';
@@ -35,15 +36,8 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
   return (
     // Changed max-w-[1600px] to max-w-[1920px] for better 2K/Ultrawide support
     <div className="w-full max-w-[1920px] mx-auto px-4 md:px-8 transition-all duration-300">
-      {/* 
-         Grid Column Updates: 
-         - Increased spacing (gap-4 -> gap-6) for a cleaner, luxury feel.
-         - grid-flow-row-dense ensures items pack tightly.
-         - Transform applied if stacking up to flip the grid coordinate system vertically.
-      */}
       <div 
-        className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 md:gap-6 grid-flow-row-dense transition-transform duration-500"
-        style={isStackUp ? { transform: 'scaleY(-1)' } : undefined}
+        className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 md:gap-6 grid-flow-row-dense"
       >
         {apps.map(app => (
           <BentoTile 
@@ -52,7 +46,6 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
             onClick={onOpenApp}
             onDragStart={(e) => handleDragStart(e, app.id)}
             onDrop={(e) => handleDrop(e, app.id)}
-            isFlipped={isStackUp} // Pass flip state so tile can correct its own orientation
           />
         ))}
       </div>

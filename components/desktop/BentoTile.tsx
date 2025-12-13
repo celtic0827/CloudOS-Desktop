@@ -8,7 +8,6 @@ interface BentoTileProps {
   style?: React.CSSProperties;
   onDragStart?: (e: React.DragEvent) => void;
   onDrop?: (e: React.DragEvent) => void;
-  isFlipped?: boolean; // New prop to handle bottom-up correction
 }
 
 export const BentoTile: React.FC<BentoTileProps> = ({ 
@@ -16,8 +15,7 @@ export const BentoTile: React.FC<BentoTileProps> = ({
   onClick, 
   style,
   onDragStart,
-  onDrop,
-  isFlipped
+  onDrop
 }) => {
   const [hasError, setHasError] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -67,8 +65,7 @@ export const BentoTile: React.FC<BentoTileProps> = ({
   const isOneByOne = app.gridSize === '1x1';
 
   return (
-    // OUTER WRAPPER: Handles Grid Positioning & Structural Transforms (Flipping)
-    // We separate this from the inner visual card to avoid CSS transform conflicts (e.g. scaleY(-1) vs hover:scale-105)
+    // OUTER WRAPPER: Handles Grid Positioning
     <div
       draggable
       onDragStart={handleDragStart}
@@ -82,11 +79,7 @@ export const BentoTile: React.FC<BentoTileProps> = ({
         ${getLayoutClasses()}
         ${isDragging ? 'z-50' : 'z-auto'}
       `}
-      style={{
-          ...style,
-          // Counter-flip if the grid is reversed (bottom-up mode)
-          transform: isFlipped ? 'scaleY(-1)' : style?.transform 
-      }}
+      style={style}
     >
       {/* INNER VISUAL CARD: Handles Appearance, Hover Effects, and Content */}
       <div 

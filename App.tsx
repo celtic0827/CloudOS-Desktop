@@ -193,48 +193,39 @@ function App() {
             }}
           >
             {/* 
-                LAYOUT FIX: 
-                Use flex-col-reverse when stacking up. 
-                This anchors content to the bottom (start) and forces expansion upwards. 
+                LAYOUT FIX - FINAL VERSION: 
+                We use standard flex-col. 
+                If 'Stack Up': We use 'mt-auto' on the inner content wrapper.
+                This pushes the content to the bottom of the scroll view. 
+                If content grows, it expands UP into the empty space.
+                If it overflows, it scrolls normally.
             */}
             <div className={`
-                min-h-full flex items-center p-6 transition-all duration-500
-                ${isStackUp 
-                    ? 'flex-col-reverse justify-start pt-32 pb-0'  // Reverse Column: Start is Bottom
-                    : 'flex-col justify-start pt-24 pb-32'        // Standard Column: Start is Top
-                }
+                min-h-full flex flex-col p-6 transition-all duration-500
+                ${isStackUp ? 'pt-32 pb-0' : 'justify-start pt-24 pb-32'}
             `}>
+               
                {/* 
-                  ORDERING:
-                  When flex-col-reverse is active, items flow from Bottom (Start) to Top (End).
-                  We use `order` classes to ensure the correct visual sequence:
-                  1. Spacer (Bottom-most)
-                  2. Grid (Middle)
-                  3. Label (Top-most)
+                  Wrapper for Grid & Label. 
+                  mt-auto is the magic: It consumes top margin, pushing this block to the bottom.
                */}
-
-               {/* 1. Bento Grid (Middle) */}
-               <div className={`w-full ${isStackUp ? 'order-2' : ''}`}>
+               <div className={`w-full ${isStackUp ? 'mt-auto' : ''}`}>
                  <BentoGrid 
                     apps={allApps} 
                     onOpenApp={handleOpenApp} 
                     onMoveApp={moveApp} 
                     stackingDirection={clockConfig.stackingDirection}
                  />
+                 
+                 {allApps.length > 12 && (
+                   <div className="text-slate-700 text-[10px] uppercase tracking-widest opacity-50 font-medium text-center mt-6">
+                     {isStackUp ? 'Start of Workspace' : 'End of Workspace'}
+                   </div>
+                 )}
                </div>
-               
-               {/* 2. Workspace Label (Top) */}
-               {allApps.length > 12 && (
-                 <div className={`
-                    text-slate-700 text-[10px] uppercase tracking-widest opacity-50 font-medium
-                    ${isStackUp ? 'order-3 mb-12 mt-0' : 'mt-12 mb-0'}
-                 `}>
-                   {isStackUp ? 'Start of Workspace' : 'End of Workspace'}
-                 </div>
-               )}
 
-               {/* 3. Explicit Spacer (Bottom) - Ensures clearance from Dock/Taskbar */}
-               {isStackUp && <div className="w-full h-48 shrink-0 order-1" />}
+               {/* Explicit Spacer (Bottom) - Keeps grid above Dock/Taskbar */}
+               {isStackUp && <div className="w-full h-48 shrink-0" />}
             </div>
           </div>
         </div>
