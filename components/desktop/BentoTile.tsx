@@ -46,7 +46,7 @@ export const BentoTile: React.FC<BentoTileProps> = ({
   const showWidget = app.widgetComponent !== undefined;
   const isOneByOne = app.gridSize === '1x1';
 
-  // Conditional Styling: Disable hover effects if grid is currently being dragged
+  // Conditional Styling: Disable hover effects on the container if grid is currently being dragged
   const hoverInteractionClasses = !isGridDragging 
     ? "group hover:bg-[#111]/60 hover:border-amber-500/30 hover:shadow-[0_8px_32px_-8px_rgba(245,158,11,0.15)] active:scale-[0.98]"
     : ""; // Static state during drag
@@ -64,6 +64,14 @@ export const BentoTile: React.FC<BentoTileProps> = ({
       `}
       style={style}
     >
+      {/* 
+          HOVER SHIELD:
+          When dragging the grid, we place a transparent div on top of everything.
+          This prevents the mouse from 'hovering' the inner Widget components, 
+          stopping their internal animations (group-hover) from firing distactingly.
+      */}
+      {isGridDragging && <div className="absolute inset-0 z-[100] bg-transparent" />}
+
       <div 
         onClick={() => onClick(app.id)}
         className={`
