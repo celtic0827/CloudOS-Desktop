@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback } from 'react';
 import { AppDefinition } from '../../types';
 import { BentoTile } from './BentoTile';
 
@@ -6,27 +6,20 @@ interface BentoGridProps {
   apps: AppDefinition[];
   onOpenApp: (id: string) => void;
   onMoveApp?: (sourceId: string, targetId: string) => void;
-  stackingDirection?: 'down' | 'up';
+  stackingDirection?: 'down' | 'up'; // Kept in interface to avoid breaking prop passing, but ignored in logic
 }
 
 export const BentoGrid: React.FC<BentoGridProps> = ({ 
   apps, 
   onOpenApp, 
-  onMoveApp,
-  stackingDirection = 'down' 
+  onMoveApp
 }) => {
   
-  // LOGIC FIX: When stacking 'up', we want the visual order to be reversed.
-  // The 'Clock' (usually first in list) should be at the visual bottom.
-  // The 'New Apps' (usually last in list) should be at the visual top.
-  // Since we anchor the whole grid to the bottom using justify-end in App.tsx,
-  // Reversing the array places the "First" items at the "HTML Bottom", which aligns with the screen bottom.
-  const visibleApps = useMemo(() => {
-    if (stackingDirection === 'up') {
-        return [...apps].reverse();
-    }
-    return apps;
-  }, [apps, stackingDirection]);
+  // SIMPLIFICATION: 
+  // We removed the "reverse" logic. 
+  // Now, the grid ALWAYS renders from Index 0 -> Index N (Left-to-Right, Top-to-Bottom).
+  // The "Stack Up" visual effect is handled purely by the parent container in App.tsx 
+  // using 'justify-end', which pushes this entire grid block to the bottom of the screen.
 
   const handleDragStart = useCallback((e: React.DragEvent, id: string) => {
     e.dataTransfer.effectAllowed = 'move';
@@ -48,7 +41,7 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
       <div 
         className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 md:gap-6 grid-flow-row-dense"
       >
-        {visibleApps.map(app => (
+        {apps.map(app => (
           <BentoTile 
             key={app.id} 
             app={app} 

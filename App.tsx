@@ -193,13 +193,18 @@ function App() {
             }}
           >
             {/* 
-                LAYOUT LOGIC:
-                - isStackUp (Bottom-Up): 
-                    We use `justify-end` to push content to the bottom. 
-                    `mt-auto` on the child also helps ensure it sticks to bottom.
-                    The padding is adjusted to give space at top (pt-32).
-                - Default (Top-Down):
-                    Standard flow.
+                LAYOUT SIMPLIFICATION:
+                We removed all 'reverse' logic.
+                
+                - isStackUp ('Bottom Up'): 
+                  We use `justify-end`. This pushes the entire Grid container to the bottom.
+                  Padding top (pt-32) ensures it doesn't hit the very top.
+                  Padding bottom (pb-0) + Spacer ensures it doesn't hit the dock.
+                  
+                - Default ('Top Down'):
+                  Standard `justify-start`.
+                  
+                Because `BentoGrid` is now just a standard grid, Drag & Drop will work perfectly.
             */}
             <div className={`
                 min-h-full flex flex-col p-6 transition-all duration-500
@@ -207,13 +212,6 @@ function App() {
             `}>
                
                <div className="w-full">
-                 {/* Top Label (Only for Bottom-Up) */}
-                 {isStackUp && allApps.length > 12 && (
-                   <div className="text-slate-700 text-[10px] uppercase tracking-widest opacity-50 font-medium text-center mb-6">
-                     End of Workspace
-                   </div>
-                 )}
-
                  <BentoGrid 
                     apps={allApps} 
                     onOpenApp={handleOpenApp} 
@@ -221,15 +219,15 @@ function App() {
                     stackingDirection={clockConfig.stackingDirection}
                  />
                  
-                 {/* Bottom Label (Only for Top-Down) */}
-                 {!isStackUp && allApps.length > 12 && (
+                 {/* Only show "End of Workspace" if we have enough apps to scroll */}
+                 {allApps.length > 12 && (
                    <div className="text-slate-700 text-[10px] uppercase tracking-widest opacity-50 font-medium text-center mt-6">
                      End of Workspace
                    </div>
                  )}
                </div>
 
-               {/* Explicit Spacer (Bottom) - Keeps grid above Dock/Taskbar when Stacking Up */}
+               {/* Spacer for Dock Clearance when Stacking Up */}
                {isStackUp && <div className="w-full h-48 shrink-0" />}
             </div>
           </div>
