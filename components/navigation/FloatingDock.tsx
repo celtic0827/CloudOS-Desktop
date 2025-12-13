@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { AppDefinition } from '../../types';
-import { LayoutGrid, Globe, LayoutDashboard, Download } from 'lucide-react';
+import { LayoutGrid, Globe, LayoutDashboard, Download, RotateCw } from 'lucide-react';
 
 interface FloatingDockProps {
   activeAppId: string | null;
   apps: AppDefinition[];
   onSwitchApp: (appId: string) => void;
   onCloseApp: () => void;
+  onReloadApp?: () => void;
+  showReload?: boolean;
   installPrompt?: any;
   onInstallClick?: () => void;
 }
@@ -60,6 +62,8 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
   apps, 
   onSwitchApp, 
   onCloseApp,
+  onReloadApp,
+  showReload,
   installPrompt,
   onInstallClick
 }) => {
@@ -244,16 +248,34 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
           
           <div className="w-px h-6 bg-white/10 mx-1" />
           
-          <button
-            onClick={() => {
-              onCloseApp();
-              setIsExpanded(false);
-            }}
-            className="p-2 rounded-xl hover:bg-white/10 text-slate-500 hover:text-amber-100 transition-colors group relative"
-            title="Show Desktop"
-          >
-            <LayoutDashboard size={16} strokeWidth={1.5} />
-          </button>
+          {/* Action Buttons Group */}
+          <div className="flex items-center gap-1">
+              {/* Reload Button (Only for Web Apps) */}
+              {showReload && onReloadApp && (
+                  <button
+                    onClick={() => {
+                        onReloadApp();
+                        setIsExpanded(false);
+                    }}
+                    className="p-2 rounded-xl hover:bg-white/10 text-slate-500 hover:text-amber-100 transition-colors group relative"
+                    title="Reload"
+                  >
+                    <RotateCw size={16} strokeWidth={1.5} />
+                  </button>
+              )}
+
+              {/* Show Desktop / Close App */}
+              <button
+                onClick={() => {
+                  onCloseApp();
+                  setIsExpanded(false);
+                }}
+                className="p-2 rounded-xl hover:bg-white/10 text-slate-500 hover:text-amber-100 transition-colors group relative"
+                title="Show Desktop"
+              >
+                <LayoutDashboard size={16} strokeWidth={1.5} />
+              </button>
+          </div>
 
           {/* Install Button (Only visible if prompt is captured) */}
           {installPrompt && (

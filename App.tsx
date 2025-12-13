@@ -40,6 +40,9 @@ function App() {
   // Context Menu State
   const [contextMenu, setContextMenu] = useState<{x: number, y: number} | null>(null);
 
+  // Web App Reload State
+  const [webRefreshTrigger, setWebRefreshTrigger] = useState(0);
+
   // PWA Install Prompt State
   const [installPrompt, setInstallPrompt] = useState<any>(null);
 
@@ -94,6 +97,10 @@ function App() {
       openApp(id);
   };
 
+  const handleReloadActiveApp = () => {
+    setWebRefreshTrigger(prev => prev + 1);
+  };
+
   const activeApp = allApps.find(app => app?.id === activeAppId);
 
   // --- Window Content Renderer ---
@@ -143,6 +150,7 @@ function App() {
           src={activeApp.url} 
           title={activeApp.name} 
           themeColor={activeApp.color}
+          refreshTrigger={webRefreshTrigger}
         />
       );
     }
@@ -242,6 +250,8 @@ function App() {
         apps={dockApps} // Pass only non-null apps
         onSwitchApp={handleOpenApp}
         onCloseApp={closeApp}
+        onReloadApp={handleReloadActiveApp}
+        showReload={activeApp?.isExternal} // Only show reload if active app is a Web App
         installPrompt={installPrompt}
         onInstallClick={() => {
             if (installPrompt) {
