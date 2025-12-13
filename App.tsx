@@ -194,7 +194,8 @@ function App() {
           >
             <div className={`
                 min-h-full flex flex-col items-center p-6 transition-all duration-500
-                ${isStackUp ? 'justify-end pt-32 pb-28' : 'justify-start pt-24 pb-32'}
+                /* Increased bottom padding (pb-48) when stacking up to clear Windows Taskbar area */
+                ${isStackUp ? 'justify-end pt-32 pb-48' : 'justify-start pt-24 pb-32'}
             `}>
                <BentoGrid 
                   apps={allApps} 
