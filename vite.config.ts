@@ -51,28 +51,28 @@ export default defineConfig(({ mode }) => {
               }
             ],
             // EXPLICITLY define standard sizes pointing to the SVG
-            // This ensures mobile browsers pick up the icon correctly
+            // Removing query strings (?v=2) to ensure Windows desktop PWA installs recognize the file correctly
             icons: [
               {
-                src: '/icon.svg?v=2',
+                src: '/icon.svg',
                 sizes: '192x192',
                 type: 'image/svg+xml',
                 purpose: 'any'
               },
               {
-                src: '/icon.svg?v=2',
+                src: '/icon.svg',
                 sizes: '512x512',
                 type: 'image/svg+xml',
                 purpose: 'any'
               },
               {
-                src: '/icon.svg?v=2',
+                src: '/icon.svg',
                 sizes: '512x512',
                 type: 'image/svg+xml',
                 purpose: 'maskable'
               },
               {
-                src: '/icon.svg?v=2',
+                src: '/icon.svg',
                 sizes: 'any',
                 type: 'image/svg+xml',
                 purpose: 'any'
@@ -84,14 +84,14 @@ export default defineConfig(({ mode }) => {
                 short_name: "Settings",
                 description: "Open System Settings",
                 url: "/?app=settings",
-                icons: [{ src: "/icon.svg?v=2", sizes: "192x192", type: "image/svg+xml" }]
+                icons: [{ src: "/icon.svg", sizes: "192x192", type: "image/svg+xml" }]
               },
               {
                 name: "AI Assistant",
                 short_name: "Gemini",
                 description: "Chat with Gemini AI",
                 url: "/?app=gemini-assistant",
-                icons: [{ src: "/icon.svg?v=2", sizes: "192x192", type: "image/svg+xml" }]
+                icons: [{ src: "/icon.svg", sizes: "192x192", type: "image/svg+xml" }]
               }
             ],
             categories: ["productivity", "utilities", "personalization"],
