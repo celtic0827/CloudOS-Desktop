@@ -4,9 +4,9 @@ import { DEFAULT_USER_APPS, SYSTEM_APPS, WIDGET_REGISTRY, configToDefinition, wi
 
 const STORAGE_KEY_APPS = 'cloudos_user_apps';
 const STORAGE_KEY_WIDGETS = 'cloudos_active_widgets';
-const STORAGE_KEY_LAYOUT = 'cloudos_grid_layout_v2'; // Changed key for new data structure
+const STORAGE_KEY_LAYOUT = 'cloudos_grid_layout_v3'; // Bumped version to v3 to reset and apply new logic cleanly
 
-// Fixed grid capacity to ensure enough drop zones for a desktop page
+// Fixed grid capacity
 const GRID_CAPACITY = 48;
 
 export const useAppConfig = (clockConfig?: ClockConfig) => {
@@ -30,13 +30,12 @@ export const useAppConfig = (clockConfig?: ClockConfig) => {
     }
   });
 
-  // 3. Layout State (Sparse Array of IDs or Null)
+  // 3. Layout State (The Single Source of Truth for Positioning)
   const [layout, setLayout] = useState<(string | null)[]>(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY_LAYOUT);
       if (stored) {
         const parsed = JSON.parse(stored);
-        // Ensure minimum capacity if loaded layout is smaller
         if (parsed.length < GRID_CAPACITY) {
             return [...parsed, ...Array(GRID_CAPACITY - parsed.length).fill(null)];
         }
@@ -61,9 +60,50 @@ export const useAppConfig = (clockConfig?: ClockConfig) => {
     localStorage.setItem(STORAGE_KEY_LAYOUT, JSON.stringify(layout));
   }, [layout]);
 
-  // 4. Compute Grid Items (Sparse Array of Definitions)
+  // --- CRITICAL FIX: Synchronize Layout with Apps ---
+  // If an app exists in userApps/widgets but NOT in layout, place it.
+  // If an app exists in layout but NOT in userApps/widgets, remove it.
+  useEffect(() => {
+      let hasChanges = false;
+      const newLayout = [...layout];
+      
+      // 1. Get all currently valid IDs
+      const validIds = new Set([
+          ...SYSTEM_APPS.map(a => a.id),
+          ...activeWidgetIds,
+          ...userApps.map(a => a.id)
+      ]);
+
+      // 2. Cleanup: Remove IDs from layout that no longer exist
+      for (let i = 0; i < newLayout.length; i++) {
+          const id = newLayout[i];
+          if (id && !validIds.has(id)) {
+              newLayout[i] = null;
+              hasChanges = true;
+          }
+      }
+
+      // 3. Placement: Add missing IDs to the first available empty slot
+      validIds.forEach(id => {
+          if (!newLayout.includes(id)) {
+              const emptyIndex = newLayout.indexOf(null);
+              if (emptyIndex !== -1) {
+                  newLayout[emptyIndex] = id;
+                  hasChanges = true;
+              }
+          }
+      });
+
+      // Only update state if changes occurred to prevent infinite loops
+      if (hasChanges) {
+          setLayout(newLayout);
+      }
+  }, [userApps, activeWidgetIds, layout]); // Dependencies trigger check whenever apps change
+
+  // 4. Compute Grid Items for Rendering
+  // Now simpler: strictly maps the layout array to definitions
   const allApps = useMemo(() => {
-    // Collect all active definitions
+    // Create a lookup map for definitions
     const definitions = [
         ...SYSTEM_APPS,
         ...activeWidgetIds
@@ -77,42 +117,19 @@ export const useAppConfig = (clockConfig?: ClockConfig) => {
             }),
         ...userApps.map(configToDefinition)
     ];
-
+    
     const defMap = new Map(definitions.map(d => [d.id, d]));
-    const placedIds = new Set<string>();
-    
-    // Construct Grid from Layout
-    let newGrid = [...layout];
-    
-    // Validate Layout: Map existing IDs to Definitions, clear invalid IDs
-    newGrid = newGrid.map(id => {
-        if (id && defMap.has(id)) {
-            placedIds.add(id);
-            return id; // Keep ID
-        }
-        return null; // Clear invalid ID or keep null
-    });
 
-    // Place unplaced apps (e.g. newly added) into first available empty slots
-    definitions.forEach(def => {
-        if (!placedIds.has(def.id)) {
-            const emptyIndex = newGrid.findIndex(item => item === null);
-            if (emptyIndex !== -1) {
-                newGrid[emptyIndex] = def.id;
-            } else {
-                newGrid.push(def.id); // Expand grid if full
-            }
-        }
-    });
-
-    // Return the actual definitions in the grid slots
-    return newGrid.map(id => (id ? defMap.get(id)! : null));
-  }, [userApps, activeWidgetIds, layout, clockConfig]);
+    // Map the layout to definitions. 
+    // If layout has an ID but defMap doesn't (rare sync race), return null.
+    return layout.map(id => (id ? defMap.get(id) || null : null));
+  }, [layout, userApps, activeWidgetIds, clockConfig]);
 
 
-  // 5. CRUD & Move Logic
+  // 5. Actions
   const addApp = (newApp: AppConfig) => {
     setUserApps(prev => [...prev, newApp]);
+    // Layout sync will handle placement in the useEffect
   };
 
   const updateApp = (updatedApp: AppConfig) => {
@@ -121,7 +138,7 @@ export const useAppConfig = (clockConfig?: ClockConfig) => {
 
   const deleteApp = (id: string) => {
     setUserApps(prev => prev.filter(app => app.id !== id));
-    setLayout(prev => prev.map(item => item === id ? null : item));
+    // Layout sync will handle removal
   };
 
   const resetApps = () => {
@@ -129,7 +146,6 @@ export const useAppConfig = (clockConfig?: ClockConfig) => {
         setUserApps(DEFAULT_USER_APPS);
         setActiveWidgetIds(['clock-widget', 'gemini-assistant']);
         setLayout(Array(GRID_CAPACITY).fill(null)); 
-        localStorage.removeItem(STORAGE_KEY_LAYOUT);
     }
   };
 
@@ -137,29 +153,24 @@ export const useAppConfig = (clockConfig?: ClockConfig) => {
     setUserApps(importedApps);
   };
 
-  // Improved Move Logic for Grid: Swap or Place
+  // Move Logic: Swaps content in the layout array
   const moveApp = useCallback((sourceId: string, targetIndex: number) => {
     setLayout(prevLayout => {
-      const newLayout = [...prevLayout];
-      const sourceIndex = newLayout.indexOf(sourceId);
+      const sourceIndex = prevLayout.indexOf(sourceId);
       
+      // Safety check: if source isn't found (shouldn't happen with sync), abort
       if (sourceIndex === -1) return prevLayout; 
       if (sourceIndex === targetIndex) return prevLayout;
 
-      // Extract source
-      newLayout[sourceIndex] = null;
-
-      // Check content at target
-      const targetContent = newLayout[targetIndex];
+      const newLayout = [...prevLayout];
       
-      // Place source at target
-      newLayout[targetIndex] = sourceId;
-
-      // If target had something, move it to source's old spot (Swap)
-      // This is the most stable behavior for manual grids without complex shifting algorithms
-      if (targetContent) {
-          newLayout[sourceIndex] = targetContent;
-      }
+      // 1. Get content at both spots
+      const sourceContent = newLayout[sourceIndex]; // Should be sourceId
+      const targetContent = newLayout[targetIndex]; // Could be an app ID or null
+      
+      // 2. Perform the Swap
+      newLayout[targetIndex] = sourceContent;
+      newLayout[sourceIndex] = targetContent;
 
       return newLayout;
     });
@@ -170,16 +181,14 @@ export const useAppConfig = (clockConfig?: ClockConfig) => {
       if (enabled) {
         return prev.includes(widgetId) ? prev : [...prev, widgetId];
       } else {
-        const newIds = prev.filter(id => id !== widgetId);
-        setLayout(l => l.map(item => item === widgetId ? null : item));
-        return newIds;
+        return prev.filter(id => id !== widgetId);
       }
     });
   };
 
   return {
     userApps,
-    allApps, // Now returns (AppDefinition | null)[]
+    allApps, 
     activeWidgetIds,
     addApp,
     updateApp,

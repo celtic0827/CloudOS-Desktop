@@ -3,12 +3,12 @@ import { AppDefinition } from '../../types';
 import { BentoTile } from './BentoTile';
 
 interface BentoGridProps {
-  apps: (AppDefinition | null)[]; // Accepts sparse array
+  apps: (AppDefinition | null)[];
   onOpenApp: (id: string) => void;
   onMoveApp?: (sourceId: string, targetIndex: number) => void;
 }
 
-// Empty Slot Component: Invisible drop target
+// Empty Slot Component
 const EmptySlot: React.FC<{ 
     index: number, 
     onDrop: (e: React.DragEvent, index: number) => void 
@@ -16,7 +16,9 @@ const EmptySlot: React.FC<{
     const [isDragOver, setIsDragOver] = React.useState(false);
 
     const handleDragOver = (e: React.DragEvent) => {
+        // Critical: preventDefault allows drop
         e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
         if (!isDragOver) setIsDragOver(true);
     };
 
@@ -36,8 +38,8 @@ const EmptySlot: React.FC<{
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             className={`
-                col-span-1 row-span-1 aspect-square rounded-3xl transition-all duration-300
-                ${isDragOver ? 'bg-white/5 border-2 border-dashed border-amber-500/50 scale-95' : 'border border-transparent'}
+                col-span-1 row-span-1 aspect-square rounded-3xl transition-all duration-200
+                ${isDragOver ? 'bg-white/10 border-2 border-dashed border-amber-500/50 scale-95 shadow-[inset_0_0_20px_rgba(245,158,11,0.2)]' : 'border border-transparent hover:bg-white/5'}
             `}
         />
     );
@@ -77,7 +79,7 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
             return (
                 <div 
                     key={app.id} 
-                    onDragOver={(e) => e.preventDefault()} 
+                    onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }} 
                     onDrop={(e) => handleDrop(e, index)} 
                     // Handle responsive spans for widgets
                     className={
@@ -90,7 +92,6 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
                     app={app} 
                     onClick={onOpenApp}
                     onDragStart={(e) => handleDragStart(e, app.id)}
-                    // We handle drop on the wrapper div to capture index
                   />
                 </div>
             );
