@@ -46,47 +46,45 @@ export const BentoTile: React.FC<BentoTileProps> = ({
   const showWidget = app.widgetComponent !== undefined;
   const isOneByOne = app.gridSize === '1x1';
 
-  // Conditional Styling: Disable hover effects on the container if grid is currently being dragged
-  const hoverInteractionClasses = !isGridDragging 
-    ? "group hover:bg-[#111]/60 hover:border-amber-500/30 hover:shadow-[0_8px_32px_-8px_rgba(245,158,11,0.15)] active:scale-[0.98]"
-    : ""; // Static state during drag
+  // --- STRICT STATE CONTROL ---
+  // When the grid is being dragged (isGridDragging):
+  // 1. pointer-events-none: Makes the widget invisible to mouse, passing events to the grid slot below.
+  // 2. !transform-none: Instantly kills any active scale animations.
+  // 3. !filter-none: Kills glows/blurs.
+  // 4. group class is REMOVED to stop child hover effects.
+  const containerInteractionClasses = !isGridDragging 
+    ? "group hover:bg-[#111]/60 hover:border-amber-500/30 hover:shadow-[0_8px_32px_-8px_rgba(245,158,11,0.15)] active:scale-[0.98] cursor-grab active:cursor-grabbing"
+    : "pointer-events-none !transform-none !filter-none !transition-none"; // Hard Reset
 
   return (
     <div
-      draggable
+      draggable={!isGridDragging} // Disable dragging specific tile if we are already in a global drag state (prevents nested issues)
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       className={`
         relative w-full h-full 
         transition-all duration-300 ease-out
         ${getAspectRatioClass()}
-        ${isDragging ? 'z-50 opacity-20' : 'z-auto opacity-100'}
+        ${isDragging ? 'z-50 opacity-20' : 'z-auto'}
+        ${isGridDragging && !isDragging ? '!opacity-100' : ''} /* Ensure non-dragged items are fully visible but static */
       `}
       style={style}
     >
-      {/* 
-          HOVER SHIELD:
-          When dragging the grid, we place a transparent div on top of everything.
-          This prevents the mouse from 'hovering' the inner Widget components, 
-          stopping their internal animations (group-hover) from firing distactingly.
-      */}
-      {isGridDragging && <div className="absolute inset-0 z-[100] bg-transparent" />}
-
       <div 
-        onClick={() => onClick(app.id)}
+        onClick={(e) => !isGridDragging && onClick(app.id)}
         className={`
-          w-full h-full overflow-hidden rounded-3xl cursor-grab active:cursor-grabbing
+          w-full h-full overflow-hidden rounded-3xl
           bg-[#0a0a0a]/40 backdrop-blur-xl border 
           transition-all duration-300 ease-out
           ${isOneByOne || !showWidget ? 'flex flex-col items-center justify-center' : ''}
           
           border-white/5 
-          ${hoverInteractionClasses}
+          ${containerInteractionClasses}
           
           text-left select-none
         `}
       >
-        {/* Drag Handle Hint - Hide during drag to reduce noise */}
+        {/* Drag Handle Hint - Only show when NOT dragging */}
         {!isGridDragging && (
             <div className="absolute top-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-30 transition-opacity z-20 pointer-events-none">
              <GripHorizontal size={12} className="text-white" />
@@ -102,15 +100,15 @@ export const BentoTile: React.FC<BentoTileProps> = ({
             <div className="relative mb-3 pointer-events-none">
                   <div className={`
                       absolute inset-0 rounded-2xl ${app.color}
-                      blur-xl opacity-20 group-hover:opacity-60
-                      transition-all duration-500 scale-110 group-hover:scale-125
+                      blur-xl opacity-20 ${!isGridDragging ? 'group-hover:opacity-60 group-hover:scale-125' : ''}
+                      transition-all duration-500 scale-110
                       brightness-150 saturate-150
                   `} />
 
                   <div className={`
                       relative w-12 h-12 rounded-2xl flex items-center justify-center
                       ${app.color} 
-                      shadow-lg group-hover:scale-110 transition-transform duration-300
+                      shadow-lg ${!isGridDragging ? 'group-hover:scale-110' : ''} transition-transform duration-300
                       border border-white/10 overflow-hidden
                   `}>
                       <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-black/10" />
@@ -128,14 +126,17 @@ export const BentoTile: React.FC<BentoTileProps> = ({
                   </div>
             </div>
             
-            <span className="text-xs font-medium text-slate-300 group-hover:text-white transition-colors truncate w-full text-center px-3 pointer-events-none relative z-10">
+            <span className={`
+                text-xs font-medium text-slate-300 transition-colors truncate w-full text-center px-3 pointer-events-none relative z-10
+                ${!isGridDragging ? 'group-hover:text-white' : ''}
+            `}>
               {app.name}
             </span>
           </>
         )}
 
         {app.isExternal && !showWidget && (
-          <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-50 transition-opacity">
+          <div className={`absolute top-3 right-3 transition-opacity ${!isGridDragging ? 'opacity-0 group-hover:opacity-50' : 'opacity-0'}`}>
               <ExternalLink size={10} className="text-slate-400" />
           </div>
         )}

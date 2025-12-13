@@ -56,12 +56,12 @@ const EmptySlot: React.FC<{
             onDrop={handleDrop}
             className={`
                 rounded-3xl transition-all duration-200 border
-                ${isGridDragging ? 'z-[50] backdrop-blur-sm' : 'z-0'}
+                ${isGridDragging ? 'z-[10]' : 'z-0'} 
                 ${borderClass} ${bgClass} ${scaleClass} ${shadowClass}
             `}
         >
             {isGridDragging && !isHighlighted && (
-                <div className="w-full h-full flex items-center justify-center opacity-20">
+                <div className="w-full h-full flex items-center justify-center opacity-20 pointer-events-none">
                     <div className="w-1 h-1 rounded-full bg-white" />
                 </div>
             )}
@@ -94,6 +94,7 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
     updateCols();
     window.addEventListener('resize', updateCols);
     
+    // Global drag end listener to ensure state cleans up even if dropped outside
     const handleGlobalDragEnd = () => {
         setIsDragging(false);
         setDraggedAppId(null);
@@ -160,6 +161,7 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
 
 
   const handleDragStart = useCallback((e: React.DragEvent, id: string) => {
+    // Crucial: Set global drag state immediately
     setIsDragging(true);
     setDraggedAppId(id);
     e.dataTransfer.effectAllowed = 'move';
@@ -248,6 +250,8 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
             return (
                 <div 
                     key={app.id} 
+                    // Important: This wrapper handles the drag over detection
+                    // because the child BentoTile will have pointer-events-none
                     onDragOver={(e) => { 
                         e.preventDefault(); 
                         e.dataTransfer.dropEffect = 'move';
@@ -257,9 +261,11 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
                     style={{ 
                         ...style, 
                         zIndex: 10,
-                        opacity: isDragging ? 0.6 : 1
                     }}
-                    className="relative transition-opacity duration-200"
+                    className={`
+                        relative transition-opacity duration-200
+                        ${isDragging ? 'z-20' : ''} /* Ensure wrapper stays reachable */
+                    `}
                 >
                   <BentoTile 
                     app={app} 
