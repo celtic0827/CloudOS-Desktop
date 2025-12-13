@@ -7,29 +7,26 @@ interface BentoTileProps {
   onClick: (appId: string) => void;
   style?: React.CSSProperties;
   onDragStart?: (e: React.DragEvent) => void;
-  onDrop?: (e: React.DragEvent) => void;
 }
 
 export const BentoTile: React.FC<BentoTileProps> = ({ 
   app, 
   onClick, 
   style,
-  onDragStart,
-  onDrop
+  onDragStart
 }) => {
   const [hasError, setHasError] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
-  const [isDragOver, setIsDragOver] = useState(false);
 
-  // Determine Layout Classes based on Grid Size
-  const getLayoutClasses = () => {
+  // We maintain aspect ratio classes here, but span classes are now on the parent wrapper in BentoGrid
+  const getAspectRatioClass = () => {
     switch (app.gridSize) {
-      case '2x2': return 'col-span-2 row-span-2 aspect-square';
-      case '2x1': return 'col-span-2 row-span-1 aspect-[2/1]'; 
-      case '1x2': return 'col-span-1 row-span-2 aspect-[1/2]';
-      case '4x2': return 'col-span-2 row-span-2 aspect-square md:col-span-4 md:row-span-2 md:aspect-[2/1]';
+      case '2x2': return 'aspect-square';
+      case '2x1': return 'aspect-[2/1]'; 
+      case '1x2': return 'aspect-[1/2]';
+      case '4x2': return 'aspect-square md:aspect-[2/1]';
       case '1x1':
-      default: return 'col-span-1 row-span-1 aspect-square';
+      default: return 'aspect-square';
     }
   };
 
@@ -42,46 +39,24 @@ export const BentoTile: React.FC<BentoTileProps> = ({
 
   const handleDragEnd = () => {
     setIsDragging(false);
-    setIsDragOver(false);
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault(); 
-    if (!isDragOver) setIsDragOver(true);
-  };
-
-  const handleDragLeave = () => {
-    setIsDragOver(false);
-  };
-
-  const handleDropLocal = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-    setIsDragging(false);
-    if (onDrop) onDrop(e);
   };
 
   const showWidget = app.widgetComponent !== undefined;
   const isOneByOne = app.gridSize === '1x1';
 
   return (
-    // OUTER WRAPPER: Handles Grid Positioning
     <div
       draggable
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDropLocal}
       className={`
         relative w-full h-full 
         transition-all duration-300 ease-out
-        ${getLayoutClasses()}
-        ${isDragging ? 'z-50' : 'z-auto'}
+        ${getAspectRatioClass()}
+        ${isDragging ? 'z-50 opacity-20' : 'z-auto opacity-100'}
       `}
       style={style}
     >
-      {/* INNER VISUAL CARD: Handles Appearance, Hover Effects, and Content */}
       <div 
         onClick={() => onClick(app.id)}
         className={`
@@ -90,10 +65,7 @@ export const BentoTile: React.FC<BentoTileProps> = ({
           transition-all duration-300 ease-out
           ${isOneByOne || !showWidget ? 'flex flex-col items-center justify-center' : ''}
           
-          /* Visual States */
-          ${isDragging ? 'opacity-20 scale-95 border-amber-500/50 grayscale' : 'opacity-100'}
-          ${isDragOver ? 'border-amber-500 shadow-[0_0_30px_-5px_rgba(245,158,11,0.3)] bg-white/5 scale-[1.02]' : 'border-white/5 hover:bg-[#111]/60 hover:border-amber-500/30 hover:shadow-[0_8px_32px_-8px_rgba(245,158,11,0.15)]'}
-          
+          border-white/5 hover:bg-[#111]/60 hover:border-amber-500/30 hover:shadow-[0_8px_32px_-8px_rgba(245,158,11,0.15)]
           active:scale-[0.98] 
           text-left select-none
         `}
@@ -103,17 +75,13 @@ export const BentoTile: React.FC<BentoTileProps> = ({
           <GripHorizontal size={12} className="text-white" />
         </div>
 
-        {/* 1. Custom Widget View */}
         {showWidget ? (
           <div className="w-full h-full pointer-events-none">
               {app.widgetComponent}
           </div>
         ) : (
-          /* 2. Standard Icon View */
           <>
-            {/* Wrapper for Icon & Glow */}
             <div className="relative mb-3 pointer-events-none">
-                  {/* Glow Layer */}
                   <div className={`
                       absolute inset-0 rounded-2xl ${app.color}
                       blur-xl opacity-20 group-hover:opacity-60
@@ -121,7 +89,6 @@ export const BentoTile: React.FC<BentoTileProps> = ({
                       brightness-150 saturate-150
                   `} />
 
-                  {/* Main Icon Box */}
                   <div className={`
                       relative w-12 h-12 rounded-2xl flex items-center justify-center
                       ${app.color} 
@@ -149,7 +116,6 @@ export const BentoTile: React.FC<BentoTileProps> = ({
           </>
         )}
 
-        {/* External Link Indicator */}
         {app.isExternal && !showWidget && (
           <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-50 transition-opacity">
               <ExternalLink size={10} className="text-slate-400" />

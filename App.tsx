@@ -79,7 +79,8 @@ function App() {
   const handleCloseContextMenu = () => setContextMenu(null);
 
   const handleOpenApp = (id: string) => {
-      const app = allApps.find(a => a.id === id);
+      // Find app in the sparse array
+      const app = allApps.find(a => a?.id === id); 
       
       if (app?.isWidget && app.id !== 'gemini-assistant') {
           setSettingsContext({ tab: 'widgets', appId: app.id });
@@ -93,7 +94,7 @@ function App() {
       openApp(id);
   };
 
-  const activeApp = allApps.find(app => app.id === activeAppId);
+  const activeApp = allApps.find(app => app?.id === activeAppId);
 
   // --- Window Content Renderer ---
   const renderAppContent = () => {
@@ -149,6 +150,9 @@ function App() {
     return <div className="flex items-center justify-center h-full text-white">App configuration error</div>;
   };
 
+  // Filter out nulls for the Dock, as the Dock should only show actual apps
+  const dockApps = allApps.filter((a): a is any => a !== null);
+
   return (
     <div 
       className="relative w-screen h-[100dvh] overflow-hidden bg-[#020202] font-sans text-slate-900 selection:bg-amber-500/30"
@@ -202,12 +206,13 @@ function App() {
                
                <div className="w-full">
                  <BentoGrid 
-                    apps={allApps} 
+                    apps={allApps} // Now passes sparse array (App | null)[]
                     onOpenApp={handleOpenApp} 
                     onMoveApp={moveApp} 
                  />
                  
-                 {allApps.length > 12 && (
+                 {/* Only show "End of Workspace" if we have enough apps to scroll */}
+                 {dockApps.length > 12 && (
                    <div className="text-slate-700 text-[10px] uppercase tracking-widest opacity-50 font-medium text-center mt-6">
                      End of Workspace
                    </div>
@@ -233,7 +238,7 @@ function App() {
       {/* Floating Navigation Dock */}
       <FloatingDock 
         activeAppId={activeAppId}
-        apps={allApps}
+        apps={dockApps} // Pass only non-null apps
         onSwitchApp={handleOpenApp}
         onCloseApp={closeApp}
         installPrompt={installPrompt}

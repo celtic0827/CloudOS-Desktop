@@ -4,9 +4,11 @@ import { DEFAULT_USER_APPS, SYSTEM_APPS, WIDGET_REGISTRY, configToDefinition, wi
 
 const STORAGE_KEY_APPS = 'cloudos_user_apps';
 const STORAGE_KEY_WIDGETS = 'cloudos_active_widgets';
-const STORAGE_KEY_ORDER = 'cloudos_layout_order';
+const STORAGE_KEY_LAYOUT = 'cloudos_grid_layout_v2'; // Changed key for new data structure
 
-// Now accepts clockConfig to sync widget sizes
+// Fixed grid capacity to ensure enough drop zones for a desktop page
+const GRID_CAPACITY = 48;
+
 export const useAppConfig = (clockConfig?: ClockConfig) => {
   // 1. User Apps State
   const [userApps, setUserApps] = useState<AppConfig[]>(() => {
@@ -18,24 +20,31 @@ export const useAppConfig = (clockConfig?: ClockConfig) => {
     }
   });
 
-  // 2. Active Widgets State (List of IDs from Registry)
+  // 2. Active Widgets State
   const [activeWidgetIds, setActiveWidgetIds] = useState<string[]>(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY_WIDGETS);
-      // Default: Enable Clock and Gemini if storage is empty
       return stored ? JSON.parse(stored) : ['clock-widget', 'gemini-assistant'];
     } catch (e) {
       return ['clock-widget', 'gemini-assistant'];
     }
   });
 
-  // 3. Layout Order State
-  const [layoutOrder, setLayoutOrder] = useState<string[]>(() => {
+  // 3. Layout State (Sparse Array of IDs or Null)
+  const [layout, setLayout] = useState<(string | null)[]>(() => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY_ORDER);
-      return stored ? JSON.parse(stored) : [];
+      const stored = localStorage.getItem(STORAGE_KEY_LAYOUT);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        // Ensure minimum capacity if loaded layout is smaller
+        if (parsed.length < GRID_CAPACITY) {
+            return [...parsed, ...Array(GRID_CAPACITY - parsed.length).fill(null)];
+        }
+        return parsed;
+      }
+      return Array(GRID_CAPACITY).fill(null);
     } catch (e) {
-      return [];
+      return Array(GRID_CAPACITY).fill(null);
     }
   });
 
@@ -49,80 +58,59 @@ export const useAppConfig = (clockConfig?: ClockConfig) => {
   }, [activeWidgetIds]);
 
   useEffect(() => {
-    if (layoutOrder.length > 0) {
-      localStorage.setItem(STORAGE_KEY_ORDER, JSON.stringify(layoutOrder));
-    }
-  }, [layoutOrder]);
+    localStorage.setItem(STORAGE_KEY_LAYOUT, JSON.stringify(layout));
+  }, [layout]);
 
-  // 4. Compute All Apps (Unordered)
-  const rawAllApps: AppDefinition[] = useMemo(() => {
-    const userDefinitions = userApps.map(configToDefinition);
-    
-    // Map active widget IDs to definitions
-    const widgetDefinitions = activeWidgetIds
-      .filter(id => WIDGET_REGISTRY[id])
-      .map(id => {
-          const def = widgetToDefinition(WIDGET_REGISTRY[id]);
-          // Override Grid Size for System Clock based on config
-          if (id === 'clock-widget' && clockConfig) {
-              def.gridSize = clockConfig.gridSize;
-          }
-          return def;
-      });
-
-    // Combine: System (Settings) + Widgets + User Apps
-    return [...SYSTEM_APPS, ...widgetDefinitions, ...userDefinitions];
-  }, [userApps, activeWidgetIds, clockConfig]); // Depend on clockConfig
-
-  // 5. Compute Ordered Apps
+  // 4. Compute Grid Items (Sparse Array of Definitions)
   const allApps = useMemo(() => {
-    if (layoutOrder.length === 0) {
-      // Heuristic sort
-      const sorted = [...rawAllApps].sort((a, b) => {
-        const getScore = (app: AppDefinition) => {
-          if (app.id === 'clock-widget') return 100;
-          if (app.id === 'gemini-assistant') return 90;
-          if (app.gridSize === '2x2') return 80;
-          if (app.gridSize === '2x1') return 70;
-          return 1;
-        };
-        return getScore(b) - getScore(a);
-      });
-      return sorted;
-    }
+    // Collect all active definitions
+    const definitions = [
+        ...SYSTEM_APPS,
+        ...activeWidgetIds
+            .filter(id => WIDGET_REGISTRY[id])
+            .map(id => {
+                const def = widgetToDefinition(WIDGET_REGISTRY[id]);
+                if (id === 'clock-widget' && clockConfig) {
+                    def.gridSize = clockConfig.gridSize;
+                }
+                return def;
+            }),
+        ...userApps.map(configToDefinition)
+    ];
 
-    const appMap = new Map(rawAllApps.map(app => [app.id, app]));
-    const ordered: AppDefinition[] = [];
-    const processedIds = new Set<string>();
-
-    layoutOrder.forEach(id => {
-      const app = appMap.get(id);
-      if (app) {
-        ordered.push(app);
-        processedIds.add(id);
-      }
+    const defMap = new Map(definitions.map(d => [d.id, d]));
+    const placedIds = new Set<string>();
+    
+    // Construct Grid from Layout
+    let newGrid = [...layout];
+    
+    // Validate Layout: Map existing IDs to Definitions, clear invalid IDs
+    newGrid = newGrid.map(id => {
+        if (id && defMap.has(id)) {
+            placedIds.add(id);
+            return id; // Keep ID
+        }
+        return null; // Clear invalid ID or keep null
     });
 
-    // Append new items
-    rawAllApps.forEach(app => {
-      if (!processedIds.has(app.id)) {
-        ordered.push(app);
-      }
+    // Place unplaced apps (e.g. newly added) into first available empty slots
+    definitions.forEach(def => {
+        if (!placedIds.has(def.id)) {
+            const emptyIndex = newGrid.findIndex(item => item === null);
+            if (emptyIndex !== -1) {
+                newGrid[emptyIndex] = def.id;
+            } else {
+                newGrid.push(def.id); // Expand grid if full
+            }
+        }
     });
 
-    return ordered;
-  }, [rawAllApps, layoutOrder]);
+    // Return the actual definitions in the grid slots
+    return newGrid.map(id => (id ? defMap.get(id)! : null));
+  }, [userApps, activeWidgetIds, layout, clockConfig]);
 
-  // Sync layoutOrder only when raw content changes meaningfully
-  useEffect(() => {
-    const currentIds = allApps.map(a => a.id);
-    const isMismatch = JSON.stringify(currentIds) !== JSON.stringify(layoutOrder);
-    if (isMismatch) {
-        setLayoutOrder(currentIds);
-    }
-  }, [allApps]);
 
-  // CRUD
+  // 5. CRUD & Move Logic
   const addApp = (newApp: AppConfig) => {
     setUserApps(prev => [...prev, newApp]);
   };
@@ -133,15 +121,15 @@ export const useAppConfig = (clockConfig?: ClockConfig) => {
 
   const deleteApp = (id: string) => {
     setUserApps(prev => prev.filter(app => app.id !== id));
-    setLayoutOrder(prev => prev.filter(orderId => orderId !== id));
+    setLayout(prev => prev.map(item => item === id ? null : item));
   };
 
   const resetApps = () => {
     if (confirm('Reset all apps and layout?')) {
         setUserApps(DEFAULT_USER_APPS);
         setActiveWidgetIds(['clock-widget', 'gemini-assistant']);
-        setLayoutOrder([]); 
-        localStorage.removeItem(STORAGE_KEY_ORDER);
+        setLayout(Array(GRID_CAPACITY).fill(null)); 
+        localStorage.removeItem(STORAGE_KEY_LAYOUT);
     }
   };
 
@@ -149,28 +137,41 @@ export const useAppConfig = (clockConfig?: ClockConfig) => {
     setUserApps(importedApps);
   };
 
-  const moveApp = useCallback((sourceId: string, targetId: string) => {
-    if (sourceId === targetId) return;
-    setLayoutOrder(prevOrder => {
-      const newOrder = [...prevOrder];
-      const sourceIndex = newOrder.indexOf(sourceId);
-      const targetIndex = newOrder.indexOf(targetId);
-      if (sourceIndex === -1 || targetIndex === -1) return prevOrder;
-      const [movedId] = newOrder.splice(sourceIndex, 1);
-      newOrder.splice(targetIndex, 0, movedId);
-      return newOrder;
+  // Improved Move Logic for Grid: Swap or Place
+  const moveApp = useCallback((sourceId: string, targetIndex: number) => {
+    setLayout(prevLayout => {
+      const newLayout = [...prevLayout];
+      const sourceIndex = newLayout.indexOf(sourceId);
+      
+      if (sourceIndex === -1) return prevLayout; 
+      if (sourceIndex === targetIndex) return prevLayout;
+
+      // Extract source
+      newLayout[sourceIndex] = null;
+
+      // Check content at target
+      const targetContent = newLayout[targetIndex];
+      
+      // Place source at target
+      newLayout[targetIndex] = sourceId;
+
+      // If target had something, move it to source's old spot (Swap)
+      // This is the most stable behavior for manual grids without complex shifting algorithms
+      if (targetContent) {
+          newLayout[sourceIndex] = targetContent;
+      }
+
+      return newLayout;
     });
   }, []);
 
-  // Widget Management
   const toggleWidget = (widgetId: string, enabled: boolean) => {
     setActiveWidgetIds(prev => {
       if (enabled) {
         return prev.includes(widgetId) ? prev : [...prev, widgetId];
       } else {
         const newIds = prev.filter(id => id !== widgetId);
-        // Also clean up order
-        setLayoutOrder(currentOrder => currentOrder.filter(id => id !== widgetId));
+        setLayout(l => l.map(item => item === widgetId ? null : item));
         return newIds;
       }
     });
@@ -178,7 +179,7 @@ export const useAppConfig = (clockConfig?: ClockConfig) => {
 
   return {
     userApps,
-    allApps,
+    allApps, // Now returns (AppDefinition | null)[]
     activeWidgetIds,
     addApp,
     updateApp,
