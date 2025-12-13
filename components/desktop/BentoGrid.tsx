@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useEffect, useMemo } from 'react';
-import { AppDefinition } from '../../types';
+import { AppDefinition, GridSize } from '../../types';
 import { BentoTile } from './BentoTile';
 
 interface BentoGridProps {
@@ -9,7 +9,6 @@ interface BentoGridProps {
 }
 
 // Empty Slot Component
-// Now simplified: State is controlled by parent to allow multi-slot highlighting
 const EmptySlot: React.FC<{ 
     index: number, 
     style: React.CSSProperties,
@@ -22,7 +21,6 @@ const EmptySlot: React.FC<{
     const handleDragOver = (e: React.DragEvent) => {
         e.preventDefault();
         e.dataTransfer.dropEffect = 'move';
-        // We trigger state update here to track where the mouse is
         onDragEnter(index); 
     };
 
@@ -62,7 +60,6 @@ const EmptySlot: React.FC<{
                 ${borderClass} ${bgClass} ${scaleClass} ${shadowClass}
             `}
         >
-            {/* Optional dot guide when dragging */}
             {isGridDragging && !isHighlighted && (
                 <div className="w-full h-full flex items-center justify-center opacity-20">
                     <div className="w-1 h-1 rounded-full bg-white" />
@@ -97,7 +94,6 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
     updateCols();
     window.addEventListener('resize', updateCols);
     
-    // Global listener to catch drag end if dropped outside
     const handleGlobalDragEnd = () => {
         setIsDragging(false);
         setDraggedAppId(null);
@@ -111,34 +107,56 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
     };
   }, []);
 
+  // Helper: Get W/H from GridSize string
+  const getDimensions = (gridSize: GridSize): [number, number] => {
+      if (gridSize === '2x2') return [2, 2];
+      if (gridSize === '2x1') return [2, 1];
+      if (gridSize === '1x2') return [1, 2];
+      if (gridSize === '4x2') return [4, 2];
+      return [1, 1];
+  };
+
+  // Helper: Check if a placement is valid (Doesn't wrap rows, doesn't overflow bottom)
+  const checkPlacementValidity = useCallback((index: number, w: number, h: number) => {
+      const colIndex = index % cols;
+      
+      // 1. Right Edge Check: If current column + width > total columns, it wraps.
+      if (colIndex + w > cols) return false;
+
+      // 2. Bottom Edge Check: If it goes beyond the total number of slots
+      // Calculate the index of the bottom-right cell
+      const lastIndex = index + ((h - 1) * cols) + (w - 1);
+      if (lastIndex >= apps.length) return false;
+
+      return true;
+  }, [cols, apps.length]);
+
   // --- Footprint Calculation Logic ---
-  // Calculates which slots should light up based on the dragged app's size and the hovered slot.
   const highlightedIndices = useMemo(() => {
       if (hoveredIndex === null || !draggedAppId) return new Set<number>();
 
       const app = apps.find(a => a?.id === draggedAppId);
-      if (!app) return new Set([hoveredIndex]);
+      // If we can't find the dragged app (weird), default to 1x1 logic or just anchor
+      const gridSize = app?.gridSize || '1x1';
+      const [w, h] = getDimensions(gridSize);
 
-      const gridSize = app.gridSize || '1x1';
-      const [w, h] = gridSize === '1x1' ? [1, 1] : 
-                     gridSize === '2x1' ? [2, 1] : 
-                     gridSize === '1x2' ? [1, 2] : 
-                     gridSize === '2x2' ? [2, 2] : 
-                     gridSize === '4x2' ? [4, 2] : [1, 1];
+      // Validate Placement BEFORE calculating indices
+      const isValid = checkPlacementValidity(hoveredIndex, w, h);
+      
+      // If invalid, return empty set (User sees NO highlight -> implies "No Drop")
+      if (!isValid) return new Set<number>();
 
       const indices = new Set<number>();
 
-      // Loop through the dimensions of the widget to find all occupied slots relative to the anchor (hoveredIndex)
       for (let row = 0; row < h; row++) {
           for (let col = 0; col < w; col++) {
-              // Calculate the linear index: Anchor + Column Offset + (Row Offset * Total Columns)
               const targetIndex = hoveredIndex + col + (row * cols);
               indices.add(targetIndex);
           }
       }
       return indices;
 
-  }, [hoveredIndex, draggedAppId, apps, cols]);
+  }, [hoveredIndex, draggedAppId, apps, cols, checkPlacementValidity]);
 
 
   const handleDragStart = useCallback((e: React.DragEvent, id: string) => {
@@ -150,15 +168,27 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
 
   const handleDrop = useCallback((e: React.DragEvent, targetIndex: number) => {
     e.preventDefault();
+    
+    // We need to re-validate here because the drop event doesn't know about the UI state
+    // We need to get the dragged app ID from state (closure) or re-fetch
+    const sourceId = e.dataTransfer.getData('text/plain');
+    
+    // Find the app to check its size
+    const app = apps.find(a => a?.id === sourceId);
+    
+    if (app && onMoveApp) {
+        const [w, h] = getDimensions(app.gridSize);
+        // Only allow move if valid
+        if (checkPlacementValidity(targetIndex, w, h)) {
+            onMoveApp(sourceId, targetIndex);
+        }
+    }
+
+    // Reset state
     setIsDragging(false);
     setDraggedAppId(null);
     setHoveredIndex(null);
-
-    const sourceId = e.dataTransfer.getData('text/plain');
-    if (sourceId && onMoveApp) {
-      onMoveApp(sourceId, targetIndex);
-    }
-  }, [onMoveApp]);
+  }, [onMoveApp, apps, checkPlacementValidity]);
 
   // Explicit Grid Position Helper
   const getGridStyle = (index: number, span?: string) => {
@@ -196,8 +226,7 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
                 if (app.gridSize === '2x2') spanClass = 'col-span-2 row-span-2';
                 else if (app.gridSize === '2x1' || app.gridSize === '4x2') spanClass = 'col-span-2';
                 else if (app.gridSize === '1x2') spanClass = 'row-span-2';
-                // 4x2 Logic if needed
-                else if (app.gridSize === '4x2') spanClass = 'col-span-2'; // simplified mapping for now or use col-span-4
+                else if (app.gridSize === '4x2') spanClass = 'col-span-2'; 
             }
 
             const style = getGridStyle(index, spanClass);
@@ -222,7 +251,6 @@ export const BentoGrid: React.FC<BentoGridProps> = ({
                     onDragOver={(e) => { 
                         e.preventDefault(); 
                         e.dataTransfer.dropEffect = 'move';
-                        // Allow dragging over existing apps too - treat them as potential drop anchors
                         setHoveredIndex(index);
                     }} 
                     onDrop={(e) => handleDrop(e, index)} 
