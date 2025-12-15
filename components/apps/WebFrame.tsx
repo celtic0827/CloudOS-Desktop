@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 interface WebFrameProps {
   id: string;
@@ -9,13 +9,9 @@ interface WebFrameProps {
 }
 
 export const WebFrame: React.FC<WebFrameProps> = ({ id, src, title, themeColor, refreshTrigger = 0 }) => {
+  // Since App.tsx now forces a remount by changing the component 'key', 
+  // this state naturally resets to true on every reload.
   const [isLoading, setIsLoading] = useState(true);
-
-  // When refreshTrigger changes (user clicked reload in Dock), reset loading state
-  // The iframe key change will force React to remount the iframe element
-  useEffect(() => {
-    setIsLoading(true);
-  }, [refreshTrigger]);
 
   return (
     <div className="w-full h-full relative bg-[#0a0a0a] group overflow-hidden">
@@ -31,7 +27,7 @@ export const WebFrame: React.FC<WebFrameProps> = ({ id, src, title, themeColor, 
       )}
       
       {/* Fullscreen Iframe - Pure, no extra UI */}
-      {/* We use refreshTrigger as part of the key to force re-render on reload */}
+      {/* Using refreshTrigger in key ensures iframe is destroyed and recreated if the parent doesn't unmount us */}
       <iframe 
           key={`${id}-${refreshTrigger}`}
           src={src} 

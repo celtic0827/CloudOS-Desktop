@@ -98,6 +98,8 @@ function App() {
   };
 
   const handleReloadActiveApp = () => {
+    // Incrementing this triggers a re-render of App
+    // We use this value in the Key of WebFrame to force a full remount
     setWebRefreshTrigger(prev => prev + 1);
   };
 
@@ -146,6 +148,9 @@ function App() {
     if (activeApp.isExternal && activeApp.url) {
       return (
         <WebFrame 
+          // CRITICAL: Changing the key forces React to completely destroy and recreate the component.
+          // This guarantees the isLoading state resets and the iframe loads from scratch.
+          key={`${activeApp.id}-${webRefreshTrigger}`}
           id={activeApp.id}
           src={activeApp.url} 
           title={activeApp.name} 
@@ -202,12 +207,6 @@ function App() {
               WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 2%, black 90%, transparent)'
             }}
           >
-            {/* 
-                LAYOUT UPDATE:
-                - Removed generic 'p-6' to allow BentoGrid to handle horizontal spacing more accurately on mobile.
-                - Increased 'pb-48' (12rem) to ensure apps are never covered by the Dock.
-                - Standardized 'pt-24' (6rem) for top spacing.
-            */}
             <div className={`
                 min-h-full flex flex-col transition-all duration-500
                 justify-start pt-24 pb-48
