@@ -92,8 +92,8 @@ export const DEFAULT_USER_APPS: AppConfig[] = [
     heroColor: "#f59e0b",
     heroEffect: "glow",
     heroEffectIntensity: 1.5,
-    widgetStyle: "horizontal",
-    gridSize: "2x1"
+    widgetStyle: "vertical",
+    gridSize: "1x2"
   },
   {
     id: "2d57b6e9-1472-4c7e-a735-7770b1c87326",
@@ -177,19 +177,25 @@ export const WIDGET_REGISTRY: Record<string, WidgetRegistryItem> = {
 // Grid is assumed to be 8 columns wide on desktop.
 export const DEFAULT_LAYOUT: (string | null)[] = new Array(48).fill(null);
 
-// Row 1
-DEFAULT_LAYOUT[0] = 'clock-widget';      // 2x2 (Covers idx 0, 1, 8, 9)
-DEFAULT_LAYOUT[2] = 'gemini-assistant';  // 2x2 (Covers idx 2, 3, 10, 11)
-DEFAULT_LAYOUT[4] = 'creator-sync';      // 1x2 (Covers idx 4, 12)
-DEFAULT_LAYOUT[5] = 'settings';          // 1x1
+// Row 1 & 2 (Top Area)
+// Clock (2x2) at 0,1 / 8,9
+DEFAULT_LAYOUT[0] = 'clock-widget';
+// Gemini (2x2) at 2,3 / 10,11
+DEFAULT_LAYOUT[2] = 'gemini-assistant';
+// Creator Sync (1x2 Vertical) at 4 / 12
+DEFAULT_LAYOUT[4] = 'creator-sync';
+// Comfy Meta (1x2 Vertical) at 5 / 13
+DEFAULT_LAYOUT[5] = 'comfy-meta';
+// Settings (1x1) at 6
+DEFAULT_LAYOUT[6] = 'settings';
 
 // Row 3 (Index starts at 16)
-DEFAULT_LAYOUT[16] = 'b236b1d4-09a6-4ca7-a873-0b5f2ea138a6'; // Batchbox (2x1)
-DEFAULT_LAYOUT[18] = 'comfy-meta';                            // Comfy Meta (2x1)
-
-// Row 4 (Index starts at 24)
-DEFAULT_LAYOUT[24] = '2d57b6e9-1472-4c7e-a735-7770b1c87326'; // Sonic Alchemy (2x1)
-DEFAULT_LAYOUT[26] = '27f478d3-020a-474c-82f0-536a8dea712c'; // Prisma Flow (2x1)
+// Batchbox (2x1) at 16,17
+DEFAULT_LAYOUT[16] = 'b236b1d4-09a6-4ca7-a873-0b5f2ea138a6'; 
+// Sonic Alchemy (2x1) at 18,19
+DEFAULT_LAYOUT[18] = '2d57b6e9-1472-4c7e-a735-7770b1c87326'; 
+// Prisma Flow (2x1) at 20,21
+DEFAULT_LAYOUT[20] = '27f478d3-020a-474c-82f0-536a8dea712c';
 
 
 // Helper: Convert user config to runtime definition

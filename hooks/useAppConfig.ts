@@ -3,9 +3,9 @@ import { AppConfig, AppDefinition, ClockConfig } from '../types';
 import { DEFAULT_USER_APPS, SYSTEM_APPS, WIDGET_REGISTRY, DEFAULT_LAYOUT, configToDefinition, widgetToDefinition } from '../constants';
 
 // Bumped versions to force reload of new default JSON layout AND the visual arrangement
-const STORAGE_KEY_APPS = 'cloudos_user_apps_v5';
-const STORAGE_KEY_WIDGETS = 'cloudos_active_widgets_v5';
-const STORAGE_KEY_LAYOUT = 'cloudos_grid_layout_v5'; 
+const STORAGE_KEY_APPS = 'cloudos_user_apps_v6';
+const STORAGE_KEY_WIDGETS = 'cloudos_active_widgets_v6';
+const STORAGE_KEY_LAYOUT = 'cloudos_grid_layout_v6'; 
 
 // Fixed grid capacity
 const GRID_CAPACITY = 48;
