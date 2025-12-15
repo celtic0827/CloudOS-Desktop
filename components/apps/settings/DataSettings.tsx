@@ -1,25 +1,40 @@
 import React, { useRef } from 'react';
 import { Download, Upload, RotateCcw } from 'lucide-react';
 import { AppConfig } from '../../../types';
+import { SystemBackup } from '../../../hooks/useAppConfig';
 
 interface DataSettingsProps {
   userApps: AppConfig[];
+  activeWidgetIds: string[];
+  layout: (string | null)[];
   onImportApps: (apps: AppConfig[]) => void;
+  onImportSystemConfig: (backup: SystemBackup) => void;
   onResetApps: () => void;
 }
 
 export const DataSettings: React.FC<DataSettingsProps> = ({
   userApps,
+  activeWidgetIds,
+  layout,
   onImportApps,
+  onImportSystemConfig,
   onResetApps
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleExport = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(userApps, null, 2));
+    // New Format: Full System Backup
+    const backupData: SystemBackup = {
+        apps: userApps,
+        widgets: activeWidgetIds,
+        layout: layout,
+        timestamp: Date.now()
+    };
+    
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
     const downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", "cloudos_backup.json");
+    downloadAnchorNode.setAttribute("download", `cloudos_full_backup_${new Date().toISOString().split('T')[0]}.json`);
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
@@ -36,9 +51,15 @@ export const DataSettings: React.FC<DataSettingsProps> = ({
       fileReader.onload = (event) => {
         try {
           const parsed = JSON.parse(event.target?.result as string);
+          
           if (Array.isArray(parsed)) {
+            // Legacy Format (Just Array of Apps)
             onImportApps(parsed);
-            alert('Backup restored successfully.');
+            alert('Restored Legacy Backup (Apps Only). Layout positions reset.');
+          } else if (parsed.layout && parsed.apps) {
+            // New Full Format
+            onImportSystemConfig(parsed as SystemBackup);
+            alert('Full System Backup Restored Successfully.');
           } else {
             alert('Invalid backup file format.');
           }
@@ -54,7 +75,7 @@ export const DataSettings: React.FC<DataSettingsProps> = ({
       <div className="max-w-3xl mx-auto h-full flex flex-col justify-center">
          <div className="mb-8 text-center">
             <h3 className="text-2xl font-serif text-amber-50 mb-2">Data Management</h3>
-            <p className="text-sm text-slate-500">Securely backup your configuration or restore from a file.</p>
+            <p className="text-sm text-slate-500">Securely backup your full configuration (Apps, Layout, Widgets) or restore from file.</p>
          </div>
 
          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -64,13 +85,13 @@ export const DataSettings: React.FC<DataSettingsProps> = ({
                   <Download size={20} />
                </div>
                <div className="relative z-10">
-                  <h4 className="font-medium text-slate-200 text-sm">Export Backup</h4>
+                  <h4 className="font-medium text-slate-200 text-sm">Full System Export</h4>
                </div>
                <button 
                   onClick={handleExport}
                   className="mt-1 px-4 py-2 bg-[#151515] text-slate-300 rounded-lg hover:bg-amber-600 hover:text-white transition-all text-[10px] font-bold uppercase tracking-wider w-full relative z-10 border border-white/5 group-hover:border-amber-500/50"
                >
-                  Download
+                  Download JSON
                </button>
             </div>
 
@@ -80,13 +101,13 @@ export const DataSettings: React.FC<DataSettingsProps> = ({
                   <Upload size={20} />
                </div>
                <div className="relative z-10">
-                  <h4 className="font-medium text-slate-200 text-sm">Import Config</h4>
+                  <h4 className="font-medium text-slate-200 text-sm">Restore Backup</h4>
                </div>
                <button 
                   onClick={handleImportClick}
                   className="mt-1 px-4 py-2 bg-[#151515] text-slate-300 rounded-lg hover:bg-emerald-600 hover:text-white transition-all text-[10px] font-bold uppercase tracking-wider w-full relative z-10 border border-white/5 group-hover:border-emerald-500/50"
                >
-                  Upload File
+                  Upload JSON
                </button>
                <input 
                   type="file" 
@@ -103,17 +124,17 @@ export const DataSettings: React.FC<DataSettingsProps> = ({
                   <RotateCcw size={20} />
                </div>
                <div className="relative z-10">
-                  <h4 className="font-medium text-slate-200 text-sm">System Reset</h4>
+                  <h4 className="font-medium text-slate-200 text-sm">Factory Reset</h4>
                </div>
                <button 
                   onClick={() => {
-                     if (confirm('DANGER: This will delete all your custom links. Are you sure?')) {
+                     if (confirm('DANGER: This will delete all your custom links and layout. Are you sure?')) {
                         onResetApps();
                      }
                   }}
                   className="mt-1 px-4 py-2 bg-[#151515] text-slate-300 rounded-lg hover:bg-red-900/50 hover:text-red-200 transition-all text-[10px] font-bold uppercase tracking-wider w-full relative z-10 border border-white/5 group-hover:border-red-500/50"
                >
-                  Factory Reset
+                  Reset All
                </button>
             </div>
          </div>

@@ -4,10 +4,12 @@ import { LayoutGrid, X } from 'lucide-react';
 import { AppsSettings } from './settings/AppsSettings';
 import { WidgetsSettings } from './settings/WidgetsSettings';
 import { DataSettings } from './settings/DataSettings';
+import { SystemBackup } from '../../hooks/useAppConfig';
 
 interface SettingsProps {
   userApps: AppConfig[];
   activeWidgetIds: string[];
+  layout: (string | null)[]; // NEW: Pass layout for backup
   clockConfig?: ClockConfig;
   onUpdateClockConfig?: (config: Partial<ClockConfig>) => void;
   onAddApp: (app: AppConfig) => void;
@@ -15,6 +17,7 @@ interface SettingsProps {
   onDeleteApp: (id: string) => void;
   onResetApps: () => void;
   onImportApps: (apps: AppConfig[]) => void;
+  onImportSystemConfig: (backup: SystemBackup) => void; // NEW: Full system restore
   onToggleWidget: (id: string, enabled: boolean) => void;
   onClose: () => void;
   initialTab?: string;
@@ -24,6 +27,7 @@ interface SettingsProps {
 export const Settings: React.FC<SettingsProps> = ({
   userApps,
   activeWidgetIds,
+  layout,
   clockConfig,
   onUpdateClockConfig,
   onAddApp,
@@ -31,6 +35,7 @@ export const Settings: React.FC<SettingsProps> = ({
   onDeleteApp,
   onResetApps,
   onImportApps,
+  onImportSystemConfig,
   onToggleWidget,
   onClose,
   initialTab,
@@ -123,7 +128,10 @@ export const Settings: React.FC<SettingsProps> = ({
         {activeTab === 'data' && (
             <DataSettings 
                 userApps={userApps}
+                activeWidgetIds={activeWidgetIds}
+                layout={layout}
                 onImportApps={onImportApps}
+                onImportSystemConfig={onImportSystemConfig}
                 onResetApps={onResetApps}
             />
         )}

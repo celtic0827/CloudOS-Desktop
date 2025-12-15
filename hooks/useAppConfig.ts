@@ -10,6 +10,13 @@ const STORAGE_KEY_LAYOUT = 'cloudos_grid_layout_v5';
 // Fixed grid capacity
 const GRID_CAPACITY = 48;
 
+export interface SystemBackup {
+    apps: AppConfig[];
+    widgets: string[];
+    layout: (string | null)[];
+    timestamp?: number;
+}
+
 export const useAppConfig = (clockConfig?: ClockConfig) => {
   // 1. User Apps State
   const [userApps, setUserApps] = useState<AppConfig[]>(() => {
@@ -151,8 +158,18 @@ export const useAppConfig = (clockConfig?: ClockConfig) => {
     }
   };
 
+  // Legacy Import (Apps Only)
   const importApps = (importedApps: AppConfig[]) => {
     setUserApps(importedApps);
+  };
+
+  // Full System Import
+  const importSystemConfig = (backup: SystemBackup) => {
+      if (backup.apps) setUserApps(backup.apps);
+      if (backup.widgets) setActiveWidgetIds(backup.widgets);
+      // Wait for state update cycle or force layout set? 
+      // Setting layout directly is fine, the useEffect sync will double check validity next render.
+      if (backup.layout) setLayout(backup.layout); 
   };
 
   // Move Logic: Swaps content in the layout array
@@ -192,11 +209,13 @@ export const useAppConfig = (clockConfig?: ClockConfig) => {
     userApps,
     allApps, 
     activeWidgetIds,
+    layout, // Exported layout for backup
     addApp,
     updateApp,
     deleteApp,
     resetApps,
     importApps,
+    importSystemConfig, // New function
     moveApp,
     toggleWidget
   };

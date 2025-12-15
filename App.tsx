@@ -18,12 +18,14 @@ function App() {
   const { 
     userApps, 
     allApps, 
-    activeWidgetIds, 
+    activeWidgetIds,
+    layout, // Extracted layout for backup
     addApp, 
     updateApp, 
     deleteApp, 
     resetApps, 
     importApps,
+    importSystemConfig, // Extracted import function
     moveApp,
     toggleWidget
   } = useAppConfig(clockConfig);
@@ -117,6 +119,7 @@ function App() {
               <Settings 
                 userApps={userApps}
                 activeWidgetIds={activeWidgetIds}
+                layout={layout} // Pass layout
                 clockConfig={clockConfig} 
                 onUpdateClockConfig={updateClockConfig} 
                 onAddApp={addApp}
@@ -124,6 +127,7 @@ function App() {
                 onDeleteApp={deleteApp}
                 onResetApps={resetApps}
                 onImportApps={importApps}
+                onImportSystemConfig={importSystemConfig} // Pass new import
                 onToggleWidget={toggleWidget}
                 onClose={closeApp}
                 initialTab={settingsContext.tab}
