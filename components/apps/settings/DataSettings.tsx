@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Download, Upload, RotateCcw } from 'lucide-react';
+import { Download, Upload, RotateCcw, LayoutTemplate, Box, Sparkles, CheckCircle2 } from 'lucide-react';
 import { AppConfig } from '../../../types';
 import { SystemBackup } from '../../../hooks/useAppConfig';
 
@@ -70,12 +70,60 @@ export const DataSettings: React.FC<DataSettingsProps> = ({
     }
   };
 
+  // Calculate stats for the dashboard
+  const appCount = userApps.length;
+  const widgetCount = activeWidgetIds.length;
+  // Count non-null slots to verify layout activity
+  const layoutItems = layout.filter(id => id !== null).length;
+
   return (
-    <div className="w-full h-full p-8 overflow-y-auto bg-[#050505]">
+    <div className="w-full h-full p-8 overflow-y-auto bg-[#050505] scrollbar-hide">
       <div className="max-w-3xl mx-auto h-full flex flex-col justify-center">
          <div className="mb-8 text-center">
             <h3 className="text-2xl font-serif text-amber-50 mb-2">Data Management</h3>
             <p className="text-sm text-slate-500">Securely backup your full configuration (Apps, Layout, Widgets) or restore from file.</p>
+         </div>
+
+         {/* Status Dashboard - Visual Confirmation of what's being backed up */}
+         <div className="bg-[#0f0f0f] border border-white/5 rounded-2xl p-6 mb-8 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
+            
+            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                <CheckCircle2 size={12} className="text-emerald-500" />
+                Current System State
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+                <div className="bg-[#050505] rounded-xl p-3 border border-white/5 flex items-center gap-3">
+                    <div className="p-2 bg-amber-900/20 text-amber-500 rounded-lg">
+                        <Box size={16} />
+                    </div>
+                    <div>
+                        <div className="text-lg font-bold text-slate-200 leading-none">{appCount}</div>
+                        <div className="text-[10px] text-slate-500 uppercase tracking-wide mt-1">Apps</div>
+                    </div>
+                </div>
+
+                <div className="bg-[#050505] rounded-xl p-3 border border-white/5 flex items-center gap-3">
+                    <div className="p-2 bg-amber-900/20 text-amber-500 rounded-lg">
+                        <Sparkles size={16} />
+                    </div>
+                    <div>
+                        <div className="text-lg font-bold text-slate-200 leading-none">{widgetCount}</div>
+                        <div className="text-[10px] text-slate-500 uppercase tracking-wide mt-1">Widgets</div>
+                    </div>
+                </div>
+
+                <div className="bg-[#050505] rounded-xl p-3 border border-white/5 flex items-center gap-3">
+                    <div className="p-2 bg-amber-900/20 text-amber-500 rounded-lg">
+                        <LayoutTemplate size={16} />
+                    </div>
+                    <div>
+                        <div className="text-lg font-bold text-slate-200 leading-none">Saved</div>
+                        <div className="text-[10px] text-slate-500 uppercase tracking-wide mt-1">Grid Layout</div>
+                    </div>
+                </div>
+            </div>
          </div>
 
          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -86,6 +134,7 @@ export const DataSettings: React.FC<DataSettingsProps> = ({
                </div>
                <div className="relative z-10">
                   <h4 className="font-medium text-slate-200 text-sm">Full System Export</h4>
+                  <p className="text-[10px] text-slate-600 mt-1">Saves layout & content</p>
                </div>
                <button 
                   onClick={handleExport}
@@ -102,6 +151,7 @@ export const DataSettings: React.FC<DataSettingsProps> = ({
                </div>
                <div className="relative z-10">
                   <h4 className="font-medium text-slate-200 text-sm">Restore Backup</h4>
+                  <p className="text-[10px] text-slate-600 mt-1">Accepts legacy & new formats</p>
                </div>
                <button 
                   onClick={handleImportClick}
@@ -125,6 +175,7 @@ export const DataSettings: React.FC<DataSettingsProps> = ({
                </div>
                <div className="relative z-10">
                   <h4 className="font-medium text-slate-200 text-sm">Factory Reset</h4>
+                  <p className="text-[10px] text-slate-600 mt-1">Clear all local data</p>
                </div>
                <button 
                   onClick={() => {

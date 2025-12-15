@@ -177,25 +177,31 @@ export const WIDGET_REGISTRY: Record<string, WidgetRegistryItem> = {
 // Grid is assumed to be 8 columns wide on desktop.
 export const DEFAULT_LAYOUT: (string | null)[] = new Array(48).fill(null);
 
-// Row 1 & 2 (Top Area)
-// Clock (2x2) at 0,1 / 8,9
+// === ROW 1 (Indices 0-7) ===
+// 1. Clock (2x2) -> Occupies 0, 1, 8, 9
 DEFAULT_LAYOUT[0] = 'clock-widget';
-// Gemini (2x2) at 2,3 / 10,11
+// 2. Gemini (2x2) -> Occupies 2, 3, 10, 11
 DEFAULT_LAYOUT[2] = 'gemini-assistant';
-// Creator Sync (1x2 Vertical) at 4 / 12
+// 3. Creator Sync (1x2 Vertical) -> Occupies 4, 12
 DEFAULT_LAYOUT[4] = 'creator-sync';
-// Comfy Meta (1x2 Vertical) at 5 / 13
+// 4. Comfy Meta (1x2 Vertical) -> Occupies 5, 13
 DEFAULT_LAYOUT[5] = 'comfy-meta';
-// Settings (1x1) at 6
-DEFAULT_LAYOUT[6] = 'settings';
+// 5. Batchbox (2x1 Horizontal) -> Occupies 6, 7
+DEFAULT_LAYOUT[6] = 'b236b1d4-09a6-4ca7-a873-0b5f2ea138a6';
 
-// Row 3 (Index starts at 16)
-// Batchbox (2x1) at 16,17
-DEFAULT_LAYOUT[16] = 'b236b1d4-09a6-4ca7-a873-0b5f2ea138a6'; 
-// Sonic Alchemy (2x1) at 18,19
-DEFAULT_LAYOUT[18] = '2d57b6e9-1472-4c7e-a735-7770b1c87326'; 
-// Prisma Flow (2x1) at 20,21
-DEFAULT_LAYOUT[20] = '27f478d3-020a-474c-82f0-536a8dea712c';
+// === ROW 2 (Indices 8-15) ===
+// Indices 8,9 taken by Clock
+// Indices 10,11 taken by Gemini
+// Index 12 taken by Creator Sync
+// Index 13 taken by Comfy Meta
+// 6. Sonic Alchemy (2x1 Horizontal) -> Occupies 14, 15 (Directly under Batchbox)
+DEFAULT_LAYOUT[14] = '2d57b6e9-1472-4c7e-a735-7770b1c87326';
+
+// === ROW 3 (Indices 16-23) ===
+// 7. Prisma Flow (2x1 Horizontal) -> Occupies 16, 17 (Under Clock)
+DEFAULT_LAYOUT[16] = '27f478d3-020a-474c-82f0-536a8dea712c';
+// 8. Settings (1x1) -> Occupies 18
+DEFAULT_LAYOUT[18] = 'settings';
 
 
 // Helper: Convert user config to runtime definition
