@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { AppConfig, AppDefinition, ClockConfig } from '../types';
-import { DEFAULT_USER_APPS, SYSTEM_APPS, WIDGET_REGISTRY, configToDefinition, widgetToDefinition } from '../constants';
+import { DEFAULT_USER_APPS, SYSTEM_APPS, WIDGET_REGISTRY, DEFAULT_LAYOUT, configToDefinition, widgetToDefinition } from '../constants';
 
-const STORAGE_KEY_APPS = 'cloudos_user_apps';
-const STORAGE_KEY_WIDGETS = 'cloudos_active_widgets';
-const STORAGE_KEY_LAYOUT = 'cloudos_grid_layout_v3'; // Bumped version to v3 to reset and apply new logic cleanly
+// Bumped versions to force reload of new default JSON layout AND the visual arrangement
+const STORAGE_KEY_APPS = 'cloudos_user_apps_v5';
+const STORAGE_KEY_WIDGETS = 'cloudos_active_widgets_v5';
+const STORAGE_KEY_LAYOUT = 'cloudos_grid_layout_v5'; 
 
 // Fixed grid capacity
 const GRID_CAPACITY = 48;
@@ -41,9 +42,10 @@ export const useAppConfig = (clockConfig?: ClockConfig) => {
         }
         return parsed;
       }
-      return Array(GRID_CAPACITY).fill(null);
+      // CRITICAL CHANGE: Return DEFAULT_LAYOUT instead of empty array
+      return [...DEFAULT_LAYOUT]; 
     } catch (e) {
-      return Array(GRID_CAPACITY).fill(null);
+      return [...DEFAULT_LAYOUT];
     }
   });
 
@@ -60,7 +62,7 @@ export const useAppConfig = (clockConfig?: ClockConfig) => {
     localStorage.setItem(STORAGE_KEY_LAYOUT, JSON.stringify(layout));
   }, [layout]);
 
-  // --- CRITICAL FIX: Synchronize Layout with Apps ---
+  // --- Synchronize Layout with Apps ---
   // If an app exists in userApps/widgets but NOT in layout, place it.
   // If an app exists in layout but NOT in userApps/widgets, remove it.
   useEffect(() => {
@@ -145,7 +147,7 @@ export const useAppConfig = (clockConfig?: ClockConfig) => {
     if (confirm('Reset all apps and layout?')) {
         setUserApps(DEFAULT_USER_APPS);
         setActiveWidgetIds(['clock-widget', 'gemini-assistant']);
-        setLayout(Array(GRID_CAPACITY).fill(null)); 
+        setLayout([...DEFAULT_LAYOUT]); // Reset to the hand-crafted layout
     }
   };
 
