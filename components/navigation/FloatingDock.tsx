@@ -189,6 +189,9 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
 
   if (!activeAppId || !position) return null;
 
+  const dockVisibleApps = apps.filter(app => app.id !== 'clock-widget').slice(0, 16);
+  const isTwoRow = dockVisibleApps.length > 8;
+
   return (
     <>
       {isExpanded && (
@@ -225,31 +228,34 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
               ...getMenuPositionStyle()
           }}
         >
-          {apps.filter(app => app.id !== 'clock-widget').slice(0, 8).map(app => (
-            <button
-              key={app.id}
-              onClick={() => {
-                onSwitchApp(app.id);
-                setIsExpanded(false);
-              }}
-              className={`
-                relative group p-1.5 rounded-xl transition-all
-                ${activeAppId === app.id ? 'bg-white/5' : 'hover:bg-white/5'}
-              `}
-              title={app.name}
-            >
-              <DockIcon app={app} isActive={activeAppId === app.id} />
-              
-              {activeAppId === app.id && (
-                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-0.5 h-0.5 bg-amber-500 rounded-full shadow-[0_0_8px_rgba(245,158,11,0.8)]" />
-              )}
-            </button>
-          ))}
+          {/* Apps Grid (Supports up to 8x2 rows = 16 apps) */}
+          <div className={isTwoRow ? 'grid grid-cols-8 gap-1.5' : 'flex items-center gap-1.5'}>
+            {dockVisibleApps.map(app => (
+              <button
+                key={app.id}
+                onClick={() => {
+                  onSwitchApp(app.id);
+                  setIsExpanded(false);
+                }}
+                className={`
+                  relative group p-1.5 rounded-xl transition-all flex items-center justify-center
+                  ${activeAppId === app.id ? 'bg-white/5' : 'hover:bg-white/5'}
+                `}
+                title={app.name}
+              >
+                <DockIcon app={app} isActive={activeAppId === app.id} />
+                
+                {activeAppId === app.id && (
+                  <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-amber-500 rounded-full shadow-[0_0_8px_rgba(245,158,11,0.8)]" />
+                )}
+              </button>
+            ))}
+          </div>
           
-          <div className="w-px h-6 bg-white/10 mx-1" />
+          <div className={`w-px ${isTwoRow ? 'h-16' : 'h-6'} bg-white/10 mx-1 transition-all`} />
           
           {/* Action Buttons Group */}
-          <div className="flex items-center gap-1">
+          <div className={`flex ${isTwoRow ? 'flex-col' : 'items-center'} gap-1`}>
               {/* Reload Button (Only for Web Apps) */}
               {showReload && onReloadApp && (
                   <button
@@ -280,7 +286,7 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
           {/* Install Button (Only visible if prompt is captured) */}
           {installPrompt && (
               <>
-                  <div className="w-px h-6 bg-white/10 mx-1" />
+                  <div className={`w-px ${isTwoRow ? 'h-16' : 'h-6'} bg-white/10 mx-1 transition-all`} />
                   <button
                       onClick={() => {
                           if (onInstallClick) onInstallClick();

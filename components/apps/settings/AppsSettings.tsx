@@ -62,7 +62,8 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
     heroEffect: 'none',
     heroEffectIntensity: 5,
     widgetStyle: 'standard',
-    gridSize: '1x1'
+    gridSize: '1x1',
+    showOnDesktop: true
   });
 
   // Initial Load Logic
@@ -94,7 +95,8 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
       heroEffect: 'none',
       heroEffectIntensity: 5,
       widgetStyle: 'standard',
-      gridSize: '1x1'
+      gridSize: '1x1',
+      showOnDesktop: true
     });
   };
 
@@ -112,12 +114,22 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
         heroEffect: app.heroEffect ?? 'none',
         heroEffectIntensity: app.heroEffectIntensity ?? 5,
         widgetStyle: app.widgetStyle || 'standard',
-        gridSize: app.gridSize || '1x1'
+        gridSize: app.gridSize || '1x1',
+        showOnDesktop: app.showOnDesktop !== false
     });
     setSelectedAppId(app.id);
     setIsNewApp(false);
     setSaveStatus('idle');
     setShowIconPicker(false);
+  };
+
+  const handleToggleDesktop = (app: AppConfig) => {
+    const nextValue = app.showOnDesktop === false ? true : false;
+    const updated = { ...app, showOnDesktop: nextValue };
+    onUpdateApp(updated);
+    if (selectedAppId === app.id) {
+      setFormData(prev => ({ ...prev, showOnDesktop: nextValue }));
+    }
   };
 
   const handleStartAdd = () => {
@@ -140,7 +152,8 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
       heroEffect: 'none',
       heroEffectIntensity: 5,
       widgetStyle: 'standard',
-      gridSize: '1x1'
+      gridSize: '1x1',
+      showOnDesktop: true
     });
     setSelectedAppId(null);
     setIsNewApp(true);
@@ -240,6 +253,7 @@ export const AppsSettings: React.FC<AppsSettingsProps> = ({
             selectedAppId={selectedAppId || (isNewApp ? 'new' : null)}
             onSelectApp={handleSelectApp}
             onStartAdd={handleStartAdd}
+            onToggleDesktop={handleToggleDesktop}
         />
 
         {/* RIGHT PANEL: APP EDITOR */}

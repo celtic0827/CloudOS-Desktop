@@ -76,11 +76,11 @@ export const useAppConfig = (clockConfig?: ClockConfig) => {
       let hasChanges = false;
       const newLayout = [...layout];
       
-      // 1. Get all currently valid IDs
+      // 1. Get all currently valid IDs (only include userApps visible on desktop)
       const validIds = new Set([
           ...SYSTEM_APPS.map(a => a.id),
           ...activeWidgetIds,
-          ...userApps.map(a => a.id)
+          ...userApps.filter(a => a.showOnDesktop !== false).map(a => a.id)
       ]);
 
       // 2. Cleanup: Remove IDs from layout that no longer exist
@@ -124,7 +124,7 @@ export const useAppConfig = (clockConfig?: ClockConfig) => {
                 }
                 return def;
             }),
-        ...userApps.map(configToDefinition)
+        ...userApps.filter(a => a.showOnDesktop !== false).map(configToDefinition)
     ];
     
     const defMap = new Map(definitions.map(d => [d.id, d]));

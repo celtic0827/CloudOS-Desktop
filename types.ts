@@ -36,6 +36,7 @@ export interface AppConfig {
   description: string;
   gridSize?: GridSize;
   widgetStyle?: WidgetStyle;
+  showOnDesktop?: boolean;
 }
 
 export interface AppDefinition {

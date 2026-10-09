@@ -1,5 +1,6 @@
 {
   "name": "CloudOS Desktop",
   "description": "A web-based desktop environment with a floating navigation dock and integrated Gemini AI assistant.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [],
+  "majorCapabilities": []
 }

@@ -65,6 +65,21 @@ export const VisualSettings: React.FC<VisualSettingsProps> = ({
   return (
     <div className="p-4 bg-[#0a0a0a] border border-white/5 rounded-2xl flex-1 flex flex-col">
         <div className="flex flex-col gap-4 pt-1">
+            {/* 0. Desktop & Dock Visibility Toggle */}
+            <div className="flex items-center justify-between p-2.5 bg-[#111] border border-white/5 rounded-xl">
+                <div>
+                    <div className="text-xs font-bold text-slate-200 leading-tight">顯示於桌面與浮動快捷列</div>
+                    <div className="text-[10px] text-slate-500 leading-tight mt-0.5">Show on Desktop & Floating Dock</div>
+                </div>
+                <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, showOnDesktop: prev.showOnDesktop === false ? true : false }))}
+                    className={`transition-colors duration-300 ${formData.showOnDesktop !== false ? 'text-amber-500' : 'text-slate-600'}`}
+                >
+                    {formData.showOnDesktop !== false ? <ToggleRight size={28} /> : <ToggleLeft size={28} />}
+                </button>
+            </div>
+
             {/* 1. Layout Style */}
             <div>
                 <label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">Layout Style</label>
