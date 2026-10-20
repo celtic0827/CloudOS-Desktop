@@ -14,7 +14,7 @@ export const WebFrame: React.FC<WebFrameProps> = ({ id, src, title, themeColor, 
   const [isLoading, setIsLoading] = useState(true);
 
   return (
-    <div className="w-full h-full relative bg-[#0a0a0a] group overflow-hidden">
+    <div className="w-full h-full relative bg-[#0a0a0a] group overflow-hidden overscroll-none">
       
       {/* Loading Indicator */}
       {isLoading && (

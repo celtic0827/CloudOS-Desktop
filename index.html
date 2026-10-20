@@ -72,9 +72,16 @@
         -ms-overflow-style: none;  /* IE and Edge */
         scrollbar-width: none;  /* Firefox */
       }
-      /* Prevent pull-to-refresh on mobile to feel like an app */
-      body {
-        overscroll-behavior-y: none;
+      /* Prevent scroll offset and pull-to-refresh */
+      html, body, #root {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        position: fixed;
+        inset: 0;
+        overscroll-behavior: none;
         -webkit-tap-highlight-color: transparent;
       }
     </style>

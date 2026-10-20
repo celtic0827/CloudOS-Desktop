@@ -73,6 +73,19 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [activeAppId, closeApp]);
 
+  // --- Prevent Rogue Browser Window/Body Scroll Shifts ---
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollX !== 0 || window.scrollY !== 0) {
+        window.scrollTo(0, 0);
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    // Also ensure reset when opening/closing apps
+    window.scrollTo(0, 0);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [activeAppId]);
+
   // --- PC Optimization: Right Click Handler ---
   const handleContextMenu = useCallback((e: React.MouseEvent) => {
     // Only trigger on the background/grid, not inside apps
@@ -172,7 +185,7 @@ function App() {
 
   return (
     <div 
-      className="relative w-screen h-[100dvh] overflow-hidden bg-[#020202] font-sans text-slate-900 selection:bg-amber-500/30"
+      className="fixed inset-0 w-full h-full overflow-hidden overscroll-none bg-[#020202] font-sans text-slate-900 selection:bg-amber-500/30"
       onContextMenu={handleContextMenu} // Capture right click globally
       onClick={handleCloseContextMenu} // Left click closes menu
     >
@@ -237,8 +250,8 @@ function App() {
         {/* Active App Window */}
         <div 
           className={`
-            absolute inset-0 transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1) z-20
-            ${activeAppId && isAppOpen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-12 scale-95 pointer-events-none'}
+            absolute inset-0 transition-all duration-300 cubic-bezier(0.16, 1, 0.3, 1) z-20 overflow-hidden overscroll-none
+            ${activeAppId && isAppOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-[0.98] pointer-events-none'}
           `}
           onContextMenu={(e) => e.stopPropagation()} // Allow default browser menu inside apps if needed, or customize
         >
