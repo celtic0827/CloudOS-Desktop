@@ -71,3 +71,12 @@ export interface SystemState {
 }
 
 export type Theme = 'light' | 'dark';
+
+export type ViewMode = 'split' | 'workspace';
+
+export interface DockState {
+  id: string;
+  activeAppId: string | null;
+  isAppOpen: boolean;
+  refreshTrigger: number;
+}

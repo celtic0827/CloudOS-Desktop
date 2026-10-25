@@ -1,14 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { AppDefinition } from '../../types';
-import { LayoutGrid, Globe, LayoutDashboard, Download, RotateCw } from 'lucide-react';
+import { AppDefinition, ViewMode, DockState } from '../../types';
+import { LayoutGrid, Globe, LayoutDashboard, Download, RotateCw, Plus, X, Columns2, Maximize2 } from 'lucide-react';
 
 interface FloatingDockProps {
-  activeAppId: string | null;
+  docks: DockState[];
+  activeDockId: string;
+  onSelectDock: (dockId: string) => void;
   apps: AppDefinition[];
-  onSwitchApp: (appId: string) => void;
-  onCloseApp: () => void;
-  onReloadApp?: () => void;
-  showReload?: boolean;
+  onSwitchApp: (appId: string, dockId: string) => void;
+  onCloseApp: (dockId: string) => void;
+  onReloadApp?: (dockId: string) => void;
+  canAddDock: boolean;
+  onAddDock: () => void;
+  onCloseSecondaryDock: () => void;
+  viewMode: ViewMode;
+  onToggleViewMode: () => void;
   installPrompt?: any;
   onInstallClick?: () => void;
 }
@@ -20,7 +26,8 @@ const DockIcon: React.FC<{
   app: AppDefinition; 
   isActive?: boolean;
   size?: 'small' | 'large';
-}> = ({ app, isActive, size = 'small' }) => {
+  accentColor?: string;
+}> = ({ app, isActive, size = 'small', accentColor = 'amber' }) => {
   const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
@@ -29,8 +36,6 @@ const DockIcon: React.FC<{
 
   const iconSize = size === 'large' ? 20 : 16;
   const imgSize = size === 'large' ? "w-5 h-5" : "w-4 h-4";
-
-  // Determine icon to render
   const IconComponent = app.icon || Globe;
 
   return (
@@ -39,8 +44,9 @@ const DockIcon: React.FC<{
       ${isActive && size === 'small' ? 'bg-white/10 border border-white/5 w-8 h-8 rounded-lg' : ''}
       ${size === 'large' ? 'w-full h-full' : ''}
     `}>
-      {/* Active Indicator Glow (Only for list items) */}
-      {isActive && size === 'small' && <div className="absolute inset-0 bg-amber-500/10 rounded-lg blur-sm" />}
+      {isActive && size === 'small' && (
+        <div className={`absolute inset-0 ${accentColor === 'cyan' ? 'bg-cyan-500/15' : 'bg-amber-500/10'} rounded-lg blur-sm`} />
+      )}
 
       {app.iconUrl && !hasError ? (
         <img 
@@ -51,27 +57,54 @@ const DockIcon: React.FC<{
           crossOrigin="anonymous"
         />
       ) : (
-        <IconComponent size={iconSize} className={`z-10 transition-colors ${isActive ? 'text-amber-100' : 'text-slate-400 group-hover:text-slate-200'}`} strokeWidth={1.5} />
+        <IconComponent 
+          size={iconSize} 
+          className={`z-10 transition-colors ${
+            isActive 
+              ? (accentColor === 'cyan' ? 'text-cyan-200' : 'text-amber-100') 
+              : 'text-slate-400 group-hover:text-slate-200'
+          }`} 
+          strokeWidth={1.5} 
+        />
       )}
     </div>
   );
 };
 
 export const FloatingDock: React.FC<FloatingDockProps> = ({ 
-  activeAppId, 
+  docks,
+  activeDockId,
+  onSelectDock,
   apps, 
   onSwitchApp, 
   onCloseApp,
   onReloadApp,
-  showReload,
+  canAddDock,
+  onAddDock,
+  onCloseSecondaryDock,
+  viewMode,
+  onToggleViewMode,
   installPrompt,
   onInstallClick
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const activeApp = apps.find(a => a.id === activeAppId);
+  const [expandedDockId, setExpandedDockId] = useState<string | null>(null);
   const dockRef = useRef<HTMLDivElement>(null);
+
+  const primaryDock = docks.find(d => d.id === 'dock-1') || docks[0];
+  const secondaryDock = docks.find(d => d.id === 'dock-2');
+  const hasMultipleDocks = !!secondaryDock;
+
+  const dock1App = primaryDock?.activeAppId ? apps.find(a => a.id === primaryDock.activeAppId) : null;
+  const dock2App = secondaryDock?.activeAppId ? apps.find(a => a.id === secondaryDock.activeAppId) : null;
+
+  // Active dock definition when menu is expanded
+  const activeExpandedDock = docks.find(d => d.id === expandedDockId);
+  const currentAppForExpanded = activeExpandedDock?.activeAppId 
+    ? apps.find(a => a.id === activeExpandedDock.activeAppId) 
+    : null;
+  const expandedAccent = expandedDockId === 'dock-2' ? 'cyan' : 'amber';
   
-  // Position State
+  // Position State for the Unified Base
   const [position, setPosition] = useState<{x: number, y: number} | null>(null);
   
   // Dragging Logic Refs
@@ -81,9 +114,10 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
   const hasMovedSignificantDistanceRef = useRef(false);
   const latestPositionRef = useRef<{x: number, y: number} | null>(null);
 
-  // Constants for Size and Padding
-  const DOCK_SIZE = 48; 
-  const EDGE_PADDING = 12; // Increased padding for aesthetics
+  // Constants
+  const BASE_WIDTH = hasMultipleDocks ? 116 : 96;
+  const BASE_HEIGHT = 54;
+  const EDGE_PADDING = 12;
 
   // Initialize Position
   useEffect(() => {
@@ -91,16 +125,15 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
       const windowWidth = window.innerWidth;
       const windowHeight = window.innerHeight;
       
-      // Default to bottom right, slightly offset
-      let initialX = windowWidth - 80;
-      let initialY = windowHeight - 100;
+      let initialX = windowWidth - BASE_WIDTH - 20;
+      let initialY = windowHeight - BASE_HEIGHT - 30;
 
       try {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
             const parsed = JSON.parse(saved);
-            const maxX = windowWidth - DOCK_SIZE - EDGE_PADDING;
-            const maxY = windowHeight - DOCK_SIZE - EDGE_PADDING;
+            const maxX = windowWidth - BASE_WIDTH - EDGE_PADDING;
+            const maxY = windowHeight - BASE_HEIGHT - EDGE_PADDING;
             
             initialX = Math.max(EDGE_PADDING, Math.min(parsed.x, maxX));
             initialY = Math.max(EDGE_PADDING, Math.min(parsed.y, maxY));
@@ -113,18 +146,17 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
       setPosition(startPos);
       latestPositionRef.current = startPos;
     }
-  }, []);
+  }, [BASE_WIDTH, BASE_HEIGHT]);
 
   const getMenuPositionStyle = () => {
     if (!position) return {};
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
 
-    // Intelligent positioning based on screen quadrant
-    if (position.x > windowWidth - 250) {
+    if (position.x > windowWidth - 280) {
       return { right: '100%', marginRight: '16px', top: '50%', transform: 'translateY(-50%)' };
     }
-    if (position.x < 250) {
+    if (position.x < 280) {
       return { left: '100%', marginLeft: '16px', top: '50%', transform: 'translateY(-50%)' };
     }
     const isTopHalf = position.y < windowHeight / 2;
@@ -135,7 +167,7 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
   };
 
   const handlePointerDown = (e: React.PointerEvent) => {
-    e.stopPropagation();
+    // Only capture drag if clicking base or icons without stopping
     isDraggingRef.current = true;
     hasMovedSignificantDistanceRef.current = false;
     dragStartRef.current = { x: e.clientX, y: e.clientY };
@@ -156,15 +188,13 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
     }
 
     if (hasMovedSignificantDistanceRef.current) {
-        if (isExpanded) setIsExpanded(false);
+        if (expandedDockId) setExpandedDockId(null);
 
         const rawX = initialPosRef.current.x + dx;
         const rawY = initialPosRef.current.y + dy;
 
-        // Constraint logic with Safe Area awareness
-        // Note: JS doesn't easily read env(), so we use a conservative padding
-        const maxX = window.innerWidth - DOCK_SIZE - EDGE_PADDING;
-        const maxY = window.innerHeight - DOCK_SIZE - EDGE_PADDING;
+        const maxX = window.innerWidth - BASE_WIDTH - EDGE_PADDING;
+        const maxY = window.innerHeight - BASE_HEIGHT - EDGE_PADDING;
 
         const clampedX = Math.max(EDGE_PADDING, Math.min(rawX, maxX));
         const clampedY = Math.max(EDGE_PADDING, Math.min(rawY, maxY));
@@ -182,150 +212,266 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
 
     if (hasMovedSignificantDistanceRef.current && latestPositionRef.current) {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(latestPositionRef.current));
-    } else {
-        setIsExpanded(prev => !prev);
     }
   };
 
-  if (!activeAppId || !position) return null;
+  const handleDockClick = (dockId: string) => {
+    // If not a drag, toggle menu
+    if (hasMovedSignificantDistanceRef.current) return;
+    onSelectDock(dockId);
+    setExpandedDockId(prev => (prev === dockId ? null : dockId));
+  };
 
-  const dockVisibleApps = apps.filter(app => app.id !== 'clock-widget').slice(0, 16);
+  if (!position) return null;
+
+  // Filter apps for dock menu, and FORCE 'settings' to always be placed at the very end
+  const eligibleApps = apps.filter(app => app.id !== 'clock-widget');
+  const nonSettingsApps = eligibleApps.filter(app => app.id !== 'settings');
+  const settingsApp = eligibleApps.find(app => app.id === 'settings');
+
+  const dockVisibleApps = settingsApp 
+    ? [...nonSettingsApps.slice(0, 15), settingsApp] 
+    : nonSettingsApps.slice(0, 16);
+
   const isTwoRow = dockVisibleApps.length > 8;
 
   return (
     <>
-      {isExpanded && (
+      {expandedDockId && (
         <div 
           className="fixed inset-0 z-40 bg-transparent"
-          onClick={() => setIsExpanded(false)}
+          onClick={() => setExpandedDockId(null)}
         />
       )}
 
       <div 
         ref={dockRef}
-        className="fixed z-50 flex flex-col items-center justify-center transition-none touch-none"
+        className="fixed z-50 flex items-center justify-center transition-none touch-none select-none"
         style={{ 
           left: position.x, 
           top: position.y,
-          // CSS variable fallback to ensure it sits above iOS home bar if docked at bottom
           marginBottom: 'env(safe-area-inset-bottom, 0px)' 
         }}
       >
         
-        {/* Expanded Menu */}
-        <div 
-          className={`
-            absolute flex items-center gap-2 p-2 bg-[#050505]/90 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)]
-            transition-all duration-300 origin-center
-            ${isExpanded 
-              ? 'opacity-100 scale-100' 
-              : 'opacity-0 scale-90 pointer-events-none'
-            }
-          `}
-          style={{ 
-              width: 'max-content', 
-              maxWidth: '90vw',
-              ...getMenuPositionStyle()
-          }}
-        >
-          {/* Apps Grid (Supports up to 8x2 rows = 16 apps) */}
-          <div className={isTwoRow ? 'grid grid-cols-8 gap-1.5' : 'flex items-center gap-1.5'}>
-            {dockVisibleApps.map(app => (
-              <button
-                key={app.id}
-                onClick={() => {
-                  onSwitchApp(app.id);
-                  setIsExpanded(false);
-                }}
-                className={`
-                  relative group p-1.5 rounded-xl transition-all flex items-center justify-center
-                  ${activeAppId === app.id ? 'bg-white/5' : 'hover:bg-white/5'}
-                `}
-                title={app.name}
-              >
-                <DockIcon app={app} isActive={activeAppId === app.id} />
-                
-                {activeAppId === app.id && (
-                  <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-amber-500 rounded-full shadow-[0_0_8px_rgba(245,158,11,0.8)]" />
-                )}
-              </button>
-            ))}
-          </div>
-          
-          <div className={`w-px ${isTwoRow ? 'h-16' : 'h-6'} bg-white/10 mx-1 transition-all`} />
-          
-          {/* Action Buttons Group */}
-          <div className={`flex ${isTwoRow ? 'flex-col' : 'items-center'} gap-1`}>
-              {/* Reload Button (Only for Web Apps) */}
-              {showReload && onReloadApp && (
+        {/* Expanded Menu for Currently Active Dock */}
+        {expandedDockId && activeExpandedDock && (
+          <div 
+            className="absolute flex items-center gap-2 p-2 bg-[#050505]/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)] transition-all duration-300 origin-center opacity-100 scale-100"
+            style={{ 
+                width: 'max-content', 
+                maxWidth: '90vw',
+                ...getMenuPositionStyle()
+            }}
+          >
+            {/* Apps Grid (Supports up to 8x2 rows = 16 apps) */}
+            <div className={isTwoRow ? 'grid grid-cols-8 gap-1.5' : 'flex items-center gap-1.5'}>
+              {dockVisibleApps.map(app => (
+                <button
+                  key={app.id}
+                  onClick={() => {
+                    onSwitchApp(app.id, expandedDockId);
+                    setExpandedDockId(null);
+                  }}
+                  className={`
+                    relative group p-1.5 rounded-xl transition-all flex items-center justify-center
+                    ${activeExpandedDock.activeAppId === app.id ? 'bg-white/5' : 'hover:bg-white/5'}
+                  `}
+                  title={app.name}
+                >
+                  <DockIcon app={app} isActive={activeExpandedDock.activeAppId === app.id} accentColor={expandedAccent} />
+                  
+                  {activeExpandedDock.activeAppId === app.id && (
+                    <div className={`absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 ${
+                      expandedAccent === 'cyan' ? 'bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]' : 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.8)]'
+                    } rounded-full`} />
+                  )}
+                </button>
+              ))}
+            </div>
+            
+            <div className={`w-px ${isTwoRow ? 'h-16' : 'h-6'} bg-white/10 mx-1 transition-all`} />
+            
+            {/* Action Buttons Group */}
+            <div className={`flex ${isTwoRow ? 'flex-col' : 'items-center'} gap-1`}>
+                {/* Split / Workspace Toggle Button (Visible when 2 docks exist) */}
+                {hasMultipleDocks && onToggleViewMode && (
                   <button
                     onClick={() => {
-                        onReloadApp();
-                        setIsExpanded(false);
+                      onToggleViewMode();
+                      setExpandedDockId(null);
                     }}
-                    className="p-2 rounded-xl hover:bg-white/10 text-slate-500 hover:text-amber-100 transition-colors group relative"
-                    title="Reload"
+                    className={`p-2 rounded-xl transition-colors group relative ${
+                      viewMode === 'split' 
+                        ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30' 
+                        : 'hover:bg-white/10 text-slate-400 hover:text-white'
+                    }`}
+                    title={viewMode === 'split' ? "切換為單頁工作區 (Workspace Tab)" : "切換為雙頁分屏 (Split Screen)"}
                   >
-                    <RotateCw size={16} strokeWidth={1.5} />
+                    {viewMode === 'split' ? <Columns2 size={16} strokeWidth={1.8} /> : <Maximize2 size={16} strokeWidth={1.8} />}
                   </button>
-              )}
+                )}
 
-              {/* Show Desktop / Close App */}
-              <button
-                onClick={() => {
-                  onCloseApp();
-                  setIsExpanded(false);
-                }}
-                className="p-2 rounded-xl hover:bg-white/10 text-slate-500 hover:text-amber-100 transition-colors group relative"
-                title="Show Desktop"
-              >
-                <LayoutDashboard size={16} strokeWidth={1.5} />
-              </button>
-          </div>
-
-          {/* Install Button (Only visible if prompt is captured) */}
-          {installPrompt && (
-              <>
-                  <div className={`w-px ${isTwoRow ? 'h-16' : 'h-6'} bg-white/10 mx-1 transition-all`} />
-                  <button
+                {/* Reload Button (Only for Web Apps) */}
+                {currentAppForExpanded?.isExternal && onReloadApp && (
+                    <button
                       onClick={() => {
-                          if (onInstallClick) onInstallClick();
-                          setIsExpanded(false);
+                          onReloadApp(expandedDockId);
+                          setExpandedDockId(null);
                       }}
-                      className="p-2 rounded-xl bg-amber-600/20 text-amber-500 hover:bg-amber-500 hover:text-white transition-all shadow-lg shadow-amber-900/10 animate-pulse"
-                      title="Install App"
+                      className="p-2 rounded-xl hover:bg-white/10 text-slate-500 hover:text-amber-100 transition-colors group relative"
+                      title="Reload"
+                    >
+                      <RotateCw size={16} strokeWidth={1.5} />
+                    </button>
+                )}
+
+                {/* Show Desktop / Close App */}
+                <button
+                  onClick={() => {
+                    onCloseApp(expandedDockId);
+                    setExpandedDockId(null);
+                  }}
+                  className="p-2 rounded-xl hover:bg-white/10 text-slate-500 hover:text-amber-100 transition-colors group relative"
+                  title={expandedDockId === 'dock-2' ? "關閉此視窗" : "返回桌面 (Show Desktop)"}
+                >
+                  <LayoutDashboard size={16} strokeWidth={1.5} />
+                </button>
+
+                {/* Low-key Close Secondary Dock Button inside menu */}
+                {expandedDockId === 'dock-2' && (
+                  <button
+                    onClick={() => {
+                      onCloseSecondaryDock();
+                      setExpandedDockId(null);
+                    }}
+                    className="p-2 rounded-xl hover:bg-white/10 text-zinc-500 hover:text-zinc-200 transition-colors"
+                    title="關閉副快捷列"
                   >
-                      <Download size={16} strokeWidth={2} />
+                    <X size={16} strokeWidth={1.8} />
                   </button>
-              </>
-          )}
+                )}
+            </div>
 
-        </div>
+            {/* Install Button (Only visible if prompt is captured) */}
+            {installPrompt && (
+                <>
+                    <div className={`w-px ${isTwoRow ? 'h-16' : 'h-6'} bg-white/10 mx-1 transition-all`} />
+                    <button
+                        onClick={() => {
+                            if (onInstallClick) onInstallClick();
+                            setExpandedDockId(null);
+                        }}
+                        className="p-2 rounded-xl bg-amber-600/20 text-amber-500 hover:bg-amber-500 hover:text-white transition-all shadow-lg shadow-amber-900/10 animate-pulse"
+                        title="Install App"
+                    >
+                        <Download size={16} strokeWidth={2} />
+                    </button>
+                </>
+            )}
 
-        {/* FAB */}
+          </div>
+        )}
+
+        {/* === UNIFIED DOCK BASE (Single Draggable Glass Capsule) === */}
         <div 
           className={`
-            w-12 h-12 rounded-[18px] 
-            bg-[#0a0a0a]/90 backdrop-blur-xl border border-white/10 
-            shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_8px_32px_rgba(0,0,0,0.5)]
-            flex items-center justify-center
-            cursor-grab active:cursor-grabbing
-            hover:scale-105 hover:border-amber-500/30 transition-all duration-300
-            group z-50
+            flex items-center p-1.5 bg-[#0a0a0a]/90 backdrop-blur-2xl border border-white/10
+            rounded-[22px] shadow-[0_10px_35px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.06)]
+            cursor-grab active:cursor-grabbing hover:border-white/20 transition-all duration-300
+            gap-1.5
           `}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
         >
-            {activeApp ? (
-               <div className="pointer-events-none p-2.5">
-                  <DockIcon app={activeApp} isActive={true} size="large" />
-               </div>
+          {/* Slot 1: Primary Dock (Dock 1) */}
+          <div 
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDockClick('dock-1');
+            }}
+            className={`
+              w-11 h-11 rounded-[16px] relative flex items-center justify-center
+              transition-all duration-200 cursor-pointer
+              ${activeDockId === 'dock-1' 
+                ? 'bg-amber-500/10 border border-amber-500/40 shadow-[0_0_12px_rgba(245,158,11,0.25)]' 
+                : 'hover:bg-white/5 border border-white/5'
+              }
+              ${expandedDockId === 'dock-1' ? 'ring-2 ring-amber-500/50' : ''}
+            `}
+            title="快捷列 1"
+          >
+            {dock1App ? (
+              <div className="pointer-events-none p-2">
+                <DockIcon app={dock1App} isActive={true} size="large" accentColor="amber" />
+              </div>
             ) : (
-               <LayoutGrid size={20} className="text-slate-400 group-hover:text-amber-100 transition-colors pointer-events-none" />
+              <LayoutGrid size={18} className="text-slate-400 group-hover:text-amber-100 transition-colors pointer-events-none" />
             )}
-            
-            <div className={`absolute inset-0 rounded-[18px] border border-amber-500/50 transition-all duration-500 ${isExpanded ? 'opacity-100 scale-110' : 'opacity-0 scale-100'}`} />
+          </div>
+
+          {/* Low-Key Split Divider between Dock 1 and Dock 2 */}
+          {secondaryDock && (
+            <div className="w-px h-5 bg-white/10 mx-0.5 pointer-events-none" />
+          )}
+
+          {/* Slot 2: Secondary Dock (Dock 2) or "+" Button */}
+          {secondaryDock ? (
+            <div 
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDockClick('dock-2');
+              }}
+              className={`
+                w-11 h-11 rounded-[16px] relative flex items-center justify-center
+                transition-all duration-200 cursor-pointer group/sec
+                ${activeDockId === 'dock-2' 
+                  ? 'bg-cyan-500/10 border border-cyan-400/40 shadow-[0_0_12px_rgba(34,211,238,0.25)]' 
+                  : 'hover:bg-white/5 border border-white/5'
+                }
+                ${expandedDockId === 'dock-2' ? 'ring-2 ring-cyan-500/50' : ''}
+              `}
+              title="快捷列 2"
+            >
+              {/* Discreet Low-Key Close Button (Frosted minimal glass X, top-right) */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onCloseSecondaryDock();
+                  if (expandedDockId === 'dock-2') setExpandedDockId(null);
+                }}
+                className="absolute -top-1 -right-1 z-30 w-4 h-4 rounded-full bg-zinc-900/90 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-100 border border-white/15 backdrop-blur-md flex items-center justify-center transition-all opacity-75 hover:opacity-100 hover:scale-110 shadow-sm cursor-pointer"
+                title="關閉副快捷列"
+              >
+                <X size={9} strokeWidth={2} />
+              </button>
+
+              {dock2App ? (
+                <div className="pointer-events-none p-2">
+                  <DockIcon app={dock2App} isActive={true} size="large" accentColor="cyan" />
+                </div>
+              ) : (
+                <LayoutGrid size={18} className="text-cyan-400/70 transition-colors pointer-events-none" />
+              )}
+            </div>
+          ) : (
+            /* "+" Button integrated inside the base */
+            canAddDock && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAddDock();
+                }}
+                className="w-8 h-8 rounded-[12px] bg-white/5 hover:bg-white/10 text-slate-400 hover:text-amber-300 border border-white/5 hover:border-amber-500/30 flex items-center justify-center transition-all hover:scale-105 active:scale-95 ml-0.5 cursor-pointer"
+                title="新增副快捷列 (支援雙頁面分屏 / 多工作區處理)"
+              >
+                <Plus size={15} strokeWidth={2} />
+              </button>
+            )
+          )}
         </div>
 
       </div>
