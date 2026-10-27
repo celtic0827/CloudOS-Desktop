@@ -115,7 +115,7 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
   const latestPositionRef = useRef<{x: number, y: number} | null>(null);
 
   // Constants
-  const BASE_WIDTH = hasMultipleDocks ? 116 : 96;
+  const BASE_WIDTH = hasMultipleDocks ? 160 : 96;
   const BASE_HEIGHT = 54;
   const EDGE_PADDING = 12;
 
@@ -290,28 +290,10 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
               ))}
             </div>
             
-            <div className={`w-px ${isTwoRow ? 'h-16' : 'h-6'} bg-white/10 mx-1 transition-all`} />
+            <div className="self-stretch w-px bg-white/10 mx-1 my-0.5 transition-all" />
             
-            {/* Action Buttons Group */}
-            <div className={`flex ${isTwoRow ? 'flex-col' : 'items-center'} gap-1`}>
-                {/* Split / Workspace Toggle Button (Visible when 2 docks exist) */}
-                {hasMultipleDocks && onToggleViewMode && (
-                  <button
-                    onClick={() => {
-                      onToggleViewMode();
-                      setExpandedDockId(null);
-                    }}
-                    className={`p-2 rounded-xl transition-colors group relative ${
-                      viewMode === 'split' 
-                        ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30' 
-                        : 'hover:bg-white/10 text-slate-400 hover:text-white'
-                    }`}
-                    title={viewMode === 'split' ? "切換為單頁工作區 (Workspace Tab)" : "切換為雙頁分屏 (Split Screen)"}
-                  >
-                    {viewMode === 'split' ? <Columns2 size={16} strokeWidth={1.8} /> : <Maximize2 size={16} strokeWidth={1.8} />}
-                  </button>
-                )}
-
+            {/* Action Buttons Group (Compact layout aligned with apps rows, prevents stretching height) */}
+            <div className={`grid ${isTwoRow ? 'grid-rows-2 grid-flow-col auto-cols-max' : 'grid-flow-col auto-cols-max'} gap-1 items-center justify-center`}>
                 {/* Reload Button (Only for Web Apps) */}
                 {currentAppForExpanded?.isExternal && onReloadApp && (
                     <button
@@ -319,10 +301,10 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
                           onReloadApp(expandedDockId);
                           setExpandedDockId(null);
                       }}
-                      className="p-2 rounded-xl hover:bg-white/10 text-slate-500 hover:text-amber-100 transition-colors group relative"
+                      className="w-8 h-8 rounded-xl hover:bg-white/10 text-slate-500 hover:text-amber-100 transition-colors flex items-center justify-center"
                       title="Reload"
                     >
-                      <RotateCw size={16} strokeWidth={1.5} />
+                      <RotateCw size={15} strokeWidth={1.5} />
                     </button>
                 )}
 
@@ -332,10 +314,10 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
                     onCloseApp(expandedDockId);
                     setExpandedDockId(null);
                   }}
-                  className="p-2 rounded-xl hover:bg-white/10 text-slate-500 hover:text-amber-100 transition-colors group relative"
+                  className="w-8 h-8 rounded-xl hover:bg-white/10 text-slate-500 hover:text-amber-100 transition-colors flex items-center justify-center"
                   title={expandedDockId === 'dock-2' ? "關閉此視窗" : "返回桌面 (Show Desktop)"}
                 >
-                  <LayoutDashboard size={16} strokeWidth={1.5} />
+                  <LayoutDashboard size={15} strokeWidth={1.5} />
                 </button>
 
                 {/* Low-key Close Secondary Dock Button inside menu */}
@@ -345,30 +327,27 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
                       onCloseSecondaryDock();
                       setExpandedDockId(null);
                     }}
-                    className="p-2 rounded-xl hover:bg-white/10 text-zinc-500 hover:text-zinc-200 transition-colors"
+                    className="w-8 h-8 rounded-xl hover:bg-white/10 text-zinc-500 hover:text-zinc-200 transition-colors flex items-center justify-center"
                     title="關閉副快捷列"
                   >
-                    <X size={16} strokeWidth={1.8} />
+                    <X size={15} strokeWidth={1.8} />
                   </button>
                 )}
-            </div>
 
-            {/* Install Button (Only visible if prompt is captured) */}
-            {installPrompt && (
-                <>
-                    <div className={`w-px ${isTwoRow ? 'h-16' : 'h-6'} bg-white/10 mx-1 transition-all`} />
+                {/* Install Button (Only visible if prompt is captured) */}
+                {installPrompt && (
                     <button
                         onClick={() => {
                             if (onInstallClick) onInstallClick();
                             setExpandedDockId(null);
                         }}
-                        className="p-2 rounded-xl bg-amber-600/20 text-amber-500 hover:bg-amber-500 hover:text-white transition-all shadow-lg shadow-amber-900/10 animate-pulse"
+                        className="w-8 h-8 rounded-xl bg-amber-600/20 text-amber-500 hover:bg-amber-500 hover:text-white transition-all shadow-md shadow-amber-900/10 flex items-center justify-center"
                         title="Install App"
                     >
-                        <Download size={16} strokeWidth={2} />
+                        <Download size={15} strokeWidth={2} />
                     </button>
-                </>
-            )}
+                )}
+            </div>
 
           </div>
         )}
@@ -471,6 +450,31 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
                 <Plus size={15} strokeWidth={2} />
               </button>
             )
+          )}
+
+          {/* Single / Dual Page ViewMode Toggle on the right side of the Dock base */}
+          {hasMultipleDocks && onToggleViewMode && (
+            <>
+              <div className="w-px h-5 bg-white/10 mx-0.5 pointer-events-none" />
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleViewMode();
+                }}
+                className={`
+                  w-9 h-9 rounded-[14px] flex items-center justify-center transition-all duration-200
+                  hover:scale-105 active:scale-95 cursor-pointer
+                  ${viewMode === 'split' 
+                    ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.2)]' 
+                    : 'bg-white/5 text-slate-400 border border-white/5 hover:bg-white/10 hover:text-white'
+                  }
+                `}
+                title={viewMode === 'split' ? "切換為單頁工作區 (Workspace)" : "切換為雙頁分屏 (Split Screen)"}
+              >
+                {viewMode === 'split' ? <Columns2 size={16} strokeWidth={1.8} /> : <Maximize2 size={16} strokeWidth={1.8} />}
+              </button>
+            </>
           )}
         </div>
 
