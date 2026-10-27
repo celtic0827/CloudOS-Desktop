@@ -19,8 +19,6 @@ interface FloatingDockProps {
   onInstallClick?: () => void;
 }
 
-const STORAGE_KEY = 'cloudos_dock_position';
-
 // Internal component to handle individual icon state logic
 const DockIcon: React.FC<{ 
   app: AppDefinition; 
@@ -88,7 +86,9 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
   onInstallClick
 }) => {
   const [expandedDockId, setExpandedDockId] = useState<string | null>(null);
-  const dockRef = useRef<HTMLDivElement>(null);
+  const [isHovered, setIsHovered] = useState(false);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastLeaveTimeRef = useRef<number>(0);
 
   const primaryDock = docks.find(d => d.id === 'dock-1') || docks[0];
   const secondaryDock = docks.find(d => d.id === 'dock-2');
@@ -103,126 +103,55 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
     ? apps.find(a => a.id === activeExpandedDock.activeAppId) 
     : null;
   const expandedAccent = expandedDockId === 'dock-2' ? 'cyan' : 'amber';
-  
-  // Position State for the Unified Base
-  const [position, setPosition] = useState<{x: number, y: number} | null>(null);
-  
-  // Dragging Logic Refs
-  const isDraggingRef = useRef(false);
-  const dragStartRef = useRef<{x: number, y: number} | null>(null);
-  const initialPosRef = useRef<{x: number, y: number} | null>(null);
-  const hasMovedSignificantDistanceRef = useRef(false);
-  const latestPositionRef = useRef<{x: number, y: number} | null>(null);
 
-  // Constants
-  const BASE_WIDTH = hasMultipleDocks ? 160 : 96;
-  const BASE_HEIGHT = 54;
-  const EDGE_PADDING = 12;
+  // Smooth closing triggered synchronously
+  const startClosing = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    lastLeaveTimeRef.current = Date.now();
+    setIsHovered(false);
+  };
 
-  // Initialize Position
+  // Hover handlers for smooth auto-hide behavior
+  const handleMouseEnter = () => {
+    // 160ms buffer from last leave ensures cursor flicking away doesn't cause immediate re-trigger oscillation
+    if (Date.now() - lastLeaveTimeRef.current < 160) return;
+
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    setIsHovered(true);
+  };
+
+  const handleMouseLeave = () => {
+    // If an app picker menu is expanded, keep it visible until user closes it
+    if (expandedDockId) return;
+
+    lastLeaveTimeRef.current = Date.now();
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    hoverTimeoutRef.current = setTimeout(() => {
+      startClosing();
+    }, 140); // Snappy 140ms debounce so it starts closing promptly
+  };
+
+  const handleDismissMenu = () => {
+    setExpandedDockId(null);
+    startClosing();
+  };
+
   useEffect(() => {
-    if (!position) {
-      const windowWidth = window.innerWidth;
-      const windowHeight = window.innerHeight;
-      
-      let initialX = windowWidth - BASE_WIDTH - 20;
-      let initialY = windowHeight - BASE_HEIGHT - 30;
-
-      try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-            const parsed = JSON.parse(saved);
-            const maxX = windowWidth - BASE_WIDTH - EDGE_PADDING;
-            const maxY = windowHeight - BASE_HEIGHT - EDGE_PADDING;
-            
-            initialX = Math.max(EDGE_PADDING, Math.min(parsed.x, maxX));
-            initialY = Math.max(EDGE_PADDING, Math.min(parsed.y, maxY));
-        }
-      } catch (e) {
-        console.error("Failed to load dock position", e);
-      }
-
-      const startPos = { x: initialX, y: initialY };
-      setPosition(startPos);
-      latestPositionRef.current = startPos;
-    }
-  }, [BASE_WIDTH, BASE_HEIGHT]);
-
-  const getMenuPositionStyle = () => {
-    if (!position) return {};
-    const windowWidth = window.innerWidth;
-    const windowHeight = window.innerHeight;
-
-    if (position.x > windowWidth - 280) {
-      return { right: '100%', marginRight: '16px', top: '50%', transform: 'translateY(-50%)' };
-    }
-    if (position.x < 280) {
-      return { left: '100%', marginLeft: '16px', top: '50%', transform: 'translateY(-50%)' };
-    }
-    const isTopHalf = position.y < windowHeight / 2;
-    if (isTopHalf) {
-       return { top: '100%', marginTop: '16px', left: '50%', transform: 'translateX(-50%)' };
-    }
-    return { bottom: '100%', marginBottom: '16px', left: '50%', transform: 'translateX(-50%)' };
-  };
-
-  const handlePointerDown = (e: React.PointerEvent) => {
-    // Only capture drag if clicking base or icons without stopping
-    isDraggingRef.current = true;
-    hasMovedSignificantDistanceRef.current = false;
-    dragStartRef.current = { x: e.clientX, y: e.clientY };
-    initialPosRef.current = position;
-    
-    document.body.style.userSelect = 'none';
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
-  };
-
-  const handlePointerMove = (e: React.PointerEvent) => {
-    if (!isDraggingRef.current || !dragStartRef.current || !initialPosRef.current) return;
-    
-    const dx = e.clientX - dragStartRef.current.x;
-    const dy = e.clientY - dragStartRef.current.y;
-    
-    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-      hasMovedSignificantDistanceRef.current = true;
-    }
-
-    if (hasMovedSignificantDistanceRef.current) {
-        if (expandedDockId) setExpandedDockId(null);
-
-        const rawX = initialPosRef.current.x + dx;
-        const rawY = initialPosRef.current.y + dy;
-
-        const maxX = window.innerWidth - BASE_WIDTH - EDGE_PADDING;
-        const maxY = window.innerHeight - BASE_HEIGHT - EDGE_PADDING;
-
-        const clampedX = Math.max(EDGE_PADDING, Math.min(rawX, maxX));
-        const clampedY = Math.max(EDGE_PADDING, Math.min(rawY, maxY));
-
-        const newPos = { x: clampedX, y: clampedY };
-        setPosition(newPos);
-        latestPositionRef.current = newPos;
-    }
-  };
-
-  const handlePointerUp = (e: React.PointerEvent) => {
-    isDraggingRef.current = false;
-    document.body.style.userSelect = '';
-    (e.target as HTMLElement).releasePointerCapture(e.pointerId);
-
-    if (hasMovedSignificantDistanceRef.current && latestPositionRef.current) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(latestPositionRef.current));
-    }
-  };
+    return () => {
+      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    };
+  }, []);
 
   const handleDockClick = (dockId: string) => {
-    // If not a drag, toggle menu
-    if (hasMovedSignificantDistanceRef.current) return;
     onSelectDock(dockId);
     setExpandedDockId(prev => (prev === dockId ? null : dockId));
   };
-
-  if (!position) return null;
 
   // Filter apps for dock menu, and FORCE 'settings' to always be placed at the very end
   const eligibleApps = apps.filter(app => app.id !== 'clock-widget');
@@ -235,34 +164,62 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
 
   const isTwoRow = dockVisibleApps.length > 8;
 
+  // Visible state: whether the full dock is slid up or collapsed into a bottom indicator bar
+  const isDockRevealed = isHovered || !!expandedDockId;
+
   return (
     <>
+      {/* Background click-away dismisser when an app picker menu is expanded */}
       {expandedDockId && (
         <div 
-          className="fixed inset-0 z-40 bg-transparent"
-          onClick={() => setExpandedDockId(null)}
+          className="fixed inset-0 z-40 bg-transparent pointer-events-auto"
+          onClick={handleDismissMenu}
         />
       )}
 
+      {/* 1. RESTING INDICATOR BAR (Fixed strictly at bottom-0, emerges synchronously as dock collapses) */}
       <div 
-        ref={dockRef}
-        className="fixed z-50 flex items-center justify-center transition-none touch-none select-none"
-        style={{ 
-          left: position.x, 
-          top: position.y,
-          marginBottom: 'env(safe-area-inset-bottom, 0px)' 
-        }}
+        onClick={handleMouseEnter}
+        onMouseEnter={handleMouseEnter}
+        className={`
+          fixed bottom-0 left-1/2 -translate-x-1/2 z-50
+          pt-2 px-14 pb-2 flex items-center justify-center group select-none transition-all duration-200 ease-out
+          ${!isDockRevealed 
+            ? 'pointer-events-auto cursor-pointer opacity-100 translate-y-0' 
+            : 'pointer-events-none opacity-0 translate-y-2'
+          }
+        `}
+        style={{ marginBottom: 'env(safe-area-inset-bottom, 0px)' }}
+        title={!isDockRevealed ? "展開快捷列 (Dock)" : undefined}
+      >
+        <div className="h-1.5 w-24 rounded-full bg-white/45 group-hover:bg-amber-400 group-hover:w-32 shadow-[0_0_10px_rgba(255,255,255,0.4)] group-hover:shadow-[0_0_14px_rgba(245,158,11,0.9)] transition-all duration-200" />
+      </div>
+
+      {/* 2. DOCK CAPSULE & MENU CONTAINER (Slides smoothly up/down synchronously, ghosted when closing) */}
+      <div 
+        className={`
+          fixed bottom-0 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center select-none
+          transition-all duration-200 ease-out
+          ${isDockRevealed 
+            ? 'translate-y-0 pb-3 pointer-events-auto opacity-100' 
+            : 'translate-y-[calc(100%+16px)] pb-1 pointer-events-none opacity-0'
+          }
+        `}
+        style={{ marginBottom: 'env(safe-area-inset-bottom, 0px)' }}
+        onMouseEnter={isDockRevealed ? handleMouseEnter : undefined}
+        onMouseLeave={isDockRevealed ? handleMouseLeave : undefined}
       >
         
-        {/* Expanded Menu for Currently Active Dock */}
+        {/* Expanded App Picker Menu (Appears centered above the dock base) */}
         {expandedDockId && activeExpandedDock && (
           <div 
-            className="absolute flex items-center gap-2 p-2 bg-[#050505]/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)] transition-all duration-300 origin-center opacity-100 scale-100"
+            className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 flex items-center gap-2 p-2 bg-[#050505]/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-[0_12px_45px_-10px_rgba(0,0,0,0.85)] transition-all duration-200 origin-bottom opacity-100 scale-100 z-50 animate-in fade-in zoom-in-95 pointer-events-auto"
             style={{ 
                 width: 'max-content', 
-                maxWidth: '90vw',
-                ...getMenuPositionStyle()
+                maxWidth: '90vw'
             }}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
           >
             {/* Apps Grid (Supports up to 8x2 rows = 16 apps) */}
             <div className={isTwoRow ? 'grid grid-cols-8 gap-1.5' : 'flex items-center gap-1.5'}>
@@ -271,7 +228,7 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
                   key={app.id}
                   onClick={() => {
                     onSwitchApp(app.id, expandedDockId);
-                    setExpandedDockId(null);
+                    handleDismissMenu();
                   }}
                   className={`
                     relative group p-1.5 rounded-xl transition-all flex items-center justify-center
@@ -299,7 +256,7 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
                     <button
                       onClick={() => {
                           onReloadApp(expandedDockId);
-                          setExpandedDockId(null);
+                          handleDismissMenu();
                       }}
                       className="w-8 h-8 rounded-xl hover:bg-white/10 text-slate-500 hover:text-amber-100 transition-colors flex items-center justify-center"
                       title="Reload"
@@ -312,7 +269,7 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
                 <button
                   onClick={() => {
                     onCloseApp(expandedDockId);
-                    setExpandedDockId(null);
+                    handleDismissMenu();
                   }}
                   className="w-8 h-8 rounded-xl hover:bg-white/10 text-slate-500 hover:text-amber-100 transition-colors flex items-center justify-center"
                   title={expandedDockId === 'dock-2' ? "關閉此視窗" : "返回桌面 (Show Desktop)"}
@@ -325,7 +282,7 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
                   <button
                     onClick={() => {
                       onCloseSecondaryDock();
-                      setExpandedDockId(null);
+                      handleDismissMenu();
                     }}
                     className="w-8 h-8 rounded-xl hover:bg-white/10 text-zinc-500 hover:text-zinc-200 transition-colors flex items-center justify-center"
                     title="關閉副快捷列"
@@ -339,7 +296,7 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
                     <button
                         onClick={() => {
                             if (onInstallClick) onInstallClick();
-                            setExpandedDockId(null);
+                            handleDismissMenu();
                         }}
                         className="w-8 h-8 rounded-xl bg-amber-600/20 text-amber-500 hover:bg-amber-500 hover:text-white transition-all shadow-md shadow-amber-900/10 flex items-center justify-center"
                         title="Install App"
@@ -352,133 +309,133 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
           </div>
         )}
 
-        {/* === UNIFIED DOCK BASE (Single Draggable Glass Capsule) === */}
+        {/* Subtle handle line above the expanded capsule */}
+        <div className="w-10 h-1 rounded-full bg-white/20 mb-1.5 opacity-50 pointer-events-none" />
+
+        {/* Unified Dock Capsule */}
         <div 
           className={`
-            flex items-center p-1.5 bg-[#0a0a0a]/90 backdrop-blur-2xl border border-white/10
+            flex items-center p-1.5 bg-[#0a0a0a]/92 backdrop-blur-2xl border border-white/10
             rounded-[22px] shadow-[0_10px_35px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.06)]
-            cursor-grab active:cursor-grabbing hover:border-white/20 transition-all duration-300
-            gap-1.5
+            hover:border-white/20 transition-all duration-300 gap-1.5
+            ${isDockRevealed ? 'pointer-events-auto' : 'pointer-events-none'}
           `}
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
         >
-          {/* Slot 1: Primary Dock (Dock 1) */}
-          <div 
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDockClick('dock-1');
-            }}
-            className={`
-              w-11 h-11 rounded-[16px] relative flex items-center justify-center
-              transition-all duration-200 cursor-pointer
-              ${activeDockId === 'dock-1' 
-                ? 'bg-amber-500/10 border border-amber-500/40 shadow-[0_0_12px_rgba(245,158,11,0.25)]' 
-                : 'hover:bg-white/5 border border-white/5'
-              }
-              ${expandedDockId === 'dock-1' ? 'ring-2 ring-amber-500/50' : ''}
-            `}
-            title="快捷列 1"
-          >
-            {dock1App ? (
-              <div className="pointer-events-none p-2">
-                <DockIcon app={dock1App} isActive={true} size="large" accentColor="amber" />
-              </div>
-            ) : (
-              <LayoutGrid size={18} className="text-slate-400 group-hover:text-amber-100 transition-colors pointer-events-none" />
-            )}
-          </div>
-
-          {/* Low-Key Split Divider between Dock 1 and Dock 2 */}
-          {secondaryDock && (
-            <div className="w-px h-5 bg-white/10 mx-0.5 pointer-events-none" />
-          )}
-
-          {/* Slot 2: Secondary Dock (Dock 2) or "+" Button */}
-          {secondaryDock ? (
+            {/* Slot 1: Primary Dock (Dock 1) */}
             <div 
               onClick={(e) => {
                 e.stopPropagation();
-                handleDockClick('dock-2');
+                handleDockClick('dock-1');
               }}
               className={`
                 w-11 h-11 rounded-[16px] relative flex items-center justify-center
-                transition-all duration-200 cursor-pointer group/sec
-                ${activeDockId === 'dock-2' 
-                  ? 'bg-cyan-500/10 border border-cyan-400/40 shadow-[0_0_12px_rgba(34,211,238,0.25)]' 
+                transition-all duration-200 cursor-pointer
+                ${activeDockId === 'dock-1' 
+                  ? 'bg-amber-500/10 border border-amber-500/40 shadow-[0_0_12px_rgba(245,158,11,0.25)]' 
                   : 'hover:bg-white/5 border border-white/5'
                 }
-                ${expandedDockId === 'dock-2' ? 'ring-2 ring-cyan-500/50' : ''}
+                ${expandedDockId === 'dock-1' ? 'ring-2 ring-amber-500/50' : ''}
               `}
-              title="快捷列 2"
+              title="快捷列 1"
             >
-              {/* Discreet Low-Key Close Button (Frosted minimal glass X, top-right) */}
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onCloseSecondaryDock();
-                  if (expandedDockId === 'dock-2') setExpandedDockId(null);
-                }}
-                className="absolute -top-1 -right-1 z-30 w-4 h-4 rounded-full bg-zinc-900/90 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-100 border border-white/15 backdrop-blur-md flex items-center justify-center transition-all opacity-75 hover:opacity-100 hover:scale-110 shadow-sm cursor-pointer"
-                title="關閉副快捷列"
-              >
-                <X size={9} strokeWidth={2} />
-              </button>
-
-              {dock2App ? (
+              {dock1App ? (
                 <div className="pointer-events-none p-2">
-                  <DockIcon app={dock2App} isActive={true} size="large" accentColor="cyan" />
+                  <DockIcon app={dock1App} isActive={true} size="large" accentColor="amber" />
                 </div>
               ) : (
-                <LayoutGrid size={18} className="text-cyan-400/70 transition-colors pointer-events-none" />
+                <LayoutGrid size={18} className="text-slate-400 group-hover:text-amber-100 transition-colors pointer-events-none" />
               )}
             </div>
-          ) : (
-            /* "+" Button integrated inside the base */
-            canAddDock && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onAddDock();
-                }}
-                className="w-8 h-8 rounded-[12px] bg-white/5 hover:bg-white/10 text-slate-400 hover:text-amber-300 border border-white/5 hover:border-amber-500/30 flex items-center justify-center transition-all hover:scale-105 active:scale-95 ml-0.5 cursor-pointer"
-                title="新增副快捷列 (支援雙頁面分屏 / 多工作區處理)"
-              >
-                <Plus size={15} strokeWidth={2} />
-              </button>
-            )
-          )}
 
-          {/* Single / Dual Page ViewMode Toggle on the right side of the Dock base */}
-          {hasMultipleDocks && onToggleViewMode && (
-            <>
+            {/* Low-Key Split Divider between Dock 1 and Dock 2 */}
+            {secondaryDock && (
               <div className="w-px h-5 bg-white/10 mx-0.5 pointer-events-none" />
-              <button
-                type="button"
+            )}
+
+            {/* Slot 2: Secondary Dock (Dock 2) or "+" Button */}
+            {secondaryDock ? (
+              <div 
                 onClick={(e) => {
                   e.stopPropagation();
-                  onToggleViewMode();
+                  handleDockClick('dock-2');
                 }}
                 className={`
-                  w-9 h-9 rounded-[14px] flex items-center justify-center transition-all duration-200
-                  hover:scale-105 active:scale-95 cursor-pointer
-                  ${viewMode === 'split' 
-                    ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.2)]' 
-                    : 'bg-white/5 text-slate-400 border border-white/5 hover:bg-white/10 hover:text-white'
+                  w-11 h-11 rounded-[16px] relative flex items-center justify-center
+                  transition-all duration-200 cursor-pointer group/sec
+                  ${activeDockId === 'dock-2' 
+                    ? 'bg-cyan-500/10 border border-cyan-400/40 shadow-[0_0_12px_rgba(34,211,238,0.25)]' 
+                    : 'hover:bg-white/5 border border-white/5'
                   }
+                  ${expandedDockId === 'dock-2' ? 'ring-2 ring-cyan-500/50' : ''}
                 `}
-                title={viewMode === 'split' ? "切換為單頁工作區 (Workspace)" : "切換為雙頁分屏 (Split Screen)"}
+                title="快捷列 2"
               >
-                {viewMode === 'split' ? <Columns2 size={16} strokeWidth={1.8} /> : <Maximize2 size={16} strokeWidth={1.8} />}
-              </button>
-            </>
-          )}
+                {/* Discreet Low-Key Close Button (Frosted minimal glass X, top-right) */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onCloseSecondaryDock();
+                    if (expandedDockId === 'dock-2') setExpandedDockId(null);
+                  }}
+                  className="absolute -top-1 -right-1 z-30 w-4 h-4 rounded-full bg-zinc-900/90 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-100 border border-white/15 backdrop-blur-md flex items-center justify-center transition-all opacity-75 hover:opacity-100 hover:scale-110 shadow-sm cursor-pointer"
+                  title="關閉副快捷列"
+                >
+                  <X size={9} strokeWidth={2} />
+                </button>
+
+                {dock2App ? (
+                  <div className="pointer-events-none p-2">
+                    <DockIcon app={dock2App} isActive={true} size="large" accentColor="cyan" />
+                  </div>
+                ) : (
+                  <LayoutGrid size={18} className="text-cyan-400/70 transition-colors pointer-events-none" />
+                )}
+              </div>
+            ) : (
+              /* "+" Button integrated inside the base */
+              canAddDock && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAddDock();
+                  }}
+                  className="w-8 h-8 rounded-[12px] bg-white/5 hover:bg-white/10 text-slate-400 hover:text-amber-300 border border-white/5 hover:border-amber-500/30 flex items-center justify-center transition-all hover:scale-105 active:scale-95 ml-0.5 cursor-pointer"
+                  title="新增副快捷列 (支援雙頁面分屏 / 多工作區處理)"
+                >
+                  <Plus size={15} strokeWidth={2} />
+                </button>
+              )
+            )}
+
+            {/* Single / Dual Page ViewMode Toggle on the right side of the Dock base */}
+            {hasMultipleDocks && onToggleViewMode && (
+              <>
+                <div className="w-px h-5 bg-white/10 mx-0.5 pointer-events-none" />
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleViewMode();
+                  }}
+                  className={`
+                    w-9 h-9 rounded-[14px] flex items-center justify-center transition-all duration-200
+                    hover:scale-105 active:scale-95 cursor-pointer
+                    ${viewMode === 'split' 
+                      ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.2)]' 
+                      : 'bg-white/5 text-slate-400 border border-white/10 hover:bg-white/10 hover:text-white'
+                    }
+                  `}
+                  title={viewMode === 'split' ? "切換為單頁工作區 (Workspace)" : "切換為雙頁分屏 (Split Screen)"}
+                >
+                  {viewMode === 'split' ? <Columns2 size={16} strokeWidth={1.8} /> : <Maximize2 size={16} strokeWidth={1.8} />}
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
-      </div>
-    </>
-  );
-};
+      </>
+    );
+  };
