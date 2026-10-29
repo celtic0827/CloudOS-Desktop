@@ -40,8 +40,9 @@ function App() {
     toggleViewMode,
     addSecondaryDock,
     removeSecondaryDock,
-    openApp, 
+    openApp,
     closeApp,
+    closeAllApps,
     reloadApp,
     anyAppOpen,
     primaryDock,
@@ -311,7 +312,7 @@ function App() {
               {dock2App && (
                 <div 
                   className={`absolute inset-0 transition-opacity duration-300 ${
-                    activeDockId === 'dock-2' 
+                    activeDockId === 'dock-2' || !dock1App
                       ? 'opacity-100 z-10 pointer-events-auto' 
                       : 'opacity-0 z-0 pointer-events-none'
                   }`}
@@ -335,6 +336,7 @@ function App() {
           apps={dockApps}
           onSwitchApp={(appId, dockId) => handleOpenApp(appId, dockId)}
           onCloseApp={(dockId) => closeApp(dockId)}
+          onCloseAllApps={closeAllApps}
           onReloadApp={(dockId) => reloadApp(dockId)}
           canAddDock={!secondaryDock}
           onAddDock={addSecondaryDock}

@@ -70,6 +70,7 @@ export const useWindowManager = () => {
       ];
     });
     setActiveDockId('dock-2');
+    setViewMode('split');
   }, []);
 
   // Remove Secondary Dock (Dock 2)
@@ -82,16 +83,25 @@ export const useWindowManager = () => {
   const openApp = useCallback((appId: string, dockId?: string) => {
     const targetDockId = dockId || activeDockId || 'dock-1';
     
-    setDocks(prev => prev.map(dock => {
-      if (dock.id === targetDockId) {
-        return {
-          ...dock,
-          activeAppId: appId,
-          isAppOpen: true
-        };
+    setDocks(prev => {
+      const exists = prev.some(dock => dock.id === targetDockId);
+      if (!exists && targetDockId === 'dock-2') {
+        return [
+          ...prev,
+          { id: 'dock-2', activeAppId: appId, isAppOpen: true, refreshTrigger: 0 }
+        ];
       }
-      return dock;
-    }));
+      return prev.map(dock => {
+        if (dock.id === targetDockId) {
+          return {
+            ...dock,
+            activeAppId: appId,
+            isAppOpen: true
+          };
+        }
+        return dock;
+      });
+    });
     setActiveDockId(targetDockId);
   }, [activeDockId]);
 
@@ -129,6 +139,15 @@ export const useWindowManager = () => {
     setViewMode(prev => (prev === 'split' ? 'workspace' : 'split'));
   }, []);
 
+  // Close all apps across all docks (Global Return to Desktop)
+  const closeAllApps = useCallback(() => {
+    setDocks(prev => prev.map(dock => ({
+      ...dock,
+      isAppOpen: false,
+      activeAppId: null
+    })));
+  }, []);
+
   // Primary active app for desktop visibility check (if any app is open across all docks)
   const anyAppOpen = docks.some(d => !!d.activeAppId && d.isAppOpen);
   const primaryDock = docks.find(d => d.id === 'dock-1') || docks[0];
@@ -145,6 +164,7 @@ export const useWindowManager = () => {
     removeSecondaryDock,
     openApp,
     closeApp,
+    closeAllApps,
     reloadApp,
     anyAppOpen,
     primaryDock,
