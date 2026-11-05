@@ -9,12 +9,17 @@ export const Clock: React.FC = () => {
   }, []);
 
   return (
-    <div className="text-center select-none relative group cursor-default flex flex-col items-center">
-      {/* Subtle Glow Effect */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-amber-600/10 rounded-full blur-[60px] pointer-events-none" />
+    <div className="text-center select-none relative group cursor-default flex flex-col items-center transform-gpu">
+      {/* Subtle Glow Effect - Lightweight radial gradient instead of 60px blur filter */}
+      <div 
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full pointer-events-none opacity-40"
+        style={{
+          background: 'radial-gradient(circle, rgba(217, 119, 6, 0.25) 0%, rgba(0, 0, 0, 0) 70%)'
+        }}
+      />
       
       {/* Time - Editorial Style: Smaller, Dark Gold Gradient, Padding for Clipping */}
-      <h1 className="relative text-6xl md:text-[5rem] leading-tight font-serif font-thin text-transparent bg-clip-text bg-gradient-to-b from-amber-400 via-amber-600 to-amber-800 drop-shadow-2xl tracking-tighter pb-4">
+      <h1 className="relative text-6xl md:text-[5rem] leading-tight font-serif font-thin text-transparent bg-clip-text bg-gradient-to-b from-amber-400 via-amber-600 to-amber-800 tracking-tighter pb-4">
         {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
       </h1>
       

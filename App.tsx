@@ -213,9 +213,9 @@ function App() {
         {/* Desktop View */}
         <div 
           className={`
-            flex-1 w-full relative
-            transition-all duration-500 ease-in-out
-            ${anyAppOpen ? 'opacity-0 scale-95 pointer-events-none blur-sm' : 'opacity-100 scale-100 blur-0'}
+            flex-1 w-full relative transform-gpu
+            transition-all duration-300 ease-out
+            ${anyAppOpen ? 'opacity-0 scale-[0.98] pointer-events-none' : 'opacity-100 scale-100'}
           `}
         >
           <div 

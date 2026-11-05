@@ -74,14 +74,14 @@ export const BentoTile: React.FC<BentoTileProps> = ({
         onClick={(e) => !isGridDragging && onClick(app.id)}
         className={`
           w-full h-full overflow-hidden rounded-3xl
-          bg-[#0a0a0a]/40 backdrop-blur-xl border 
-          transition-all duration-300 ease-out
+          bg-[#0d0d0f]/95 border 
+          transition-all duration-200 ease-out
           ${isOneByOne || !showWidget ? 'flex flex-col items-center justify-center' : ''}
           
-          border-white/5 
+          border-white/[0.08]
           ${containerInteractionClasses}
           
-          text-left select-none
+          text-left select-none transform-gpu
         `}
       >
         {/* Drag Handle Hint - Only show when NOT dragging */}
@@ -100,15 +100,14 @@ export const BentoTile: React.FC<BentoTileProps> = ({
             <div className="relative mb-3 pointer-events-none">
                   <div className={`
                       absolute inset-0 rounded-2xl ${app.color}
-                      blur-xl opacity-20 ${!isGridDragging ? 'group-hover:opacity-60 group-hover:scale-125' : ''}
-                      transition-all duration-500 scale-110
-                      brightness-150 saturate-150
+                      opacity-15 ${!isGridDragging ? 'group-hover:opacity-40 group-hover:scale-110' : ''}
+                      transition-all duration-300 scale-105
                   `} />
 
                   <div className={`
                       relative w-12 h-12 rounded-2xl flex items-center justify-center
                       ${app.color} 
-                      shadow-lg ${!isGridDragging ? 'group-hover:scale-110' : ''} transition-transform duration-300
+                      shadow-md ${!isGridDragging ? 'group-hover:scale-105' : ''} transition-transform duration-200
                       border border-white/10 overflow-hidden
                   `}>
                       <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-black/10" />
