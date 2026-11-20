@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppDefinition, ViewMode, DockState } from '../../types';
 import { LayoutGrid, Globe, LayoutDashboard, Download, RotateCw, Plus, X, Columns2, Maximize2 } from 'lucide-react';
 
@@ -88,9 +88,7 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
   onInstallClick
 }) => {
   const [expandedDockId, setExpandedDockId] = useState<string | null>(null);
-  const [isHovered, setIsHovered] = useState(false);
-  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const lastLeaveTimeRef = useRef<number>(0);
+  const [isDockOpen, setIsDockOpen] = useState(false);
 
   const primaryDock = docks.find(d => d.id === 'dock-1') || docks[0];
   const secondaryDock = docks.find(d => d.id === 'dock-2');
@@ -108,52 +106,19 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
     : null;
   const expandedAccent = expandedDockId === 'dock-2' ? 'cyan' : 'amber';
 
-  // Smooth closing triggered synchronously
-  const startClosing = () => {
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current);
-      hoverTimeoutRef.current = null;
-    }
-    lastLeaveTimeRef.current = Date.now();
-    setIsHovered(false);
-  };
-
-  // Hover handlers for smooth auto-hide behavior
-  const handleMouseEnter = () => {
-    // 160ms buffer from last leave ensures cursor flicking away doesn't cause immediate re-trigger oscillation
-    if (Date.now() - lastLeaveTimeRef.current < 160) return;
-
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current);
-      hoverTimeoutRef.current = null;
-    }
-    setIsHovered(true);
-  };
-
-  const handleMouseLeave = () => {
-    // If an app picker menu is expanded, keep it visible until user closes it
-    if (expandedDockId) return;
-
-    lastLeaveTimeRef.current = Date.now();
-    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
-    hoverTimeoutRef.current = setTimeout(() => {
-      startClosing();
-    }, 140); // Snappy 140ms debounce so it starts closing promptly
+  const handleOpenDock = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setIsDockOpen(true);
   };
 
   const handleDismissMenu = () => {
     setExpandedDockId(null);
-    startClosing();
+    setIsDockOpen(false);
   };
-
-  useEffect(() => {
-    return () => {
-      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
-    };
-  }, []);
 
   const handleDockClick = (dockId: string) => {
     onSelectDock(dockId);
+    setIsDockOpen(true);
     setExpandedDockId(prev => (prev === dockId ? null : dockId));
   };
 
@@ -169,37 +134,38 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
   const isTwoRow = dockVisibleApps.length > 8;
 
   // Visible state: whether the full dock is slid up or collapsed into a bottom indicator bar
-  const isDockRevealed = isHovered || !!expandedDockId;
+  const isDockRevealed = isDockOpen || !!expandedDockId;
 
   return (
     <>
-      {/* Background click-away dismisser when an app picker menu is expanded */}
-      {expandedDockId && (
+      {/* Background click-away dismisser whenever the dock or app picker menu is revealed */}
+      {isDockRevealed && (
         <div 
           className="fixed inset-0 z-40 bg-transparent pointer-events-auto"
           onClick={handleDismissMenu}
         />
       )}
 
-      {/* 1. RESTING INDICATOR BAR (Fixed strictly at bottom-0, emerges synchronously as dock collapses) */}
+      {/* 1. RESTING INDICATOR BAR (Click-to-expand with comfortable invisible hitbox) */}
       <div 
-        onClick={handleMouseEnter}
-        onMouseEnter={handleMouseEnter}
+        role="button"
+        aria-label="展開快捷列 (Dock)"
+        onClick={handleOpenDock}
         className={`
           fixed bottom-0 left-1/2 -translate-x-1/2 z-50
-          pt-2 px-14 pb-2 flex items-center justify-center group select-none transition-all duration-200 ease-out
+          pt-3 px-16 pb-2.5 flex items-center justify-center group select-none transition-all duration-200 ease-out
           ${!isDockRevealed 
             ? 'pointer-events-auto cursor-pointer opacity-100 translate-y-0' 
             : 'pointer-events-none opacity-0 translate-y-2'
           }
         `}
         style={{ marginBottom: 'env(safe-area-inset-bottom, 0px)' }}
-        title={!isDockRevealed ? "展開快捷列 (Dock)" : undefined}
+        title={!isDockRevealed ? "點擊展開快捷列 (Dock)" : undefined}
       >
         <div className="h-1.5 w-24 rounded-full bg-white/45 group-hover:bg-amber-400 group-hover:w-32 shadow-[0_0_10px_rgba(255,255,255,0.4)] group-hover:shadow-[0_0_14px_rgba(245,158,11,0.9)] transition-all duration-200" />
       </div>
 
-      {/* 2. DOCK CAPSULE & MENU CONTAINER (Slides smoothly up/down synchronously, ghosted when closing) */}
+      {/* 2. DOCK CAPSULE & MENU CONTAINER */}
       <div 
         className={`
           fixed bottom-0 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center select-none
@@ -210,8 +176,6 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
           }
         `}
         style={{ marginBottom: 'env(safe-area-inset-bottom, 0px)' }}
-        onMouseEnter={isDockRevealed ? handleMouseEnter : undefined}
-        onMouseLeave={isDockRevealed ? handleMouseLeave : undefined}
       >
         
         {/* Expanded App Picker Menu (Appears centered above the dock base) */}
@@ -222,8 +186,6 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
                 width: 'max-content', 
                 maxWidth: '90vw'
             }}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
           >
             {/* Apps Grid (Supports up to 8x2 rows = 16 apps) */}
             <div className={isTwoRow ? 'grid grid-cols-8 gap-1.5' : 'flex items-center gap-1.5'}>
@@ -313,8 +275,18 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
           </div>
         )}
 
-        {/* Subtle handle line above the expanded capsule */}
-        <div className="w-8 h-1 rounded-full bg-white/20 mb-1 opacity-50 pointer-events-none" />
+        {/* Clickable collapse handle line above the expanded capsule */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDismissMenu();
+          }}
+          className="px-6 py-1.5 -mb-0.5 flex items-center justify-center group/handle cursor-pointer"
+          title="收合快捷列"
+        >
+          <div className="w-8 h-1 rounded-full bg-white/25 group-hover/handle:bg-amber-400/80 group-hover/handle:w-10 transition-all duration-200" />
+        </button>
 
         {/* Unified Dock Capsule (Slimmer 30% reduction with tight padding) */}
         <div 
@@ -406,7 +378,7 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
                     onAddDock();
                     onSelectDock('dock-2');
                     setExpandedDockId('dock-2');
-                    setIsHovered(true);
+                    setIsDockOpen(true);
                   }}
                   className="w-7 h-7 rounded-[10px] bg-white/5 hover:bg-white/10 text-slate-400 hover:text-amber-300 border border-white/5 hover:border-amber-500/30 flex items-center justify-center transition-all hover:scale-105 active:scale-95 ml-0.5 cursor-pointer"
                   title="新增副快捷列 (支援雙頁面分屏 / 多工作區處理)"
